@@ -76,10 +76,10 @@ const solicitudSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Municipios",
     },
-    departamento:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Departamentos",
-    },
+    // departamento:{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Departamentos",
+    // },
 },{
     timestamps: true,
 })
