@@ -16,9 +16,9 @@ app.use(json())
 app.use(cookieParser())
 // Permitir usar cookie en el frontend
 app.use(cors({
-    origin: process.env.FORNTEND,
+    origin: process.env.FRONTEND_URL,
     credentials: true
-}))
+})) 
 
 
 

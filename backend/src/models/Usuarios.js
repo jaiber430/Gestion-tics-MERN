@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import bcrypt from 'bcrypt'
 
 const usuarioSchema = new mongoose.Schema({
     nombre: {
@@ -51,6 +52,10 @@ const usuarioSchema = new mongoose.Schema({
         enum: ['Contrato', 'Planta'],
         required: true,
     },
+    inicioContrato: {
+        type: Date,
+        default: null,
+    },
     finContrato: {
         type: Date,
         default: null,
@@ -63,9 +68,25 @@ const usuarioSchema = new mongoose.Schema({
         type: Number,
         required: false,
         default: null,
+        unique: true,
     }
 }, {
     timestamps: true
 })
+
+//  Encriptación de la contraseña
+usuarioSchema.pre('save', async function () {
+    if (!this.isModified('password')) {
+        return
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    this.password = await bcrypt.hash(this.password, salt)
+    return
+})
+
+usuarioSchema.methods.comprobarPassword = async function (passwordFormulario) {
+    return await bcrypt.compare(passwordFormulario, this.password)
+}
 
 export default mongoose.model('Usuarios', usuarioSchema)

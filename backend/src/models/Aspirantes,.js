@@ -12,8 +12,9 @@ const aspirantesSchema = new mongoose.Schema({
         trim: true,
     },
     archivo: {
-        type: String, // ruta o URL del PDF
-        required: true
+        // ruta o URL del PDF
+        type: String,
+        required: false
     },
     // ! Referencia
     tipoIdentificacion: {
