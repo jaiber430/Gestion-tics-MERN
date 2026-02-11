@@ -1,9 +1,12 @@
+import { v4 as uuidv4 } from 'uuid'
+
 import Usuarios from '../models/Usuarios.js'
 import Roles from "../models/Roles.js"
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarJWT from '../helpers/generarJWT.js'
+import { emailRecuperacion } from '../helpers/enviarEmail.js'
 
 const registrarUsuario = async (req, res) => {
     // Obtener los datos del usuario
@@ -135,21 +138,36 @@ const iniciarSesion = async (req, res) => {
     res.send(usuarioLogueado)
 }
 
-const olvidePassword = async (req, res) => {
-
-}
-
 const recuperarPassword = async (req, res) => {
+    const { email } = req.body
+
+    const existeEmail = await Usuarios.findOne({ email })
+    if (!existeEmail) {
+        throw new HttpErrors('El correo no encontrado', 404)
+    }
+
+    const generarPassword = uuidv4()
+    const passwordActualizada = generarPassword.slice(0, 8)
+
+    emailRecuperacion({
+        email: existeEmail.email,
+        passwordActualizada: passwordActualizada
+    })
+
+    existeEmail.password = passwordActualizada
+
+
+    await existeEmail.save()
+    res.send('Contraseña actualizada')
 }
 
-const profile = async (req, res) =>{
+const profile = async (req, res) => {
     res.send('Hola mundo')
 }
 
 export {
     iniciarSesion,
     registrarUsuario,
-    olvidePassword,
     recuperarPassword,
     profile
 }
