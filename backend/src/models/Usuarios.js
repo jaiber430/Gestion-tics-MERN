@@ -15,15 +15,14 @@ const usuarioSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Roles'
     },
+    tipoIdentificacion: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TiposIdentificacion'
+    },
     numeroIdentificacion: {
         type: Number,
         required: true,
         unique: true,
-    },
-    // ! Referencia
-    tipoIdentificacion: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'TiposIdentificacion'
     },
     email: {
         type: String,
@@ -39,8 +38,9 @@ const usuarioSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    token:{
+    token: {
         type: String,
+        default: null,
     },
     verificado: {
         type: Boolean,
@@ -51,17 +51,18 @@ const usuarioSchema = new mongoose.Schema({
         enum: ['Contrato', 'Planta'],
         required: true,
     },
-    finContrato:{
+    finContrato: {
         type: Date,
         default: null,
     },
-    contratoActivo:{
+    contratoActivo: {
         type: Boolean,
         default: false
     },
     numeroContrato: {
         type: Number,
         required: false,
+        default: null,
     }
 }, {
     timestamps: true
