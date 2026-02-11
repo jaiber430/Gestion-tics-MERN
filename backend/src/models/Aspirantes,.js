@@ -11,6 +11,10 @@ const aspirantesSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    archivo: {
+        type: String, // ruta o URL del PDF
+        required: true
+    },
     // ! Referencia
     tipoIdentificacion: {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +25,10 @@ const aspirantesSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    telefono: {
+        type: Number,
+        required: true,
+    },
     email: {
         type: String,
         required: true,
@@ -29,11 +37,6 @@ const aspirantesSchema = new mongoose.Schema({
         lowercase: true,
         // Farmato valido para el correo
         match: [/^\S+@\S+\.\S+$/,],
-    },
-    password: {
-        type: String,
-        required: true,
-        trim: true,
     },
 }, {
     timestamps: true
