@@ -1,11 +1,17 @@
 import { Router } from 'express'
 
 import {
-    iniciarSesion
+    iniciarSesion,
+    registrarUsuario,
+    olvidePassword,
+    recuperarPassword
 } from '../controllers/usuarioController.js'
 
 const router = Router()
 
-router.get('/', iniciarSesion)
+router.post('/', iniciarSesion)
+router.post('/registrar', registrarUsuario)
+router.post('/olvide-password', olvidePassword)
+router.post('/recuperar-password', recuperarPassword)
 
 export default router
