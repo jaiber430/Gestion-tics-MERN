@@ -3,6 +3,7 @@ import Roles from "../models/Roles.js"
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
+import generarJWT from '../helpers/generarJWT.js'
 
 const registrarUsuario = async (req, res) => {
     // Obtener los datos del usuario
@@ -88,6 +89,50 @@ const registrarUsuario = async (req, res) => {
 }
 
 const iniciarSesion = async (req, res) => {
+    const { numeroIdentificacion, password } = req.body
+
+    const existeUsuario = await Usuarios.findOne({ numeroIdentificacion })
+
+    if (!existeUsuario) {
+        throw new HttpErrors('El usuario no existe registrate para usar el sistema', 404)
+    }
+
+    const passwordCorrecta = await existeUsuario.comprobarPassword(password)
+    if (!passwordCorrecta) {
+        throw new HttpErrors('Credenciales invalidas', 400)
+    }
+
+    if (!existeUsuario.verificado) {
+        throw new HttpErrors('Tu cuenta aun no ha sido verificada', 409)
+    }
+
+    if (!existeUsuario.contratoActivo) {
+        throw new HttpErrors('Usted no esta contratado por la entidad', 409)
+    }
+
+    const token = generarJWT(existeUsuario._id)
+
+    // Crear cookie si todo es correcto
+    res.cookie('token', token, {
+        // No poder acceder al token usando JS
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        // 30d
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    })
+
+
+    const usuarioLogueado = {
+        id: existeUsuario._id,
+        nombre: existeUsuario.nombre,
+        apellido: existeUsuario.apellido,
+        rol: existeUsuario.rol,
+        numeroIdentificacion: existeUsuario.numeroIdentificacion,
+        email: existeUsuario.email
+    }
+
+    res.send(usuarioLogueado)
 }
 
 const olvidePassword = async (req, res) => {
@@ -97,11 +142,14 @@ const olvidePassword = async (req, res) => {
 const recuperarPassword = async (req, res) => {
 }
 
-
+const profile = async (req, res) =>{
+    res.send('Hola mundo')
+}
 
 export {
     iniciarSesion,
     registrarUsuario,
     olvidePassword,
-    recuperarPassword
+    recuperarPassword,
+    profile
 }
