@@ -7,6 +7,7 @@ import errorMiddleware from './middlewares/errorMiddleare.js'
 import asyncHandle from './helpers/asyncHandler.js'
 
 import usuarioRoutes from './routes/usuarioRoutes.js'
+import solicitudRoutes from './routes/solicitudRoutes.js'
 
 const app = express()
 
@@ -21,7 +22,8 @@ app.use(cors({
 
 
 
-app.use(`${process.env.APIURL}`, asyncHandle(usuarioRoutes))
+app.use(`${process.env.APIURL}usuarios`, asyncHandle(usuarioRoutes))
+app.use(`${process.env.APIURL}solicitudes`, asyncHandle(solicitudRoutes))
 
 app.use(errorMiddleware)
 

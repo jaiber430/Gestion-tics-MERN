@@ -2,11 +2,10 @@ import HttpErrors from "../helpers/httpErrors.js"
 import jwt from 'jsonwebtoken'
 
 import Usuarios from '../models/Usuarios.js'
-import Roles from '../models/Roles.js'
 
 const checkAuth = async (req, res, next) => {
 
-    const token = req.cookie.token
+    const token = req.cookies.token
 
     if (!token) {
         throw new HttpErrors('Accion no valida', 401)
@@ -14,11 +13,13 @@ const checkAuth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.SECRETKEY)
-        req.usuario = await Usuarios.findById(decoded.id)
+        const usuario = await Usuarios.findById(decoded.id).populate('rol')
 
-        if (!req.usuario) {
+        if (!usuario) {
             throw new HttpErrors('Usuario no encontrado', 403)
         }
+
+        req.usuario = usuario
 
         next()
     } catch (error) {
