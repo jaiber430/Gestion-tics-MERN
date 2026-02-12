@@ -23,12 +23,16 @@ const empresaSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    // ! Referencia
     tipoEmpresa: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TiposEmpresa'
-    }
-},{
+    },
+    cartaSolicitud: {
+        // ruta o URL del PDF
+        type: String,
+        required: false
+    },
+}, {
     timestamps: true
 })
 

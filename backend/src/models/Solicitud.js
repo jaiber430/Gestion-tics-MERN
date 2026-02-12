@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
 const solicitudSchema = new mongoose.Schema({
-    tipoOferta: {
-        type: String,
-        enum: ['Abierta', 'Cerrada'],
-        required: true,
-    },
     tipoSolicitud: {
         type: String,
         enum: ['CampeSENA', 'Regular'],
+        required: true,
+    },
+    tipoOferta: {
+        type: String,
+        enum: ['Abierta', 'Cerrada'],
         required: true,
     },
     codigoSolicitud: {
@@ -18,6 +18,7 @@ const solicitudSchema = new mongoose.Schema({
     cupo: {
         type: Number,
         required: true,
+        default: 25,
     },
     direccionFormacion: {
         type: String,
@@ -51,7 +52,6 @@ const solicitudSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    // ! Relaciones
     usuarioSolicitante: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuarios',
@@ -68,10 +68,15 @@ const solicitudSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "ProgramasEspeciales",
     },
+    departamento:{
+        type: String,
+        default: "Cauca",
+    },
     municipio: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Municipios",
     },
+    // Zona del horario ☠️
     fechaInicio: {
         type: Date,
         default: null,
@@ -79,6 +84,7 @@ const solicitudSchema = new mongoose.Schema({
     fechaFin: {
         type: Date,
         default: null,
+        required: false,
     },
     mes1: {
         type: String,
@@ -87,10 +93,14 @@ const solicitudSchema = new mongoose.Schema({
     },
     mes2: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
-    horas: {
+    horaInicio: {
+        type: String,
+        required: true
+    },
+    horaFin: {
         type: String,
         required: true
     },
