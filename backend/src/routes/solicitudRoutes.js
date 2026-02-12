@@ -13,6 +13,6 @@ import {
 const router = Router()
 
 router.get('/tipo-solicitud', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'), tipoSolicitud)
-router.post('/crear-solicitud', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'), crearSolicitud)
+router.post('/crear-solicitud/:tipo', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'), crearSolicitud)
 
 export default router

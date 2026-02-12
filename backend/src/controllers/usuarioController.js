@@ -186,16 +186,14 @@ const verificarUsuarios = async (req, res) => {
     const { id } = req.params
     const { inicioContrato, finContrato, verificado, contratoActivo, usuarioCoordinador } = req.body
 
-    // console.log(id)
-    console.log(inicioContrato, finContrato, verificado, contratoActivo, usuarioCoordinador)
-        // Todas las operaciones que usen la sesión pertenecera al mismo blocke de codigo
+    // Todas las operaciones que usen la sesión pertenecera al mismo blocke de codigo
     const session = await mongoose.startSession()
     session.startTransaction()
 
     try {
 
         const inicio = formatearFechaInicio(inicioContrato)
-        const fin = formatearFechaInicio(finContrato)
+        const fin = formatearFechaFin(finContrato)
 
         if (inicio > fin) {
             throw new HttpErrors('La fecha de finalización no puede ser antes que la de inicio', 400)
@@ -219,7 +217,7 @@ const verificarUsuarios = async (req, res) => {
             throw new HttpErrors('El usuario no es coordinador', 400)
         }
 
-        if(!verificarCoordinador.verificado || !verificarCoordinador.contratoActivo){
+        if (!verificarCoordinador.verificado || !verificarCoordinador.contratoActivo) {
             throw new HttpErrors('El coordinador aun no ha sido verificado', 400)
         }
 
