@@ -13,7 +13,7 @@ import { formatearFechaInicio, formatearFechaFin } from '../helpers/formatearFec
 
 const registrarUsuario = async (req, res) => {
     // Obtener los datos del usuario
-    const { nombre, apellido, rol, tipoIdentificacion, numeroIdentificacion, email, password, tipoContrato, numeroContrato } = req.body
+    const { nombre, apellido, rol, tipoIdentificacion, numeroIdentificacion, email, password, tipoContrato, numeroContrato, inicioContrato, finContrato, } = req.body
 
     //  Comprobar que los campos no lleguen vacios (Solo los requeridos)
     if (!nombre || !apellido || !rol || !tipoIdentificacion || !numeroIdentificacion || !email || !password || !tipoContrato) {
@@ -64,8 +64,15 @@ const registrarUsuario = async (req, res) => {
     }
 
     // Verificar si al ser contrato se envia su numero
-    if (tipoContrato === 'Contrato' && !numeroContrato) {
-        throw new HttpErrors('El numero de contrato requerido', 400)
+    if (tipoContrato === 'Contrato' && !numeroContrato || !inicioContrato || !finContrato) {
+        throw new HttpErrors('El numero de contrato, su fecha inicio y fin son requeridos', 400)
+    }
+
+    const inicio = formatearFechaInicio(inicioContrato)
+    const fin = formatearFechaFin(finContrato)
+
+    if (inicio > fin) {
+        throw new HttpErrors('La fecha de finalización no puede ser antes que la de inicio', 400)
     }
 
     // Comprobar si envia el numero de contrato
@@ -179,12 +186,18 @@ const verUsuarios = async (req, res) => {
             { contratoActivo: { $ne: true } }
         ]
     })
-    res.json(verUsuariosNoverificados)
+    if (verUsuariosNoverificados <= 0) {
+        res.json({
+            msg: "No se encuantran usuarios para verificar"
+        })
+    } else {
+        res.json(verUsuariosNoverificados)
+    }
 }
 
 const verificarUsuarios = async (req, res) => {
     const { id } = req.params
-    const { inicioContrato, finContrato, verificado, contratoActivo, usuarioCoordinador } = req.body
+    const { verificado, contratoActivo, usuarioCoordinador } = req.body
 
     // Todas las operaciones que usen la sesión pertenecera al mismo blocke de codigo
     const session = await mongoose.startSession()
@@ -192,17 +205,10 @@ const verificarUsuarios = async (req, res) => {
 
     try {
 
-        const inicio = formatearFechaInicio(inicioContrato)
-        const fin = formatearFechaFin(finContrato)
-
-        if (inicio > fin) {
-            throw new HttpErrors('La fecha de finalización no puede ser antes que la de inicio', 400)
-        }
-
         // Actualizar por medio del id el usuario
         const verificarUsuarioById = await Usuarios.findByIdAndUpdate(
             id,
-            { inicioContrato, finContrato, verificado, contratoActivo },
+            { verificado, contratoActivo },
             { new: true, session },
         )
 

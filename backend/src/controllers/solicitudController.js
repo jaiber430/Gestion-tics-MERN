@@ -11,7 +11,9 @@ const tipoSolicitud = async (req, res) => {
 const crearSolicitud = async (req, res) => {
     const { tipo } = req.params
 
-    const { tipoOferta, cupo, direccionFormacion, subSectorEconomico, convenio, ambiente, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, programaFormacion, programaEspecial, municipio, fechaInicio, mes1, mes2, horaInicio, horaFin, diasSemana } = req.body
+    // const { tipoOferta, cupo, direccionFormacion, subSectorEconomico, convenio, ambiente, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, programaFormacion, programaEspecial, municipio, fechaInicio, mes1, mes2, horaInicio, horaFin, diasSemana } = req.body
+
+    const { oferta } = req.body
 
     switch (tipo) {
         case "hoa":
@@ -25,14 +27,14 @@ const crearSolicitud = async (req, res) => {
 
                 // Pedir campos en base a la oferta
                 if (tipoOferta !== "Abierta") {
-                    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !cartaSolicitud || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !mes1 || !mes2 || !horaInicio || !horaFin || !diasSemana) {
-                        throw new HttpErrors('Todos los campos son requeridos', 400)
-                    }
+                    // if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !cartaSolicitud || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !mes1 || !mes2 || !horaInicio || !horaFin || !diasSemana) {
+                    //     throw new HttpErrors('Todos los campos son requeridos', 400)
+                    // }
                 }
 
-                if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !mes1 || !mes2 || !horaInicio || !horaFin || !diasSemana) {
-                    throw new HttpErrors('Todos los campos son requeridos', 400)
-                }
+                // if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !mes1 || !mes2 || !horaInicio || !horaFin || !diasSemana) {
+                //     throw new HttpErrors('Todos los campos son requeridos', 400)
+                // }
 
                 // Verificar que el cupo no pase del maximo y que tenga el cupo minimo
                 if (cupo < 25 || cupo > 30) {
