@@ -1,12 +1,15 @@
 import { v4 as uuidv4 } from 'uuid'
+import mongoose from 'mongoose'
 
 import Usuarios from '../models/Usuarios.js'
 import Roles from "../models/Roles.js"
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
+import UsuarioAsignado from '../models/UsuarioAsignado.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarJWT from '../helpers/generarJWT.js'
 import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
+import { formatearFechaInicio, formatearFechaFin } from '../helpers/formatearFechas.js'
 
 const registrarUsuario = async (req, res) => {
     // Obtener los datos del usuario
@@ -181,10 +184,63 @@ const verUsuarios = async (req, res) => {
 
 const verificarUsuarios = async (req, res) => {
     const { id } = req.params
-    const { inicioContrato, finContrato, verificado, contratoActivo } = req.body
+    const { inicioContrato, finContrato, verificado, contratoActivo, usuarioCoordinador } = req.body
 
-    
+    // Todas las operaciones que usen la sesión pertenecera al mismo blocke de codigo
+    const session = await mongoose.startSession()
+    session.startTransaction()
 
+    try {
+
+        const inicio = formatearFechaInicio(inicioContrato)
+        const fin = formatearFechaFin(finContrato)
+
+        if (inicio > fin) {
+            throw new HttpErrors('La fecha de finalización no puede ser antes que la de inicio', 400)
+        }
+
+        // Actualizar por medio del id el usuario
+        const verificarUsuarioById = await Usuarios.findByIdAndUpdate(
+            id,
+            { inicioContrato, finContrato, verificado, contratoActivo },
+            { new: true, session },
+        )
+
+        if (!verificarUsuarioById) {
+            throw new HttpErrors('Usuario no encontrado', 404)
+        }
+
+        const verificarCoordinador = await Usuarios.findById(usuarioCoordinador).populate('rol').session(session)
+
+        // Validar que el dato exista y sea coordinador
+        if (!verificarCoordinador || verificarCoordinador.rol.nombreRol !== 'COORDINADOR') {
+            throw new HttpErrors('El usuario no es coordinador', 400)
+        }
+
+        if (!verificarCoordinador.verificado || !verificarCoordinador.contratoActivo) {
+            throw new HttpErrors('El coordinador aun no ha sido verificado', 400)
+        }
+
+        // Crear un nuevo dato en el modelo UsuarioAsignado
+        await UsuarioAsignado.create([{
+            usuarioInstructor: verificarUsuarioById._id,
+            usuarioCoordinador: verificarCoordinador._id
+        }], { session })
+
+        // Si todo sale bien Guarda los datos
+        await session.commitTransaction()
+        // Finaliza la sesión
+        session.endSession()
+
+        res.json({
+            msg: "Instructor verificado con exito y asignado al coordinador",
+        })
+    } catch (error) {
+        // Si algo sale mal cancela todo
+        await session.abortTransaction()
+        session.endSession()
+        throw error
+    }
 }
 
 export {

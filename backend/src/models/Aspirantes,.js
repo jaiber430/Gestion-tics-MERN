@@ -16,7 +16,6 @@ const aspirantesSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    // ! Referencia
     tipoIdentificacion: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TiposIdentificacion'
