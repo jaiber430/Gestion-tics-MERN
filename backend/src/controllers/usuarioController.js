@@ -6,7 +6,7 @@ import TiposIdentificacion from '../models/TiposIdentificacion.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarJWT from '../helpers/generarJWT.js'
-import { emailRecuperacion } from '../helpers/enviarEmail.js'
+import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
 
 const registrarUsuario = async (req, res) => {
     // Obtener los datos del usuario
@@ -163,12 +163,28 @@ const recuperarPassword = async (req, res) => {
     res.send('Se ha enviado a su correo la nueva contraseña')
 }
 
-const verificarUsuarios = async (req, res) => {
-
-}
-
 const comprobarCookies = async (req, res) => {
     res.send('Este usuario esta loguado y tiene el rol permitido')
+}
+
+const verUsuarios = async (req, res) => {
+    const verUsuariosNoverificados = await Usuarios.find({
+        // $or => Si cumple al menos una de todas las condiciones devuelve los datos
+        $or: [
+            // $ne => Obtener datos diferentes a la petición
+            { verificado: { $ne: true } },
+            { contratoActivo: { $ne: true } }
+        ]
+    })
+    res.json(verUsuariosNoverificados)
+}
+
+const verificarUsuarios = async (req, res) => {
+    const { id } = req.params
+    const { inicioContrato, finContrato, verificado, contratoActivo } = req.body
+
+    
+
 }
 
 export {
@@ -176,5 +192,6 @@ export {
     registrarUsuario,
     recuperarPassword,
     comprobarCookies,
+    verUsuarios,
     verificarUsuarios
 }

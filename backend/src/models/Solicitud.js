@@ -43,11 +43,11 @@ const solicitudSchema = new mongoose.Schema({
         type: Date,
         default: Date.now(),
     },
-    revisado:{
+    revisado: {
         type: Boolean,
         default: true
     },
-    linkPreinscripcion:{
+    linkPreinscripcion: {
         type: Boolean,
         default: true
     },
@@ -60,27 +60,45 @@ const solicitudSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Empresa',
     },
-    programaFormacion:{
+    programaFormacion: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "ProgramasFormacion",
     },
-    programaEspecial:{
+    programaEspecial: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "ProgramasEspeciales",
     },
-    horarioFormacion:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Horario",
-    },
-    municipio:{
+    municipio: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Municipios",
     },
-    // departamento:{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Departamentos",
-    // },
-},{
+    fechaInicio: {
+        type: Date,
+        default: null,
+    },
+    fechaFin: {
+        type: Date,
+        default: null,
+    },
+    mes1: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    mes2: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    horas: {
+        type: String,
+        required: true
+    },
+    diasSemana: {
+        type: String,
+        required: true,
+    },
+}, {
     timestamps: true,
 })
 

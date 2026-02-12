@@ -5,6 +5,7 @@ import {
     registrarUsuario,
     recuperarPassword,
     comprobarCookies,
+    verUsuarios,
     verificarUsuarios
 } from '../controllers/usuarioController.js'
 
@@ -17,6 +18,7 @@ router.post('/', iniciarSesion)
 router.post('/registrar', registrarUsuario)
 router.put('/recuperar-password', recuperarPassword)
 router.get('/comprobarCookies', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),  comprobarCookies)
-router.put('/verificacion-usuarios', checkAuth, permisosRol('ADMINISTRADOR'), verificarUsuarios)
+router.get('/verificacion-usuarios', checkAuth, permisosRol('ADMINISTRADOR'), verUsuarios)
+router.put('/verificacion-usuarios/:id', checkAuth, permisosRol('ADMINISTRADOR'), verificarUsuarios)
 
 export default router
