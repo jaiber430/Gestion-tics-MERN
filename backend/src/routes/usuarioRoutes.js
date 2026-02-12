@@ -3,9 +3,10 @@ import { Router } from 'express'
 import {
     iniciarSesion,
     registrarUsuario,
-    olvidePassword,
     recuperarPassword,
-    profile
+    comprobarCookies,
+    verUsuarios,
+    verificarUsuarios
 } from '../controllers/usuarioController.js'
 
 import checkAuth from '../middlewares/checkAuth.js'
@@ -15,8 +16,9 @@ const router = Router()
 
 router.post('/', iniciarSesion)
 router.post('/registrar', registrarUsuario)
-router.post('/olvide-password', olvidePassword)
-router.post('/recuperar-password', recuperarPassword)
-router.get('/profile', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),  profile)
+router.put('/recuperar-password', recuperarPassword)
+router.get('/comprobarCookies', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),  comprobarCookies)
+router.get('/verificacion-usuarios', checkAuth, permisosRol('ADMINISTRADOR'), verUsuarios)
+router.put('/verificacion-usuarios/:id', checkAuth, permisosRol('ADMINISTRADOR'), verificarUsuarios)
 
 export default router

@@ -1,9 +1,12 @@
+import { v4 as uuidv4 } from 'uuid'
+
 import Usuarios from '../models/Usuarios.js'
 import Roles from "../models/Roles.js"
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarJWT from '../helpers/generarJWT.js'
+import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
 
 const registrarUsuario = async (req, res) => {
     // Obtener los datos del usuario
@@ -62,10 +65,13 @@ const registrarUsuario = async (req, res) => {
         throw new HttpErrors('El numero de contrato requerido', 400)
     }
 
-    // Comprobar que el nnumero de contrato no se repita
-    const numeroContratoExiste = await Usuarios.findOne({ numeroContrato })
-    if (numeroContratoExiste) {
-        throw new HttpErrors('EL numero de contrato ya existe', 409)
+    // Comprobar si envia el numero de contrato
+    if (numeroContrato) {
+        // Comprobar que el numero de contrato no se repita
+        const numeroContratoExiste = await Usuarios.findOne({ numeroContrato })
+        if (numeroContratoExiste) {
+            throw new HttpErrors('EL numero de contrato ya existe', 409)
+        }
     }
 
     // Crear usuario
@@ -135,21 +141,57 @@ const iniciarSesion = async (req, res) => {
     res.send(usuarioLogueado)
 }
 
-const olvidePassword = async (req, res) => {
-
-}
-
 const recuperarPassword = async (req, res) => {
+    const { email } = req.body
+
+    const existeEmail = await Usuarios.findOne({ email })
+    if (!existeEmail) {
+        throw new HttpErrors('El correo no ha sido encontrado', 404)
+    }
+
+    const generarPassword = uuidv4()
+    const passwordActualizada = generarPassword.slice(0, 8)
+
+    emailRecuperacion({
+        email: existeEmail.email,
+        passwordActualizada: passwordActualizada
+    })
+
+    existeEmail.password = passwordActualizada
+
+    await existeEmail.save()
+    res.send('Se ha enviado a su correo la nueva contraseña')
 }
 
-const profile = async (req, res) =>{
-    res.send('Hola mundo')
+const comprobarCookies = async (req, res) => {
+    res.send('Este usuario esta loguado y tiene el rol permitido')
+}
+
+const verUsuarios = async (req, res) => {
+    const verUsuariosNoverificados = await Usuarios.find({
+        // $or => Si cumple al menos una de todas las condiciones devuelve los datos
+        $or: [
+            // $ne => Obtener datos diferentes a la petición
+            { verificado: { $ne: true } },
+            { contratoActivo: { $ne: true } }
+        ]
+    })
+    res.json(verUsuariosNoverificados)
+}
+
+const verificarUsuarios = async (req, res) => {
+    const { id } = req.params
+    const { inicioContrato, finContrato, verificado, contratoActivo } = req.body
+
+    
+
 }
 
 export {
     iniciarSesion,
     registrarUsuario,
-    olvidePassword,
     recuperarPassword,
-    profile
+    comprobarCookies,
+    verUsuarios,
+    verificarUsuarios
 }
