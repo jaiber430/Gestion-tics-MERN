@@ -39,10 +39,6 @@ const usuarioSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    token: {
-        type: String,
-        default: null,
-    },
     verificado: {
         type: Boolean,
         default: false,
