@@ -66,9 +66,8 @@ const usuarioSchema = new mongoose.Schema({
     },
     numeroContrato: {
         type: Number,
-        required: false,
-        default: null,
         unique: true,
+        sparse: true
     }
 }, {
     timestamps: true

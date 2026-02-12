@@ -1,34 +1,32 @@
-import nodemailer from 'nodemailer';
+import sgMail from "@sendgrid/mail";
+import dotenv from "dotenv";
 
-const emailRecuperacion = async (datos) => {
-    const { passwordActualizada, email } = datos
-    // 1. Configurar el transporte (quién envía)
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'jaiberworks4302@gmail.com',
-            pass: 'dsfh hbyo lbxb hybm' // La contraseña de aplicación
-        }
-    });
+dotenv.config();
 
-    // 2. Definir el contenido del correo
-    const mailOptions = {
-        from: 'jaiberworks4302@gmail.com',
-        to: `${email}`,
-        subject: 'Nueva contraseña',
-        text: '¡Hola! has solicitado una recuperacion de contraseña',
-        html: `<h1>NUEVA CONTRASEÑA</h1><p>Contraseña<b>${passwordActualizada}</b>.</p>`
-    };
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-    // 3. Enviar
+const emailRecuperacion = async ({ email, passwordActualizada }) => {
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Correo enviado con éxito:', info.messageId);
+        await sgMail.send({
+            to: email,
+            from: "jaiberworks4302@gmail.com",
+            subject: "Solicitud de recuperación de acceso",
+            html: `
+                <div style="font-family: Arial; line-height: 1.6;">
+                    <h3>Hola 👋</h3>
+                    <p>Recibimos una solicitud para restablecer el acceso a tu cuenta.</p>
+                    <p>Si fuiste tú, usa el siguiente código:</p>
+                    <p style="font-size: 20px;"><b>${passwordActualizada}</b></p>
+                    <p>Si no solicitaste esto, ignora este mensaje.</p>
+                    <hr>
+                    <small>Mensaje automático, no respondas.</small>
+                </div>
+                `
+        });
+        console.log("Correo enviado correctamente");
     } catch (error) {
-        console.error('Error al enviar:', error);
+        console.error(error.response?.body || error);
     }
-}
+};
 
-export {
-    emailRecuperacion
-}
+export { emailRecuperacion };

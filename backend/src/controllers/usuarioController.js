@@ -65,10 +65,13 @@ const registrarUsuario = async (req, res) => {
         throw new HttpErrors('El numero de contrato requerido', 400)
     }
 
-    // Comprobar que el nnumero de contrato no se repita
-    const numeroContratoExiste = await Usuarios.findOne({ numeroContrato })
-    if (numeroContratoExiste) {
-        throw new HttpErrors('EL numero de contrato ya existe', 409)
+    // Comprobar si envia el numero de contrato
+    if (numeroContrato) {
+        // Comprobar que el numero de contrato no se repita
+        const numeroContratoExiste = await Usuarios.findOne({ numeroContrato })
+        if (numeroContratoExiste) {
+            throw new HttpErrors('EL numero de contrato ya existe', 409)
+        }
     }
 
     // Crear usuario
@@ -143,7 +146,7 @@ const recuperarPassword = async (req, res) => {
 
     const existeEmail = await Usuarios.findOne({ email })
     if (!existeEmail) {
-        throw new HttpErrors('El correo no encontrado', 404)
+        throw new HttpErrors('El correo no ha sido encontrado', 404)
     }
 
     const generarPassword = uuidv4()
@@ -156,18 +159,22 @@ const recuperarPassword = async (req, res) => {
 
     existeEmail.password = passwordActualizada
 
-
     await existeEmail.save()
-    res.send('Contraseña actualizada')
+    res.send('Se ha enviado a su correo la nueva contraseña')
 }
 
-const profile = async (req, res) => {
-    res.send('Hola mundo')
+const verificarUsuarios = async (req, res) => {
+
+}
+
+const comprobarCookies = async (req, res) => {
+    res.send('Este usuario esta loguado y tiene el rol permitido')
 }
 
 export {
     iniciarSesion,
     registrarUsuario,
     recuperarPassword,
-    profile
+    comprobarCookies,
+    verificarUsuarios
 }
