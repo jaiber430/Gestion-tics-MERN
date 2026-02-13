@@ -38,6 +38,10 @@ const aspirantesSchema = new mongoose.Schema({
         // Farmato valido para el correo
         match: [/^\S+@\S+\.\S+$/,],
     },
+    solicitud: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Solicitud'
+    }
 }, {
     timestamps: true
 })

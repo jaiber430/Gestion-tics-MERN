@@ -108,10 +108,6 @@ const solicitudSchema = new mongoose.Schema({
         type: Date,
         required: true,
     }],
-    solicitud: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Solicitud'
-    }
 }, {
     timestamps: true,
 })

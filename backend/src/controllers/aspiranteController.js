@@ -1,29 +1,8 @@
 import HttpErrors from '../helpers/httpErrors.js'
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 import Aspirantes from '../models/Aspirantes.js'
-//import Cup from '../models/cup.js'
 
 const registrarAspirante = async (req, res) => {
-    const { id } = req.params
-    // 1. Extraemos los datos, incluyendo la 'solicitudId' que viene del frontend
-    const { nombre, apellido, archivo, tipoIdentificacion, numeroIdentificacion, telefono, email } = req.body
-
-    // --- LÓGICA DINÁMICA DE CUPOS ---
-    if (solicitudId) {
-        // Buscamos si existe una configuración de límite para esta solicitud en Cup.js
-        const configCupo = await Cup.findOne({ solicitud: solicitudId });
-
-        if (configCupo) {
-            // Contamos cuántos aspirantes tienen este ID dentro de su array de 'solicitud'
-            const cantidadActual = await Aspirantes.countDocuments({ solicitud: solicitudId });
-
-            if (cantidadActual >= configCupo.limite) {
-                throw new HttpErrors(`Cupos agotados. Esta solicitud solo permite ${configCupo.limite} registros.`, 400);
-            }
-        }
-    }
-    // --------------------------------
-
     // Validaciones de campos requeridos
     if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !telefono || !email) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
