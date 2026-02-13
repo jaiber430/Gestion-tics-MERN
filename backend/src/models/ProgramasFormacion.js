@@ -9,10 +9,11 @@ const programasFormacionSchema = new mongoose.Schema({
         type: String,
     },
     versionPrograma: {
-        type: Number,
+        type: String,
     },
     horas: {
-        type: Number
+        type: Number,
+        required: true,
     },
     modalidad: {
         type: String,

@@ -7,11 +7,13 @@ import permisosRol from "../middlewares/permisosRol.js";
 // ! CONTROLLERS
 import {
     tipoSolicitud,
-    crearSolicitud
+    crearSolicitud,
+    subir
 } from '../controllers/solicitudController.js'
 
 const router = Router()
 
+router.post('/', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'), subir)
 router.get('/tipo-solicitud', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'), tipoSolicitud)
 router.post('/crear-solicitud/:tipo', checkAuth, permisosRol('ADMINISTRADOR', 'INSTRUCTOR'), crearSolicitud)
 

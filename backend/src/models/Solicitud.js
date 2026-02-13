@@ -46,7 +46,7 @@ const solicitudSchema = new mongoose.Schema({
     },
     revisado: {
         type: Boolean,
-        default: true
+        default: false
     },
     linkPreinscripcion: {
         type: Boolean,
@@ -59,6 +59,7 @@ const solicitudSchema = new mongoose.Schema({
     empresaSolicitante: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Empresa',
+        required: false,
     },
     programaFormacion: {
         type: mongoose.Schema.Types.ObjectId,
@@ -68,7 +69,7 @@ const solicitudSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "ProgramasEspeciales",
     },
-    departamento:{
+    departamento: {
         type: String,
         default: "Cauca",
     },
@@ -88,7 +89,6 @@ const solicitudSchema = new mongoose.Schema({
     },
     mes1: {
         type: String,
-        required: true,
         trim: true
     },
     mes2: {
@@ -104,10 +104,10 @@ const solicitudSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    diasSemana: {
-        type: String,
+    fechasSeleccionadas: [{
+        type: Date,
         required: true,
-    },
+    }]
 }, {
     timestamps: true,
 })
