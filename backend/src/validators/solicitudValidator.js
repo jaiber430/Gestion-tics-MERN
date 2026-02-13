@@ -5,7 +5,7 @@ import Solicitud from '../models/Solicitud.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 
-const solicitudVerificacion = async (data, session) => {
+const solicitudValidator = async (data, session) => {
 
     const { programaFormacion, programaEspecial, cupo, municipio } = data
 
@@ -38,4 +38,4 @@ const solicitudVerificacion = async (data, session) => {
     }
 }
 
-export default solicitudVerificacion
+export default solicitudValidator

@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 import HttpErrors from "../helpers/httpErrors.js"
 import construirHorario from "../services/horarioServices.js"
-import solicitudVerificacion from "../validators/solicitudValidator.js"
+import solicitudValidator from "../validators/solicitudValidator.js"
 import empresaValidator from "../validators/empresaValidator.js"
 
 
@@ -25,7 +25,6 @@ const crearSolicitud = async (req, res) => {
 
     const { tipoOferta, programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = req.body
 
-    console.log(req.body)
     if (tipo === 'hoa') {
         // Todas las operaciones correctas que usen el la sesion van a ser creadas
         const session = await mongoose.startSession()
@@ -54,23 +53,21 @@ const crearSolicitud = async (req, res) => {
                 }], { session })
 
                 // Verificaciones y Creación del horario
-                const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudVerificacion(req.body, session)
+                const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(req.body, session)
 
-                // CONSTRUIR HORARIO - TÚ ENVÍAS LOS DATOS, SOLO SE CALCULA FECHA FIN AUTOMÁTICAMENTE
                 const horario = construirHorario(programaExiste, {
-                    fechasSeleccionadas: req.body.fechasSeleccionadas, // TÚ LAS ENVÍAS
-                    horaInicio: req.body.horaInicio, // TÚ LA ENVÍAS
-                    fechaInicio: req.body.fechaInicio, // TÚ LA ENVÍAS
-                    horaFin: req.body.horaFin // TÚ LA ENVÍAS
+                    fechasSeleccionadas: req.body.fechasSeleccionadas,
+                    horaInicio: req.body.horaInicio,
+                    fechaInicio: req.body.fechaInicio,
+                    horaFin: req.body.horaFin
                 });
 
-                //  VALIDAR TRANSLAPE CON LOS DATOS QUE TÚ ENVÍAS + FECHA FIN CALCULADA
                 const evitarTranslape = await Solicitud.findOne({
                     direccionFormacion: req.body.direccionFormacion,
                     ambiente: req.body.ambiente,
                     municipio: existeMunicipio._id,
                     fechaInicio: horario.fechaInicio,
-                    fechaFin: horario.fechaFin, // SOLO ESTO SE CALCULA AUTOMÁTICAMENTE
+                    fechaFin: horario.fechaFin,
                     horaInicio: horario.horaInicio,
                     horaFin: horario.horaFin,
                     fechasSeleccionadas: horario.fechasSeleccionadas
@@ -94,12 +91,12 @@ const crearSolicitud = async (req, res) => {
                     programaFormacion: programaExiste._id,
                     programaEspecial: existeProgramaEspecial._id,
                     fechaInicio: horario.fechaInicio,
-                    fechaFin: horario.fechaFin, // CALCULADA AUTOMÁTICAMENTE
+                    fechaFin: horario.fechaFin,
                     mes1: horario.mes1,
                     mes2: horario.mes2,
-                    horaInicio: horario.horaInicio, // LA QUE TÚ ENVÍAS
-                    horaFin: horario.horaFin, // LA QUE TÚ ENVÍAS
-                    fechasSeleccionadas: horario.fechasSeleccionadas // LAS QUE TÚ ENVÍAS
+                    horaInicio: horario.horaInicio,
+                    horaFin: horario.horaFin,
+                    fechasSeleccionadas: horario.fechasSeleccionadas
                 }], { session });
 
                 await session.commitTransaction()
@@ -115,7 +112,7 @@ const crearSolicitud = async (req, res) => {
                 }
 
                 // Verificaciones adicionales para la creación
-                const { programaExiste, existeProgramaEspecial, existeMunicipio } = solicitudVerificacion(req.body)
+                const { programaExiste, existeProgramaEspecial, existeMunicipio } = solicitudValidator(req.body)
 
                 const horario = construirHorario(programaExiste, req.body);
 
@@ -149,7 +146,6 @@ const crearSolicitud = async (req, res) => {
                     solicitud: nuevaSolicitud
                 })
             }
-
         } catch (err) {
             // Si algo sale mal cancela todo
             await session.abortTransaction()

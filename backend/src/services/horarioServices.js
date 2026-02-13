@@ -26,6 +26,8 @@ const construirHorario = (programa, data) => {
         throw new HttpErrors("La fecha de inicio no puede ser mayor a la primera fecha para dictar el curso", 400);
     }
 
+    const { mes1, mes2 } = calcularMeses(fechasSeleccionadas)
+
     const { horaFin } = data;
 
     // Calcular duración diaria y total
@@ -34,9 +36,14 @@ const construirHorario = (programa, data) => {
     const duracionTotal = duracionHoras * cantidadDias;
 
     // Validar duración total
-    if (duracionTotal < programa.horas) {
+    if (Number(duracionTotal) < programa.horas) {
         throw new HttpErrors(
-            `Duración total (${duracionTotal}h) menor al mínimo requerido (${programa.horas}h)`,
+            `La duración total del curso (${duracionTotal}h) es menor al mínimo de horas requeridas en el programa formación (${programa.horas}h)`,
+            400
+        );
+    } else if (Number(duracionTotal) > programa.horas) {
+        throw new HttpErrors(
+            `La duración total del curso (${duracionTotal}h) excede la cantidad de horas minimas en el programa formación (${programa.horas}h)`,
             400
         );
     }
