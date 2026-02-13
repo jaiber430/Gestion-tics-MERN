@@ -107,7 +107,11 @@ const solicitudSchema = new mongoose.Schema({
     fechasSeleccionadas: [{
         type: Date,
         required: true,
-    }]
+    }],
+    solicitud: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Solicitud'
+    }
 }, {
     timestamps: true,
 })

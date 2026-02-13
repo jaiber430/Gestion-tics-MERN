@@ -10,9 +10,8 @@ import {
 
 const router = Router()
 
-router.post('/registrar', registrarAspirante)
 router.put('/actualizar', actualizarAspirante)
 router.delete('/eliminar', eliminarAspirante)
-router.get('/contar', contarAspirante)
+router.post('/prerincripcion-aspirantes/:id', registrarAspirante)
 
 export default router
