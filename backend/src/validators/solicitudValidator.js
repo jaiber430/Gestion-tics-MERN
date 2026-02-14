@@ -1,8 +1,6 @@
 import ProgramasFomracion from '../models/ProgramasFormacion.js'
 import ProgramasEspeciales from "../models/ProgramasEspeciales.js"
 import Municipios from "../models/Municipios.js"
-import Solicitud from '../models/Solicitud.js'
-
 import HttpErrors from '../helpers/httpErrors.js'
 
 const solicitudValidator = async (data, session) => {

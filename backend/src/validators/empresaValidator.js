@@ -23,7 +23,7 @@ const empresaValidator = async (data, session) => {
         throw new HttpErrors('El nit de la empresa ya existe', 400)
     }
     return {
-        existeTipoEmpresa
+        existeTipoEmpresa,
     }
 }
 
