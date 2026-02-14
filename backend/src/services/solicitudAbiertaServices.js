@@ -1,45 +1,15 @@
-import HttpErrors from "../helpers/httpErrors.js"
-import construirHorario from "../services/horarioServices.js"
-import solicitudValidator from "../validators/solicitudValidator.js"
-import empresaValidator from "../validators/empresaValidator.js"
-import Solicitud from "../models/Solicitud.js"
-import Empresa from "../models/Empresa.js"
-import TiposEmpresa from '../models/TiposEmpresa.js'
-import TipoEmpresaRegular from '../models/TipoEmpresaRegular.js'
+import solicitudValidator from '../validators/solicitudValidator.js'
+import HttpErrors from '../helpers/httpErrors.js'
+import Solicitud from '../models/Solicitud.js'
+import construirHorario from './horarioServices.js'
 
-const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador) => {
+const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud) => {
 
-    const tipoSolicitud = 'CampeSENA'
+    const { programaFormacion, programaEspecial, cupo, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
 
-    const { programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
-
-    // VALIDAR TODOS LOS CAMPOS INCLUYENDO LOS DEL HORARIO QUE TÚ ENVÍAS
-    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !cartaSolicitud || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas) {
+    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !fechasSeleccionadas) {
         throw new HttpErrors('Todos los campos son requeridos', 400)
     }
-
-    let modelsTiposEmpresa
-
-    if (tipoSolicitud === "CampeSENA") {
-        modelsTiposEmpresa = "TiposEmpresa"
-    } else {
-        modelsTiposEmpresa = "TipoEmpresaRegular"
-    }
-
-
-    // Verificaciones adicionales para la creación
-    const { existeTipoEmpresa } = await empresaValidator(data, session, modelsTiposEmpresa)
-
-    const crearEmpresa = await Empresa.create([{
-        nombreEmpresa: nombreEmpresa,
-        nombreResponsable: nombreResponsable,
-        emailEmpresa: emailEmpresa,
-        nitEmpresa: nitEmpresa,
-        tipoEmpresa: existeTipoEmpresa._id,
-        modelsTiposEmpresa: modelsTiposEmpresa,
-        cartaSolicitud: cartaSolicitud
-    }], { session })
-
 
     // Verificaciones y Creación del horario
     const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session)
@@ -49,7 +19,7 @@ const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador
         horaInicio: horaInicio,
         fechaInicio: fechaInicio,
         horaFin: horaFin
-    }, { session });
+    });
 
     const evitarTranslape = await Solicitud.findOne({
         direccionFormacion: direccionFormacion,
@@ -75,7 +45,7 @@ const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador
         convenio: convenio,
         ambiente: ambiente,
         usuarioSolicitante: usuarioCreador,
-        empresaSolicitante: crearEmpresa[0]._id,
+        empresaSolicitante: null,
         municipio: existeMunicipio._id,
         programaFormacion: programaExiste._id,
         programaEspecial: existeProgramaEspecial._id,
@@ -89,7 +59,7 @@ const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador
     }], { session });
 
     return {
-        nuevaSolicitud,
+        nuevaSolicitud
     }
 }
 

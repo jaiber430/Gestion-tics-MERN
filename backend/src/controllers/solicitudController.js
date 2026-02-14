@@ -1,8 +1,8 @@
 import mongoose from "mongoose"
 
-import solicitudAbiertaService from "../services/solicitudAbiertaServices.js"
-import solicituCerradaService from "../services/solicitudCerradaServices.js"
-import TipoEmpresaRegular from "../models/TipoEmpresaRegular.js"
+import solicitudCerradaService from "../services/solicitudCerradaServices.js"
+import solicitudAbiertaService from "../services/solicitudAbiertaservices.js"
+import ProgramassEspecialesCampesena from "../models/ProgramassEspecialesCampesena.js"
 
 const tipoSolicitud = async (req, res) => {
     const { solicitud } = req.params
@@ -14,26 +14,30 @@ const crearSolicitud = async (req, res) => {
     const { tipo } = req.params
     const { tipoOferta } = req.body
 
+    const tipoSolicitud = 'CampeSENA'
+    // Iniciar Sesion para guardar cambios en varios modelos
     const session = await mongoose.startSession()
-    if (tipo === 'hoa') {
+    if (tipo === 'campesena') {
         // Todas las operaciones correctas que usen el la sesion van a ser creadas
         try {
             session.startTransaction()
             // Pedir campos en base a la oferta
             if (tipoOferta === "Cerrada") {
+                // Enviar datos reqeuridos para la solicitud Si es cerrada
+                const { nuevaSolicitud } = await solicitudCerradaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
 
-                const { nuevaSolicitud } = await solicitudAbiertaService(req.body, session, tipoOferta, req.usuario.id)
-
+                // Si todo sale bien guardar los cambios en modelos, etc
                 await session.commitTransaction()
+                // Finalizar la sesion
                 session.endSession()
 
+                // Devolver la respuesta + la solicitud que se creo
                 res.json({
                     msg: "Solicitud creada con exito",
                     solicitud: nuevaSolicitud[0]
                 })
             } else {
-
-                const { nuevaSolicitud } = await solicituCerradaService(req.body, session, tipoOferta, req.usuario.id)
+                const { nuevaSolicitud } = await solicitudAbiertaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
 
                 await session.commitTransaction()
                 session.endSession()
@@ -44,11 +48,13 @@ const crearSolicitud = async (req, res) => {
                 })
             }
         } catch (err) {
-            // Si algo sale mal cancela todo
+            // Si algo sale mal cancela todo (No guarda nada)
             await session.abortTransaction()
+            // Finalizar sesión
             session.endSession()
             throw err
         }
+        // Si la empresa es regular
     } else if (tipo === 'Regular') {
         // Todas las operaciones correctas que usen el la sesion van a ser creadas
         const session = await mongoose.startSession()
@@ -204,8 +210,8 @@ const crearSolicitud = async (req, res) => {
 
 const subir = async (req, res) => {
 
-    await TipoEmpresaRegular.create({
-        tipoEmpresaRegular: 'Probando ando'
+    await ProgramassEspecialesCampesena.create({
+        programaEspecialCampesena: 'Probando ando'
     })
     res.send('Hi')
 }
