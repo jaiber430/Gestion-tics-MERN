@@ -4,20 +4,31 @@ import solicitudValidator from "../validators/solicitudValidator.js"
 import empresaValidator from "../validators/empresaValidator.js"
 import Solicitud from "../models/Solicitud.js"
 import Empresa from "../models/Empresa.js"
+import TiposEmpresa from '../models/TiposEmpresa.js'
+import TipoEmpresaRegular from '../models/TipoEmpresaRegular.js'
 
 const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador) => {
 
     const tipoSolicitud = 'CampeSENA'
 
-    const {programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
+    const { programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
 
     // VALIDAR TODOS LOS CAMPOS INCLUYENDO LOS DEL HORARIO QUE TÚ ENVÍAS
     if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !cartaSolicitud || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas) {
         throw new HttpErrors('Todos los campos son requeridos', 400)
     }
 
+    let modelsTiposEmpresa
+
+    if (tipoSolicitud === "CampeSENA") {
+        modelsTiposEmpresa = "TiposEmpresa"
+    } else {
+        modelsTiposEmpresa = "TipoEmpresaRegular"
+    }
+
+
     // Verificaciones adicionales para la creación
-    const { existeTipoEmpresa } = await empresaValidator(data, session)
+    const { existeTipoEmpresa } = await empresaValidator(data, session, modelsTiposEmpresa)
 
     const crearEmpresa = await Empresa.create([{
         nombreEmpresa: nombreEmpresa,
@@ -25,6 +36,7 @@ const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador
         emailEmpresa: emailEmpresa,
         nitEmpresa: nitEmpresa,
         tipoEmpresa: existeTipoEmpresa._id,
+        modelsTiposEmpresa: modelsTiposEmpresa,
         cartaSolicitud: cartaSolicitud
     }], { session })
 

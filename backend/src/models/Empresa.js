@@ -21,7 +21,11 @@ const empresaSchema = new mongoose.Schema({
     },
     tipoEmpresa: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'TiposEmpresa'
+        refPath: 'modelsTiposEmpresa'
+    },
+    modelsTiposEmpresa: {
+        type: String,
+        enum: ['TiposEmpresa', 'TipoEmpresaRegular']
     },
     cartaSolicitud: {
         // ruta o URL del PDF

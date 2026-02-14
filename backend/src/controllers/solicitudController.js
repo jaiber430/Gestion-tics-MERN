@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 
 import solicitudAbiertaService from "../services/solicitudAbiertaServices.js"
 import solicituCerradaService from "../services/solicitudCerradaServices.js"
+import TipoEmpresaRegular from "../models/TipoEmpresaRegular.js"
 
 const tipoSolicitud = async (req, res) => {
     const { solicitud } = req.params
@@ -202,22 +203,10 @@ const crearSolicitud = async (req, res) => {
 
 
 const subir = async (req, res) => {
-    await TiposEmpresa.create({
-        tipoEmpresa: 'Public'
-    })
 
-    await Municipios.create({
-        municipios: "Popayán"
+    await TipoEmpresaRegular.create({
+        tipoEmpresaRegular: 'Probando ando'
     })
-
-    await ProgramasEspeciales.create({
-        programaEspecial: "Aula"
-    })
-    // const { area } = req.body
-
-    // await Area.create({
-    //     area: 'Probando'
-    // })
     res.send('Hi')
 }
 export {

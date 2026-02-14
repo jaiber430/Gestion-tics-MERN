@@ -1,12 +1,30 @@
 import TiposEmpresa from "../models/TiposEmpresa.js"
 import Empresa from "../models/Empresa.js"
 import HttpErrors from "../helpers/httpErrors.js"
+import TipoEmpresaRegular from "../models/TipoEmpresaRegular.js"
 
-const empresaValidator = async (data, session) => {
+const empresaValidator = async (data, session, modelsTiposEmpresa) => {
 
     const { tipoEmpresa, emailEmpresa, nitEmpresa } = data
 
-    const existeTipoEmpresa = await TiposEmpresa.findById(tipoEmpresa).session(session)
+
+    const modelosPermitidos = {
+        TiposEmpresa,
+        TipoEmpresaRegular
+    }
+
+
+    const ModeloTipoEmpresa = modelosPermitidos[modelsTiposEmpresa]
+
+    if (!ModeloTipoEmpresa) {
+        throw new HttpErrors('Modelo de tipo empresa inválido', 400)
+    }
+
+
+    const existeTipoEmpresa = await ModeloTipoEmpresa
+        .findById(tipoEmpresa)
+        .session(session)
+
     if (!existeTipoEmpresa) {
         throw new HttpErrors('El tipo de empresa no existe', 404)
     }
