@@ -27,10 +27,10 @@ const registrarAspirante = async (req, res) => {
     if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !telefono || !email) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
-    
+
     const contarAspirantes = await Aspirantes.countDocuments({ solicitud: comprobarSolicitud._id })
-     if (String(contarAspirantes) === String(comprobarSolicitud.cupo)) {
-         throw new HttpErrors('La solicitud ya tiene el máximo de aspirantes permitidos', 400)
+    if (String(contarAspirantes) === String(comprobarSolicitud.cupo)) {
+        throw new HttpErrors('La solicitud ya tiene el máximo de aspirantes permitidos', 400)
     }
 
 
@@ -65,56 +65,56 @@ const registrarAspirante = async (req, res) => {
 
     try {
 
-    if (!req.file) {
-        throw new HttpErrors('Debe subir el documento PDF', 400);
+        if (!req.file) {
+            throw new HttpErrors('Debe subir el documento PDF', 400);
+        }
+
+        // Estructura de los pdf:
+        const carpetaDestino = path.join(
+            'Uploads',
+            String(comprobarSolicitud._id),
+            'DocumentoAspirantes'
+        );
+
+        await fs.mkdir(carpetaDestino, { recursive: true });
+
+        // 📄 nombre final = cedula.pdf
+        const nombreFinal = `${numeroIdentificacion}.pdf`;
+        const rutaFinalPDF = path.join(carpetaDestino, nombreFinal);
+
+        // mover archivo desde temp → carpeta final
+        await fs.rename(req.file.path, rutaFinalPDF);
+
+        // guardar en BD
+        const nuevoAspirante = new Aspirantes({
+            nombre,
+            apellido,
+            archivo: rutaFinalPDF,
+            tipoIdentificacion,
+            numeroIdentificacion,
+            telefono,
+            email,
+            solicitud: comprobarSolicitud._id
+        });
+
+        await nuevoAspirante.save();
+
+        res.json(nuevoAspirante);
+
+    } catch (error) {
+
+        if (req.file?.path) {
+            await fs.unlink(req.file.path);
+        }
+
+        console.log(error);
+        throw new HttpErrors('Error al guardar el aspirante', 500);
     }
 
-    // Estructura de los pdf:
-    const carpetaDestino = path.join(
-        'Uploads',
-        String(comprobarSolicitud._id),
-        'DocumentoAspirantes'
-    );
-
-    await fs.mkdir(carpetaDestino, { recursive: true });
-
-    // 📄 nombre final = cedula.pdf
-    const nombreFinal = `${numeroIdentificacion}.pdf`;
-    const rutaFinalPDF = path.join(carpetaDestino, nombreFinal);
-
-    // mover archivo desde temp → carpeta final
-    await fs.rename(req.file.path, rutaFinalPDF);
-
-    // guardar en BD
-    const nuevoAspirante = new Aspirantes({
-        nombre,
-        apellido,
-        archivo: rutaFinalPDF,
-        tipoIdentificacion,
-        numeroIdentificacion,
-        telefono,
-        email,
-        solicitud: comprobarSolicitud._id
-    });
-
-    await nuevoAspirante.save();
-
-    res.json(nuevoAspirante);
-
-} catch (error) {
-
-    if (req.file?.path) {
-        await fs.unlink(req.file.path);
-    }
-
-    console.log(error);
-    throw new HttpErrors('Error al guardar el aspirante', 500);
-}
 
 
 
 
-    
 }
 
 const actualizarAspirante = async (req, res) => {
