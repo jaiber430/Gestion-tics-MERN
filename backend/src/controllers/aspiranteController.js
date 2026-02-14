@@ -1,12 +1,35 @@
+import mongoose from 'mongoose';
+
 import HttpErrors from '../helpers/httpErrors.js'
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 import Aspirantes from '../models/Aspirantes.js'
+import Solicitud from '../models/Solicitud.js'
 
 const registrarAspirante = async (req, res) => {
+
+    const { id } = req.params
+
+    const { nombre, apellido, tipoIdentificacion, numeroIdentificacion, telefono, email } = req.body
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new HttpErrors('El ID de la solicitud no es válido', 400);
+    }
+
+    const comprobarSolicitud = await Solicitud.findById(id)
+    if (!comprobarSolicitud) {
+        throw new HttpErrors('La solicitud no existe', 404)
+    }
+
     // Validaciones de campos requeridos
     if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !telefono || !email) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
+    
+    const contarAspirantes = await Aspirantes.countDocuments({ solicitud: comprobarSolicitud._id })
+     if (String(contarAspirantes) === String(comprobarSolicitud.cupo)) {
+         throw new HttpErrors('La solicitud ya tiene el máximo de aspirantes permitidos', 400)
+    }
+
 
     // Validar tipo de identificación
     const comprobarTipoIdentificacion = await TiposIdentificacion.findById(tipoIdentificacion)
@@ -36,7 +59,10 @@ const registrarAspirante = async (req, res) => {
         throw new HttpErrors('El correo no es valido', 400)
     }
 
-    // Crear el nuevo aspirante
+
+    try {
+    //Guardar PDF
+        // Crear el nuevo aspirante
     const nuevoAspirante = new Aspirantes({
         nombre,
         apellido,
@@ -45,11 +71,17 @@ const registrarAspirante = async (req, res) => {
         numeroIdentificacion,
         telefono,
         email,
-        solicitud: [solicitudId] // Guardamos el ID en el array que definiste
+        solicitud: comprobarSolicitud._id
     })
 
     await nuevoAspirante.save()
     res.json(nuevoAspirante)
+
+    } catch (error) {
+        
+    }
+
+    
 }
 
 const actualizarAspirante = async (req, res) => {
