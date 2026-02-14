@@ -1,5 +1,5 @@
 import { Router } from 'express'
-
+import upload from '../middlewares/uploadPDF.js'
 
 import {
     registrarAspirante,
@@ -11,6 +11,8 @@ const router = Router()
 
 router.put('/actualizar', actualizarAspirante)
 router.delete('/eliminar', eliminarAspirante)
-router.post('/preincripcion-aspirantes/:id', registrarAspirante)
+
+
+router.post('/preincripcion-aspirantes/:id', upload.single('pdf'), registrarAspirante)
 
 export default router

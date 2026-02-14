@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+import fs from 'fs/promises';
+import path from 'path';
+
 import HttpErrors from '../helpers/httpErrors.js'
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 import Aspirantes from '../models/Aspirantes.js'
@@ -61,25 +64,55 @@ const registrarAspirante = async (req, res) => {
 
 
     try {
-    //Guardar PDF
-        // Crear el nuevo aspirante
+
+    if (!req.file) {
+        throw new HttpErrors('Debe subir el documento PDF', 400);
+    }
+
+    // Estructura de los pdf:
+    const carpetaDestino = path.join(
+        'Uploads',
+        String(comprobarSolicitud._id),
+        'DocumentoAspirantes'
+    );
+
+    await fs.mkdir(carpetaDestino, { recursive: true });
+
+    // 📄 nombre final = cedula.pdf
+    const nombreFinal = `${numeroIdentificacion}.pdf`;
+    const rutaFinalPDF = path.join(carpetaDestino, nombreFinal);
+
+    // mover archivo desde temp → carpeta final
+    await fs.rename(req.file.path, rutaFinalPDF);
+
+    // guardar en BD
     const nuevoAspirante = new Aspirantes({
         nombre,
         apellido,
-        archivo: null,
+        archivo: rutaFinalPDF,
         tipoIdentificacion,
         numeroIdentificacion,
         telefono,
         email,
         solicitud: comprobarSolicitud._id
-    })
+    });
 
-    await nuevoAspirante.save()
-    res.json(nuevoAspirante)
+    await nuevoAspirante.save();
 
-    } catch (error) {
-        
+    res.json(nuevoAspirante);
+
+} catch (error) {
+
+    if (req.file?.path) {
+        await fs.unlink(req.file.path);
     }
+
+    console.log(error);
+    throw new HttpErrors('Error al guardar el aspirante', 500);
+}
+
+
+
 
     
 }
