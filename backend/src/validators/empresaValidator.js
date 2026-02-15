@@ -1,7 +1,8 @@
 import TiposEmpresa from "../models/TiposEmpresa.js"
 import Empresa from "../models/Empresa.js"
-import HttpErrors from "../helpers/httpErrors.js"
 import TipoEmpresaRegular from "../models/TipoEmpresaRegular.js"
+
+import HttpErrors from "../helpers/httpErrors.js"
 
 const empresaValidator = async (data, session, modelsTiposEmpresa) => {
 

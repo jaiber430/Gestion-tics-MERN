@@ -2,14 +2,17 @@ import fs from "fs"
 import path from "path"
 import PizZip from "pizzip"
 import Docxtemplater from "docxtemplater"
+
 import Usuarios from "../models/Usuarios.js"
 import ProgramasFormacion from "../models/ProgramasFormacion.js"
 import Municipios from "../models/Municipios.js"
 import Empresa from "../models/Empresa.js"
-import { calcularDiasSemana } from '../utils/calcularDiasSemana.js'
-import generarProgramas from '../utils/programasEspeciales.js'
 import ProgramasEspeciales from "../models/ProgramasEspeciales.js"
 import ProgramasEspecialesCampesena from "../models/ProgramasEspecialesCampesena.js"
+
+import { calcularDiasSemana } from '../utils/calcularDiasSemana.js'
+import generarProgramas from '../utils/programasEspeciales.js'
+
 
 export const generarDocumento = async (data) => {
     // Crear la ruta donde se encuntra la plantilla

@@ -1,8 +1,9 @@
 import Solicitud from '../models/Solicitud.js'
-import construirHorario from './horarioServices.js'
 
-import { generarDocumento } from './wordServices.js'
 import solicitudValidator from '../validators/solicitudValidator.js'
+
+import construirHorario from './horarioServices.js'
+import { generarDocumento } from './wordServices.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 

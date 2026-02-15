@@ -1,10 +1,13 @@
-import HttpErrors from "../helpers/httpErrors.js"
-import construirHorario from "../services/horarioServices.js"
-import solicitudValidator from "../validators/solicitudValidator.js"
-import empresaValidator from "../validators/empresaValidator.js"
 import Solicitud from "../models/Solicitud.js"
 import Empresa from "../models/Empresa.js"
+
+import solicitudValidator from "../validators/solicitudValidator.js"
+import empresaValidator from "../validators/empresaValidator.js"
+
+import construirHorario from "../services/horarioServices.js"
 import {generarDocumento} from '../services/wordServices.js'
+
+import HttpErrors from "../helpers/httpErrors.js"
 
 const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud) => {
 

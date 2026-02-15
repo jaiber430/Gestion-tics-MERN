@@ -78,7 +78,7 @@ const registrarAspirante = async (req, res) => {
 
         await fs.mkdir(carpetaDestino, { recursive: true });
 
-        // 📄 nombre final = cedula.pdf
+        // nombre final = cedula.pdf
         const nombreFinal = `${numeroIdentificacion}.pdf`;
         const rutaFinalPDF = path.join(carpetaDestino, nombreFinal);
 
