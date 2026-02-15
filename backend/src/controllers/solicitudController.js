@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 import solicitudCerradaService from "../services/solicitudCerradaServices.js"
 import solicitudAbiertaService from "../services/solicitudAbiertaservices.js"
-import ProgramassEspecialesCampesena from "../models/ProgramassEspecialesCampesena.js"
+import ProgramassEspecialesCampesena from "../models/ProgramasEspecialesCampesena.js"
 
 import HttpErrors from "../helpers/httpErrors.js"
 
@@ -78,7 +78,7 @@ const crearSolicitud = async (req, res) => {
                 })
             } else {
 
-                const {nuevaSolicitud} = await solicitudCerradaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
+                const { nuevaSolicitud } = await solicitudCerradaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
 
                 await session.commitTransaction()
                 session.endSession()

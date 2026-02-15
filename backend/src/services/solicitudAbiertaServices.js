@@ -11,8 +11,18 @@ const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador
         throw new HttpErrors('Todos los campos son requeridos', 400)
     }
 
+    // Guardar id tipo empresa en base a su tipo de solicitud
+    let modelsProgramasEspeciales
+
+    if (tipoSolicitud === "CampeSENA") {
+        modelsProgramasEspeciales = 'ProgramasEspecialesCampesena'
+    } else {
+        modelsProgramasEspeciales = 'ProgramasEspeciales'
+    }
+
+
     // Verificaciones y Creación del horario
-    const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session)
+    const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session, modelsProgramasEspeciales)
 
     const horario = construirHorario(programaExiste, {
         fechasSeleccionadas: fechasSeleccionadas,

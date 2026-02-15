@@ -17,7 +17,7 @@ const empresaValidator = async (data, session, modelsTiposEmpresa) => {
     const ModeloTipoEmpresa = modelosPermitidos[modelsTiposEmpresa]
 
     if (!ModeloTipoEmpresa) {
-        throw new HttpErrors('Modelo de tipo empresa inválido', 400)
+        throw new HttpErrors('tipo de empresa inválido', 400)
     }
 
 

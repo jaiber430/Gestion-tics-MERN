@@ -14,12 +14,16 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         throw new HttpErrors('Todos los campos son requeridos', 400)
     }
 
+    // Guardar id tipo empresa en base a su tipo de solicitud
     let modelsTiposEmpresa
+    let modelsProgramasEspeciales
 
     if (tipoSolicitud === "CampeSENA") {
         modelsTiposEmpresa = "TiposEmpresa"
+        modelsProgramasEspeciales = 'ProgramasEspecialesCampesena'
     } else {
         modelsTiposEmpresa = "TipoEmpresaRegular"
+        modelsProgramasEspeciales = 'ProgramasEspeciales'
     }
 
 
@@ -38,7 +42,7 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
 
 
     // Verificaciones y Creación del horario
-    const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session)
+    const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session, modelsProgramasEspeciales)
 
     const horario = construirHorario(programaExiste, {
         fechasSeleccionadas: fechasSeleccionadas,

@@ -67,7 +67,11 @@ const solicitudSchema = new mongoose.Schema({
     },
     programaEspecial: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "ProgramasEspeciales",
+        refPath: "modelosProgramasEspeciales",
+    },
+    modelosProgramasEspeciales:{
+        type: String,
+        enum: ['ProgramasEspeciales', 'ProgramasEspecialesCampesena']
     },
     departamento: {
         type: String,
