@@ -1,7 +1,11 @@
-import solicitudValidator from '../validators/solicitudValidator.js'
-import HttpErrors from '../helpers/httpErrors.js'
 import Solicitud from '../models/Solicitud.js'
 import construirHorario from './horarioServices.js'
+
+import { generarDocumento } from './wordServices.js'
+import solicitudValidator from '../validators/solicitudValidator.js'
+
+import HttpErrors from '../helpers/httpErrors.js'
+
 
 const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud) => {
 
@@ -67,6 +71,8 @@ const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador
         horaFin: horario.horaFin,
         fechasSeleccionadas: horario.fechasSeleccionadas
     }], { session });
+
+    generarDocumento(nuevaSolicitud[0])
 
     return {
         nuevaSolicitud

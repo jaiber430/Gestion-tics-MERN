@@ -9,31 +9,31 @@ const ordenarFechas = (fechas) => {
 
 const calcularMeses = (fechasSeleccionadas) => {
 
-    const meses = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
+    if (!Array.isArray(fechasSeleccionadas)) {
+        throw new Error("fechasSeleccionadas debe ser un array");
+    }
 
-    // Obtener meses únicos de todas las fechas seleccionadas
-    const mesesUnicos = [...new Set(fechasSeleccionadas.map(fecha => {
-        const fechaObj = new Date(fecha);
-        return fechaObj.getMonth();
-    }))];
+    const mes1 = [];
+    const mes2 = [];
 
-    // Separar meses del primer semestre (0-5) y segundo semestre (6-11)
-    const mesesPrimerSemestre = mesesUnicos
-        .filter(mes => mes >= 0 && mes <= 5)
-        .sort((a, b) => a - b)
-        .map(mes => meses[mes]);
+    fechasSeleccionadas.forEach(fecha => {
 
-    const mesesSegundoSemestre = mesesUnicos
-        .filter(mes => mes >= 6 && mes <= 11)
-        .sort((a, b) => a - b)
-        .map(mes => meses[mes]);
+        const [year, month, day] = fecha.split("-").map(Number);
+        const fechaObj = new Date(year, month - 1, day); // evitar problema zona horaria
+
+        const numeroMes = fechaObj.getMonth(); // 0-11
+
+        if (numeroMes >= 0 && numeroMes <= 5) {
+            mes1.push(fecha); // guardamos la fecha original
+        } else {
+            mes2.push(fecha);
+        }
+
+    });
 
     return {
-        mes1: mesesPrimerSemestre.join(', '), // Array con meses de Enero a Junio que están en las fechas
-        mes2: mesesSegundoSemestre.join(', ') // Array con meses de Julio a Diciembre que están en las fechas
+        mes1: mes1.join(', '),
+        mes2: mes2.join(', '),
     };
 };
 

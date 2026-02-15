@@ -2,7 +2,6 @@ import mongoose from "mongoose"
 
 import solicitudCerradaService from "../services/solicitudCerradaServices.js"
 import solicitudAbiertaService from "../services/solicitudAbiertaservices.js"
-import ProgramassEspecialesCampesena from "../models/ProgramasEspecialesCampesena.js"
 
 import HttpErrors from "../helpers/httpErrors.js"
 
@@ -102,11 +101,9 @@ const crearSolicitud = async (req, res) => {
 
 const subir = async (req, res) => {
 
-    await ProgramassEspecialesCampesena.create({
-        programaEspecialCampesena: 'Probando ando'
-    })
-    res.send('Hi')
 }
+
+
 export {
     tipoSolicitud,
     crearSolicitud,
