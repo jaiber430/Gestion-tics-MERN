@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const programasEspecialesCampesenaSchema = new mongoose.Schema({
-    programaEspecialCampesena:{
+    programaEspecial:{
         type: String,
         required: true,
         trim: true

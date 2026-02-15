@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const tipoEmpresaRegularSchema = new mongoose.Schema({
-    tipoEmpresaRegular: {
+    tipoEmpresa: {
         type: String,
         required: true,
         trim: true,
