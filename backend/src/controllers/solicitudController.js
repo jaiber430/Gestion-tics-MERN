@@ -56,7 +56,7 @@ const crearSolicitud = async (req, res) => {
             throw err
         }
         // Si la empresa es regular
-    } else if (tipo === 'Regular') {
+    } else if (tipo === 'regular') {
         // Todas las operaciones correctas que usen el la sesion van a ser creadas
         const session = await mongoose.startSession()
 

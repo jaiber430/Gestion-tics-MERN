@@ -25,8 +25,7 @@ export const calcularDiasSemana = (fechasSeleccionadas = []) => {
     fechasSeleccionadas.forEach(fechaStr => {
 
         // Crear fecha LOCAL para evitar problema UTC
-        const [year, month, day] = fechaStr.split("-")
-        const fecha = new Date(year, month - 1, day)
+        const fecha = new Date(fechaStr)
 
         const numeroDia = fecha.getDay()
         const sigla = mapaDias[numeroDia]

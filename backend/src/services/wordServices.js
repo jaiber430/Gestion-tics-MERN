@@ -1,5 +1,3 @@
-// import { calcularDiasSemana } from '../utils/calcularDiasSemana'
-// const diasSemana = calcularDiasSemana(fechasSeleccionadas)
 import fs from "fs"
 import path from "path"
 import PizZip from "pizzip"
@@ -8,6 +6,10 @@ import Usuarios from "../models/Usuarios.js"
 import ProgramasFormacion from "../models/ProgramasFormacion.js"
 import Municipios from "../models/Municipios.js"
 import Empresa from "../models/Empresa.js"
+import { calcularDiasSemana } from '../utils/calcularDiasSemana.js'
+import generarProgramas from '../utils/programasEspeciales.js'
+import ProgramasEspeciales from "../models/ProgramasEspeciales.js"
+import ProgramasEspecialesCampesena from "../models/ProgramasEspecialesCampesena.js"
 
 export const generarDocumento = async (data) => {
     // Crear la ruta donde se encuntra la plantilla
@@ -15,10 +17,28 @@ export const generarDocumento = async (data) => {
     // Leer el archivo encontrado
     const content = fs.readFileSync(rutaFichaCaracterizacion, "binary")
 
-    let empresaCreada = ''
+    const { usuarioSolicitante, programaFormacion, fechaInicio, fechaFin, cupo, municipio, direccionFormacion, empresaSolicitante, subSectorEconomico, convenio, ambiente, horaInicio, horaFin, mes1, mes2, fechasSeleccionadas, programaEspecial, tipoSolicitud } = data
 
-    const { usuarioSolicitante, programaFormacion, fechaInicio, fechaFin, cupo, municipio, direccionFormacion, empresaSolicitante, subSectorEconomico, convenio, ambiente, horaInicio, horaFin, mes1, mes2 } = data
+    // Guardar id tipo empresa en base a su tipo de solicitud
+    let modelsProgramasEspeciales
 
+    if (tipoSolicitud === "CampeSENA") {
+        modelsProgramasEspeciales = 'ProgramasEspecialesCampesena'
+    } else {
+        modelsProgramasEspeciales = 'ProgramasEspeciales'
+    }
+
+    const ProgramasEspecialesPermitidos = {
+        ProgramasEspeciales,
+        ProgramasEspecialesCampesena
+    }
+
+    const existeModeloProgramaEspecial = await ProgramasEspecialesPermitidos[modelsProgramasEspeciales]
+
+    const buscarProgramaEspecial = await existeModeloProgramaEspecial
+        .findById(programaEspecial)
+    const programasWord = generarProgramas(buscarProgramaEspecial.programaEspecial)
+    const diasSemana = calcularDiasSemana(fechasSeleccionadas)
     const dataProgramaFormacion = await ProgramasFormacion.findById(programaFormacion)
     const dataUser = await Usuarios.findById(usuarioSolicitante)
     const dataMunicipio = await Municipios.findById(municipio)
@@ -47,8 +67,10 @@ export const generarDocumento = async (data) => {
         email: dataUser.email,
         nombreEmpresa: dataEmpresa ? dataEmpresa.nombreEmpresa : '',
         subSectorEconomico: subSectorEconomico,
+        ...programasWord,
         convenio: convenio,
         ambiente: ambiente,
+        ...diasSemana,
         horaFin: horaFin,
         horaInicio: horaInicio,
         mes1: mes1,

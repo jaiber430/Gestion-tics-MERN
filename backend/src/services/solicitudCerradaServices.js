@@ -4,6 +4,7 @@ import solicitudValidator from "../validators/solicitudValidator.js"
 import empresaValidator from "../validators/empresaValidator.js"
 import Solicitud from "../models/Solicitud.js"
 import Empresa from "../models/Empresa.js"
+import {generarDocumento} from '../services/wordServices.js'
 
 const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud) => {
 
@@ -87,6 +88,8 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         horaFin: horario.horaFin,
         fechasSeleccionadas: horario.fechasSeleccionadas
     }], { session });
+
+    generarDocumento(nuevaSolicitud[0])
 
     return {
         nuevaSolicitud,
