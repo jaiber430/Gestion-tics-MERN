@@ -15,13 +15,13 @@ import generarProgramas from '../utils/programasEspeciales.js'
 import { formatearFechaWord } from '../helpers/formatearFechas.js'
 
 
-export const generarDocumento = async (data) => {
+export const generarDocumento = async (data, session) => {
     // Crear la ruta donde se encuntra la plantilla
     const rutaFichaCaracterizacion = path.join(process.cwd(), 'src', 'templates', 'plantilla.docx')
     // Leer el archivo encontrado
     const content = fs.readFileSync(rutaFichaCaracterizacion, "binary")
 
-    const { usuarioSolicitante, programaFormacion, fechaInicio, fechaFin, cupo, municipio, direccionFormacion, empresaSolicitante, subSectorEconomico, convenio, ambiente, horaInicio, horaFin, mes1, mes2, fechasSeleccionadas, programaEspecial, tipoSolicitud } = data
+    const { usuarioSolicitante, programaFormacion, fechaInicio, fechaFin, cupo, municipio, direccionFormacion, empresaSolicitante, subSectorEconomico, convenio, ambiente, horaInicio, horaFin, mes1, mes2, fechasSeleccionadas, programaEspecial, tipoSolicitud, _id } = data
 
     // Guardar id tipo empresa en base a su tipo de solicitud
     let modelsProgramasEspeciales
@@ -81,13 +81,13 @@ export const generarDocumento = async (data) => {
         horaInicio: horaInicio,
         mes1: mes1,
         mes2: mes2,
-    })
+    }, { session })
 
     const buffer = doc.getZip().generate({
         type: "nodebuffer"
-    })
+    }, { session })
 
-    const carpetaDestino = path.join(process.cwd(), "src", "uploads", "documents")
+    const carpetaDestino = path.join(process.cwd(), "src", "uploads", `solicitud-${_id}`, 'documents')
     if (!fs.existsSync(carpetaDestino)) {
         fs.mkdirSync(carpetaDestino, { recursive: true })
     }

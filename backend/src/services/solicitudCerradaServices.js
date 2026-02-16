@@ -92,7 +92,7 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         fechasSeleccionadas: horario.fechasSeleccionadas
     }], { session });
 
-    generarDocumento(nuevaSolicitud[0])
+    generarDocumento(nuevaSolicitud[0], session)
 
     return {
         nuevaSolicitud,

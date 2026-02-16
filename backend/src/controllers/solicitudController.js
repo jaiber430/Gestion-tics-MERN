@@ -99,7 +99,7 @@ const crearSolicitud = async (req, res) => {
 }
 
 
-const subir = async (req, res) => {
+const consultarSolicitud = async (req, res) => {
 
 }
 
@@ -107,5 +107,5 @@ const subir = async (req, res) => {
 export {
     tipoSolicitud,
     crearSolicitud,
-    subir
+    consultarSolicitud
 }

@@ -170,7 +170,7 @@ const recuperarPassword = async (req, res) => {
     existeEmail.password = passwordActualizada
 
     await existeEmail.save()
-    res.send('Se ha enviado a su correo la nueva contraseña')
+    res.json({msg : 'Se ha enviado a su correo la nueva contraseña'})
 }
 
 const comprobarCookies = async (req, res) => {
