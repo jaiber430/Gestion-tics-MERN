@@ -5,7 +5,6 @@ import Docxtemplater from "docxtemplater"
 
 import Usuarios from "../models/Usuarios.js"
 import ProgramasFormacion from "../models/ProgramasFormacion.js"
-import Municipios from "../models/Municipios.js"
 import Solicitud from "../models/Solicitud.js"
 
 const generarCartaCoordinador = async (coordinador, instructor, solicitud, session) => {
@@ -17,7 +16,7 @@ const generarCartaCoordinador = async (coordinador, instructor, solicitud, sessi
     const dataUser = await Usuarios.findById(instructor)
     const dataCoordinador = await Usuarios.findById(coordinador)
     const solicitudSend = await Solicitud.findById(solicitud)
-    
+    const programaFormacion = await ProgramasFormacion.findById(solicitudSend.programaFormacion)
 
     const zip = new PizZip(content)
 
@@ -31,20 +30,21 @@ const generarCartaCoordinador = async (coordinador, instructor, solicitud, sessi
         apellidoInstru: dataUser.apellido,
         nombreCo: dataCoordinador.nombre,
         apellidoCo: dataCoordinador.apellido,
+        email: dataCoordinador.email,
         convenio: solicitudSend.convenio,
-        programaFormacion: solicitudSend.programaFormacion,
+        programaFormacion: programaFormacion.nombrePrograma,
     }, { session })
 
     const buffer = doc.getZip().generate({
         type: "nodebuffer"
     }, { session })
 
-    const carpetaDestino = path.join(process.cwd(), "src", "uploads", `solicitud-${_id}`, 'documents')
+    const carpetaDestino = path.join(process.cwd(), "src", "uploads", `solicitud-${solicitud}`, 'documents')
     if (!fs.existsSync(carpetaDestino)) {
         fs.mkdirSync(carpetaDestino, { recursive: true })
     }
 
-    const nombreArchivo = `carta-${data._id}.docx`
+    const nombreArchivo = `carta-${solicitud}.docx`
 
     const rutaFinal = path.join(carpetaDestino, nombreArchivo)
 

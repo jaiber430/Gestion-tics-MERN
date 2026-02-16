@@ -101,7 +101,8 @@ const revisarSolicitud = async (req, res) => {
             throw new HttpErrors('Todos los campos son requeridos', 400)
         }
 
-        const existeSolicitud = await Solicitud.findById(idSolicitud).session(session)
+        const existeSolicitud = await Solicitud
+            .findById(idSolicitud)
 
         if (!existeSolicitud) {
             throw new HttpErrors('Solicitud no encontarda', 404)
@@ -112,8 +113,9 @@ const revisarSolicitud = async (req, res) => {
         }
 
         if (existeSolicitud.empresaSolicitante === null) {
-            await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante.id, idSolicitud, session)
-        }
+            // console.log(existeSolicitud.usuarioSolicitante)
+            await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante, idSolicitud, session)
+            }
 
         const revisarSolicitud = new RevisionCoordinador({
             usuarioSolicitante: existeSolicitud.usuarioSolicitante,
@@ -121,7 +123,7 @@ const revisarSolicitud = async (req, res) => {
             solicitud: idSolicitud,
             estado: estado,
             observacion: observacion,
-        }, { session })
+        })
 
         await revisarSolicitud.save()
         await session.commitTransaction()
@@ -132,7 +134,7 @@ const revisarSolicitud = async (req, res) => {
     } catch (error) {
         await session.abortTransaction()
         session.endSession()
-        throw error
+        console.log(error)
     }
 }
 
