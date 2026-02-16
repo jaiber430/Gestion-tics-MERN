@@ -82,6 +82,7 @@ const consultarSolicitudCoordinador = async (req, res) => {
             path: 'usuarioSolicitante',
             select: 'nombre apellido'
         })
+        .populate('tipoOferta')
 
     res.json(solicitud)
 }
@@ -129,7 +130,7 @@ const verFichaCaracterizacionCoordinador = async (req, res) => {
         throw new HttpErrors('No existe la ficha de caracterización', 404)
     }
 
-    const nameFile = `solicitud-${idSolicitud}.docx`
+    const nameFile = `ficha-${idSolicitud}.docx`
 
     const rutaFichaCaracterizacion = path.join(
         process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
@@ -146,16 +147,56 @@ const verFormatoMasivo = async (req, res) => {
     })
 
     if (!solicitud) {
-        throw new HttpErrors('No existe la ficha de caracterización', 404)
+        throw new HttpErrors('No existe el formato de aspirantes masivo', 404)
     }
 
-    const nameFile = `solicitud-${idSolicitud}.xlsx`
+    const nameFile = `masivo-${idSolicitud}.xlsx`
 
-    const rutaFichaCaracterizacion = path.join(
+    const rutaMasivo = path.join(
         process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
     )
 
-    res.sendFile(rutaFichaCaracterizacion)
+    res.sendFile(rutaMasivo)
+}
+
+const verCartaSolicitud = async (req, res) => {
+    const {idSolicitud} = req.params
+
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+    })
+
+    if(!solicitud){
+        throw new HttpErrors('No existe la carta de solicitud', 404)
+    }
+
+    const nameFile = `carta-${idSolicitud}.pdf`
+
+    const rutaCarta = path.join(
+        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+    )
+
+    res.sendFile(rutaCarta)
+}
+
+const verDocumentoAspirantes = async (req, res) => {
+    const {idSolicitud} = req.params
+
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+    })
+
+    if(!solicitud){
+        throw new HttpErrors('No existe la carta de solicitud', 404)
+    }
+
+    const nameFile = `combinado.pdf`
+
+    const rutaCarta = path.join(
+        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'DocumentoAspirantes', nameFile
+    )
+
+    res.sendFile(rutaCarta)
 }
 
 export {
@@ -165,5 +206,7 @@ export {
     consultarSolicitudCoordinador,
     revisarSolicitud,
     verFichaCaracterizacionCoordinador,
-    verFormatoMasivo
+    verFormatoMasivo,
+    verCartaSolicitud,
+    verDocumentoAspirantes
 }

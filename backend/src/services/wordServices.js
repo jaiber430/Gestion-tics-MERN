@@ -92,7 +92,7 @@ export const generarDocumento = async (data, session) => {
         fs.mkdirSync(carpetaDestino, { recursive: true })
     }
 
-    const nombreArchivo = `solicitud-${data._id}.docx`
+    const nombreArchivo = `ficha-${data._id}.docx`
 
     const rutaFinal = path.join(carpetaDestino, nombreArchivo)
 

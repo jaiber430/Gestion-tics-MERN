@@ -7,7 +7,9 @@ import {
     consultarSolicitudCoordinador,
     revisarSolicitud,
     verFichaCaracterizacionCoordinador,
-    verFormatoMasivo
+    verFormatoMasivo,
+    verCartaSolicitud,
+    verDocumentoAspirantes
 } from '../controllers/consultasController.js'
 
 import checkAuth from '../middlewares/checkAuth.js'
@@ -21,7 +23,9 @@ router.get('/consultas-instructor/verFichaCaracterizacion/:idSolicitud', checkAu
 router.get('/consultas-coordinador', checkAuth, permisosRol('COORDINADOR'), consultarSolicitudCoordinador)
 
 router.post('/consultas-coordinador/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), revisarSolicitud)
+router.get('/consultas-coordinador/carta-solicitud/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verCartaSolicitud)
 router.get('/consultas-coordinador/ver-ficha-caracterizacion/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verFichaCaracterizacionCoordinador)
+router.get('/consultas-coordinador/ver-documento-combinado/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verDocumentoAspirantes)
 router.get('/consultas-coordinador/ver-formato-inscripcion-masivo/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verFormatoMasivo)
 
 router.post('/revision-funcionario', checkAuth, permisosRol('INSTRUCTOR'), consultarSolicitudInstructor)
