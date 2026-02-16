@@ -39,7 +39,7 @@ const generarCartaCoordinador = async (coordinador, instructor, solicitud, sessi
         type: "nodebuffer"
     }, { session })
 
-    const carpetaDestino = path.join(process.cwd(), "src", "uploads", `solicitud-${solicitud}`, 'documents')
+    const carpetaDestino = path.join(process.cwd(), "uploads", `solicitud-${solicitud}`, 'documents')
     if (!fs.existsSync(carpetaDestino)) {
         fs.mkdirSync(carpetaDestino, { recursive: true })
     }

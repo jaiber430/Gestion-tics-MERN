@@ -152,7 +152,7 @@ const verFichaCaracterizacionCoordinador = async (req, res) => {
     const nameFile = `ficha-${idSolicitud}.docx`
 
     const rutaFichaCaracterizacion = path.join(
-        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
     )
 
     res.sendFile(rutaFichaCaracterizacion)
@@ -172,7 +172,7 @@ const verFormatoMasivo = async (req, res) => {
     const nameFile = `masivo-${idSolicitud}.xlsx`
 
     const rutaMasivo = path.join(
-        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
     )
 
     res.sendFile(rutaMasivo)
@@ -192,7 +192,7 @@ const verCartaSolicitud = async (req, res) => {
     const nameFile = `carta-${idSolicitud}.pdf`
 
     const rutaCarta = path.join(
-        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
     )
 
     res.sendFile(rutaCarta)
@@ -212,7 +212,7 @@ const verDocumentoAspirantes = async (req, res) => {
     const nameFile = `combinado.pdf`
 
     const rutaCarta = path.join(
-        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'DocumentoAspirantes', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'DocumentoAspirantes', nameFile
     )
 
     res.sendFile(rutaCarta)
