@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import path from 'path'
 
 import Solicitud from "../models/Solicitud.js"
@@ -92,36 +93,47 @@ const revisarSolicitud = async (req, res) => {
     const { idSolicitud } = req.params
     const { estado, observacion } = req.body
 
-    if (!observacion) {
-        throw new HttpErrors('Todos los campos son requeridos', 400)
+    const session = await mongoose.startSession()
+
+    try {
+        session.startTransaction()
+        if (!observacion) {
+            throw new HttpErrors('Todos los campos son requeridos', 400)
+        }
+
+        const existeSolicitud = await Solicitud.findById(idSolicitud).session(session)
+
+        if (!existeSolicitud) {
+            throw new HttpErrors('Solicitud no encontarda', 404)
+        }
+
+        if (!existeSolicitud.revisado) {
+            throw new HttpErrors('la solicitud aun no ha sido aprovada por el instructor', 409)
+        }
+
+        if (existeSolicitud.empresaSolicitante === null) {
+            await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante._id, idSolicitud, session)
+        }
+
+        const revisarSolicitud = new RevisionCoordinador({
+            usuarioSolicitante: existeSolicitud.usuarioSolicitante,
+            usuarioRevisador: req.usuario.id,
+            solicitud: idSolicitud,
+            estado: estado,
+            observacion: observacion,
+        }, { session })
+
+        await revisarSolicitud.save()
+        await session.commitTransaction()
+        session.endSession()
+        res.json({
+            msg: 'Revisión realizada exitosamente'
+        })
+    } catch (error) {
+        await session.abortTransaction()
+        session.endSession()
+        throw error
     }
-
-    const existeSolicitud = await Solicitud.findById(idSolicitud)
-
-    if (!existeSolicitud) {
-        throw new HttpErrors('Solicitud no encontarda', 404)
-    }
-
-    if (!existeSolicitud.revisado) {
-        throw new HttpErrors('la solicitud aun no ha sido aprovada por el instructor', 409)
-    }
-
-    if(existeSolicitud.empresaSolicitante === null){
-        await generarCartaCoordinador()
-    }
-
-    const revisarSolicitud = new RevisionCoordinador({
-        usuarioSolicitante: existeSolicitud.usuarioSolicitante,
-        usuarioRevisador: req.usuario.id,
-        solicitud: idSolicitud,
-        estado: estado,
-        observacion: observacion,
-    })
-
-    await revisarSolicitud.save()
-    res.json({
-        msg: 'Revisión realizada exitosamente'
-    })
 }
 
 const verFichaCaracterizacionCoordinador = async (req, res) => {
@@ -165,13 +177,13 @@ const verFormatoMasivo = async (req, res) => {
 }
 
 const verCartaSolicitud = async (req, res) => {
-    const {idSolicitud} = req.params
+    const { idSolicitud } = req.params
 
     const solicitud = await Solicitud.findOne({
         _id: idSolicitud,
     })
 
-    if(!solicitud){
+    if (!solicitud) {
         throw new HttpErrors('No existe la carta de solicitud', 404)
     }
 
@@ -185,13 +197,13 @@ const verCartaSolicitud = async (req, res) => {
 }
 
 const verDocumentoAspirantes = async (req, res) => {
-    const {idSolicitud} = req.params
+    const { idSolicitud } = req.params
 
     const solicitud = await Solicitud.findOne({
         _id: idSolicitud,
     })
 
-    if(!solicitud){
+    if (!solicitud) {
         throw new HttpErrors('No existe la carta de solicitud', 404)
     }
 
