@@ -112,7 +112,7 @@ const revisarSolicitud = async (req, res) => {
         }
 
         if (existeSolicitud.empresaSolicitante === null) {
-            await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante._id, idSolicitud, session)
+            await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante.id, idSolicitud, session)
         }
 
         const revisarSolicitud = new RevisionCoordinador({
