@@ -114,17 +114,23 @@ const revisarSolicitud = async (req, res) => {
 
         if (existeSolicitud.empresaSolicitante === null) {
             await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante, idSolicitud, session)
+        }
+
+        const revision = await RevisionCoordinador.findOneAndUpdate(
+            { solicitud: idSolicitud }, // criterio de búsqueda
+            {
+                usuarioSolicitante: existeSolicitud.usuarioSolicitante,
+                usuarioCoordinador: req.usuario.id,
+                solicitud: idSolicitud,
+                estado,
+                observacion
+            },
+            {
+                new: true,      // devuelve el documento actualizado
+                upsert: true    // si no existe lo crea
             }
-
-        const revisarSolicitud = new RevisionCoordinador({
-            usuarioSolicitante: existeSolicitud.usuarioSolicitante,
-            usuarioRevisador: req.usuario.id,
-            solicitud: idSolicitud,
-            estado: estado,
-            observacion: observacion,
-        })
-
-        await revisarSolicitud.save()
+        )
+        await revision.save()
         await session.commitTransaction()
         session.endSession()
         res.json({

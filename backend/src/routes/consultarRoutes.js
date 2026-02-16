@@ -22,7 +22,7 @@ router.put('/consultas-instructor/:idSolicitud', checkAuth, permisosRol('INSTRUC
 router.get('/consultas-instructor/verFichaCaracterizacion/:idSolicitud', checkAuth, permisosRol('INSTRUCTOR'), verFichaCaracterizacion)
 router.get('/consultas-coordinador', checkAuth, permisosRol('COORDINADOR'), consultarSolicitudCoordinador)
 
-router.post('/consultas-coordinador/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), revisarSolicitud)
+router.put('/consultas-coordinador/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), revisarSolicitud)
 router.get('/consultas-coordinador/carta-solicitud/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verCartaSolicitud)
 router.get('/consultas-coordinador/ver-ficha-caracterizacion/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verFichaCaracterizacionCoordinador)
 router.get('/consultas-coordinador/ver-documento-combinado/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verDocumentoAspirantes)
