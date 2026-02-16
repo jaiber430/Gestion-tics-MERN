@@ -5,6 +5,7 @@ import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import RevisionCoordinador from '../models/RevisionCoordinador.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
+import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
 
 const consultarSolicitudInstructor = async (req, res) => {
     const verSolicitudesInstructor = await Solicitud
@@ -103,6 +104,10 @@ const revisarSolicitud = async (req, res) => {
 
     if (!existeSolicitud.revisado) {
         throw new HttpErrors('la solicitud aun no ha sido aprovada por el instructor', 409)
+    }
+
+    if(existeSolicitud.empresaSolicitante === null){
+        await generarCartaCoordinador()
     }
 
     const revisarSolicitud = new RevisionCoordinador({
