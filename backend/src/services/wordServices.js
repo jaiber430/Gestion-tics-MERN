@@ -12,11 +12,12 @@ import ProgramasEspecialesCampesena from "../models/ProgramasEspecialesCampesena
 
 import { calcularDiasSemana } from '../utils/calcularDiasSemana.js'
 import generarProgramas from '../utils/programasEspeciales.js'
+import { formatearFechaWord } from '../helpers/formatearFechas.js'
 
 
 export const generarDocumento = async (data) => {
     // Crear la ruta donde se encuntra la plantilla
-    const rutaFichaCaracterizacion = path.join(process.cwd(), 'src', 'public', 'plantilla.docx')
+    const rutaFichaCaracterizacion = path.join(process.cwd(), 'src', 'templates', 'plantilla.docx')
     // Leer el archivo encontrado
     const content = fs.readFileSync(rutaFichaCaracterizacion, "binary")
 
@@ -46,6 +47,8 @@ export const generarDocumento = async (data) => {
     const dataUser = await Usuarios.findById(usuarioSolicitante)
     const dataMunicipio = await Municipios.findById(municipio)
     const dataEmpresa = await Empresa.findById(empresaSolicitante)
+    const fechaInicioFormateada = formatearFechaWord(fechaInicio)
+    const fechaFinFormateada = formatearFechaWord(fechaFin)
 
     const zip = new PizZip(content)
 
@@ -59,8 +62,8 @@ export const generarDocumento = async (data) => {
         nombrePrograma: dataProgramaFormacion.nombrePrograma,
         versionPrograma: dataProgramaFormacion.versionPrograma,
         horas: dataProgramaFormacion.horas,
-        fechaInicio: fechaInicio,
-        fechaFin: fechaFin,
+        fechaInicio: fechaInicioFormateada,
+        fechaFin: fechaFinFormateada,
         cupo: cupo,
         municipio: dataMunicipio.municipios,
         direccionFormacion: direccionFormacion,

@@ -18,7 +18,7 @@ const construirHorario = (programa, data) => {
 
     const fechasOrdenadas = ordenarFechas(fechasUnicas);
 
-    const fechaInicioDate = crearFechaLocal(fechaInicio);;
+    const fechaInicioDate = crearFechaLocal(fechaInicio);
 
     // LA FECHA FIN SE CALCULA AUTOMÁTICAMENTE como la última fecha seleccionada
     const fechaFin = fechasOrdenadas.at(-1);
