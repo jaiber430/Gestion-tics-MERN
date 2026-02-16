@@ -113,7 +113,6 @@ const revisarSolicitud = async (req, res) => {
         }
 
         if (existeSolicitud.empresaSolicitante === null) {
-            // console.log(existeSolicitud.usuarioSolicitante)
             await generarCartaCoordinador(req.usuario.id, existeSolicitud.usuarioSolicitante, idSolicitud, session)
             }
 
@@ -134,7 +133,7 @@ const revisarSolicitud = async (req, res) => {
     } catch (error) {
         await session.abortTransaction()
         session.endSession()
-        console.log(error)
+        throw error
     }
 }
 
