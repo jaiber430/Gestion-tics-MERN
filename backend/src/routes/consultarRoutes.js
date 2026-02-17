@@ -1,16 +1,22 @@
-import { Router } from "express";
+import { Router } from "express"
 
 import {
+    // INSTRUCTOR
     consultarSolicitudInstructor,
     enviarSolicitud,
     verFichaCaracterizacion,
+
+    // COORDINADOR
     consultarSolicitudCoordinador,
     revisarSolicitud,
     verFichaCaracterizacionCoordinador,
     verFormatoMasivo,
     verCartaSolicitud,
     verDocumentoAspirantes,
-    revisarSolicituFuncionario,
+
+    // FUNCIONARIO
+    verSolicitudesFuncionario,
+    revisarSolicitudFuncionario,
     descargarCartaSolicitud,
     descargarFichaCaracterizacion,
     descargarDocumentoAspirantes,
@@ -22,24 +28,124 @@ import permisosRol from '../middlewares/permisosRol.js'
 
 const router = Router()
 
-router.get('/consultas-instructor', checkAuth, permisosRol('INSTRUCTOR'), consultarSolicitudInstructor)
-router.put('/consultas-instructor/:idSolicitud', checkAuth, permisosRol('INSTRUCTOR'), enviarSolicitud)
-router.get('/consultas-instructor/verFichaCaracterizacion/:idSolicitud', checkAuth, permisosRol('INSTRUCTOR'), verFichaCaracterizacion)
-router.get('/revision-coordinador', checkAuth, permisosRol('COORDINADOR'), consultarSolicitudCoordinador)
+// INSTRUCTOR
 
-router.put('/revision-coordinador/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), revisarSolicitud)
-router.get('/revision-coordinador/carta-solicitud/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verCartaSolicitud)
-router.get('/revision-coordinador/ver-ficha-caracterizacion/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verFichaCaracterizacionCoordinador)
-router.get('/revision-coordinador/ver-documento-combinado/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verDocumentoAspirantes)
-router.get('/revision-coordinador/ver-formato-inscripcion-masivo/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verFormatoMasivo)
+// Listar solicitudes
+router.get(
+    '/consultas-instructor',
+    checkAuth,
+    permisosRol('INSTRUCTOR'),
+    consultarSolicitudInstructor
+)
 
-router.put('/revision-funcionario/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), revisarSolicituFuncionario)
-router.get('/revision-funcionario/descargar-carta-solicitud/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarCartaSolicitud)
-router.get('/revision-funcionario/descargar-ficha-caracterizacion/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarFichaCaracterizacion)
-router.get('/revision-funcionario/descargar-documento-combinado/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarDocumentoAspirantes)
-router.get('/revision-funcionario/descargar-formato-inscripcion-masivo/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarFormatoMasivo)
+// Enviar solicitud
+router.put(
+    '/consultas-instructor/:idSolicitud',
+    checkAuth,
+    permisosRol('INSTRUCTOR'),
+    enviarSolicitud
+)
 
-router.post('/revision-funcionario', checkAuth, permisosRol('INSTRUCTOR'), consultarSolicitudInstructor)
-router.post('/consultas-administrador', checkAuth, permisosRol('INSTRUCTOR'), consultarSolicitudInstructor)
+// Ver ficha de caracterización
+router.get(
+    '/consultas-instructor/:idSolicitud/ficha-caracterizacion',
+    checkAuth,
+    permisosRol('INSTRUCTOR'),
+    verFichaCaracterizacion
+)
+
+// COORDINADOR
+
+// Listar solicitudes
+router.get(
+    '/revision-coordinador',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    consultarSolicitudCoordinador
+)
+
+// Revisar solicitud
+router.put(
+    '/revision-coordinador/:idSolicitud',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    revisarSolicitud
+)
+
+// Ver documentos
+router.get(
+    '/revision-coordinador/:idSolicitud/carta-solicitud',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    verCartaSolicitud
+)
+
+router.get(
+    '/revision-coordinador/:idSolicitud/ficha-caracterizacion',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    verFichaCaracterizacionCoordinador
+)
+
+router.get(
+    '/revision-coordinador/:idSolicitud/documento-aspirantes',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    verDocumentoAspirantes
+)
+
+router.get(
+    '/revision-coordinador/:idSolicitud/formato-masivo',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    verFormatoMasivo
+)
+
+// FUNCIONARIO
+
+// Listar solicitudes
+router.get(
+    '/revision-funcionario',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    verSolicitudesFuncionario
+)
+
+// Revisar solicitud
+router.put(
+    '/revision-funcionario/:idSolicitud',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    revisarSolicitudFuncionario
+)
+
+// Descargar documentos
+router.get(
+    '/revision-funcionario/:idSolicitud/descargar-carta',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    descargarCartaSolicitud
+)
+
+router.get(
+    '/revision-funcionario/:idSolicitud/descargar-ficha',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    descargarFichaCaracterizacion
+)
+
+router.get(
+    '/revision-funcionario/:idSolicitud/descargar-documento',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    descargarDocumentoAspirantes
+)
+
+router.get(
+    '/revision-funcionario/:idSolicitud/descargar-formato',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    descargarFormatoMasivo
+)
 
 export default router

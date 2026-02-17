@@ -4,6 +4,7 @@ import path from 'path'
 import Solicitud from "../models/Solicitud.js"
 import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import RevisionCoordinador from '../models/RevisionCoordinador.js'
+import Ficha from "../models/Ficha.js"
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
@@ -223,8 +224,117 @@ const verDocumentoAspirantes = async (req, res) => {
     res.sendFile(rutaCarta)
 }
 
-const revisarSolicituFuncionario = async (req, res) => {
+const verSolicitudesFuncionario = async (req, res) => {
 
+    const solicitudes = await Solicitud.find({ revisado: true })
+
+    if (solicitudes.length === 0) {
+        throw new HttpErrors(
+            'No hay solicitudes revisadas por el instructor',
+            404
+        )
+    }
+
+    const solicitudesIds = solicitudes.map(s => s._id)
+
+    const revisionesAprobadas = await RevisionCoordinador.find({
+        solicitud: { $in: solicitudesIds },
+        estado: true
+    })
+        .populate('usuarioSolicitante', 'nombre email')
+        .populate('solicitud')
+
+    if (revisionesAprobadas.length === 0) {
+        throw new HttpErrors(
+            'No hay solicitudes aprobadas por el coordinador',
+            404
+        )
+    }
+
+    res.status(200).json(revisionesAprobadas)
+}
+
+const revisarSolicitudFuncionario = async (req, res) => {
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction()
+        const { idSolicitud } = req.params
+        const { estado, observacion, codigoFicha, codigoSolicitud } = req.body
+
+        // Verificar que la solicitud exista y esté revisada
+        const solicitud = await Solicitud.findOne({
+            _id: idSolicitud,
+            revisado: true
+        }).session(session)
+
+        if (!solicitud) {
+            throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
+        }
+
+        if (codigoFicha !== codigoSolicitud) {
+            throw new HttpErrors('El codigo de ficha debe ser igual al codigo de solicitud', 400)
+        }
+
+        const estadosValidos = ['Creación', 'Creada', 'Lista de espera', 'Matriculada', 'Rechazada']
+
+        if (!estadosValidos.includes(estado)) {
+            throw new HttpErrors('Estado no válido', 400)
+        }
+
+        const updateSolicitud = await Solicitud.findOneAndUpdate(
+            { _id: idSolicitud },
+            { codigoSolicitud: codigoSolicitud },
+            {
+                new: true,
+                upsert: true,
+                session
+            }
+        )
+
+        const estadosPermitidosCodigo = [
+            'Creada',
+            'Matriculada',
+            'Rechazada'
+        ]
+
+        if (codigoFicha !== null && !estadosPermitidosCodigo.includes(estado) && codigoSolicitud !== null) {
+            throw new HttpErrors('El código de ficha y código de solicitud solo pueden asignarse cuando el estado es Rechazado, creado o matriculado', 403)
+        }
+
+        // Objeto que puede cambiar
+        const dataFicha = {
+            solicitud: idSolicitud,
+            estado,
+            observacion,
+            usuarioSolicitante: solicitud.usuarioSolicitante,
+            fechaRevisonFicha: new Date()
+        }
+
+        if (codigoFicha !== undefined) {
+            dataFicha.codigoFicha = codigoFicha
+        }
+
+        const fichaUpdate = await Ficha.findOneAndUpdate(
+            { solicitud: idSolicitud },
+            dataFicha,
+            {
+                new: true,
+                upsert: true,
+                session
+            }
+        )
+
+        await session.commitTransaction()
+        session.endSession()
+        res.status(200).json({
+            msg: "Revisión realizada correctamente",
+            fichaUpdate
+        })
+    } catch (error) {
+        await session.abortTransaction()
+        session.endSession()
+        throw error
+    }
 }
 
 const descargarCartaSolicitud = async (req, res) => {
@@ -276,7 +386,7 @@ const descargarFichaCaracterizacion = async (req, res) => {
     })
 
     if (!solicitud) {
-        throw new HttpErrors('No existe la carta de solicitud revisada', 404)
+        throw new HttpErrors('No existe la ficha de caracterización de la solicitud revisada', 404)
     }
 
     const solicitudRevisada = await RevisionCoordinador.findOne({
@@ -306,7 +416,7 @@ const descargarDocumentoAspirantes = async (req, res) => {
     })
 
     if (!solicitud) {
-        throw new HttpErrors('No existe la carta de solicitud revisada', 404)
+        throw new HttpErrors('No existen los documentos de los aspirantes', 404)
     }
 
     const solicitudRevisada = await RevisionCoordinador.findOne({
@@ -328,7 +438,33 @@ const descargarDocumentoAspirantes = async (req, res) => {
 }
 
 const descargarFormatoMasivo = async (req, res) => {
+    const { idSolicitud } = req.params
 
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+        revisado: true
+    })
+
+    if (!solicitud) {
+        throw new HttpErrors('No existe el formato de inscripción masivo de la solicitud revisada', 404)
+    }
+
+    const solicitudRevisada = await RevisionCoordinador.findOne({
+        solicitud: solicitud._id,
+        estado: true
+    })
+
+    if (!solicitudRevisada) {
+        throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
+    }
+
+    const nameFile = `masivo-${idSolicitud}.xlsx`
+
+    const rutaMasivo = path.join(
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+    )
+
+    res.download(rutaMasivo)
 }
 
 export {
@@ -341,7 +477,8 @@ export {
     verFormatoMasivo,
     verCartaSolicitud,
     verDocumentoAspirantes,
-    revisarSolicituFuncionario,
+    verSolicitudesFuncionario,
+    revisarSolicitudFuncionario,
     descargarCartaSolicitud,
     descargarFichaCaracterizacion,
     descargarDocumentoAspirantes,
