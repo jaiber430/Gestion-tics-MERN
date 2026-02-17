@@ -467,6 +467,19 @@ const descargarFormatoMasivo = async (req, res) => {
     res.download(rutaMasivo)
 }
 
+const subirExcelSofiaPlus = async (req, res) => {
+
+    const { idSolicitud } = req.params
+
+    if (!req.file) {
+        throw new HttpErrors('No se envió ningún archivo', 400)
+    }
+
+    res.status(200).json({
+        msg: "Excel enviado correctamente",
+    })
+}
+
 export {
     consultarSolicitudInstructor,
     enviarSolicitud,
@@ -483,4 +496,5 @@ export {
     descargarFichaCaracterizacion,
     descargarDocumentoAspirantes,
     descargarFormatoMasivo,
+    subirExcelSofiaPlus
 }

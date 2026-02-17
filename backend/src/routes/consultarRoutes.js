@@ -21,8 +21,10 @@ import {
     descargarFichaCaracterizacion,
     descargarDocumentoAspirantes,
     descargarFormatoMasivo,
+    subirExcelSofiaPlus,
 } from '../controllers/consultasController.js'
 
+import upload from "../utils/subirExcel.js"
 import checkAuth from '../middlewares/checkAuth.js'
 import permisosRol from '../middlewares/permisosRol.js'
 
@@ -146,6 +148,14 @@ router.get(
     checkAuth,
     permisosRol('FUNCIONARIO'),
     descargarFormatoMasivo
+)
+
+router.post(
+    '/revision-funcionario/subir-excel/:idSolicitud',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    upload.single('archivo'),
+    subirExcelSofiaPlus
 )
 
 export default router
