@@ -223,6 +223,62 @@ const verDocumentoAspirantes = async (req, res) => {
     res.sendFile(rutaCarta)
 }
 
+const revisarSolicituFuncionario = async (req, res) => {
+
+}
+
+const descargarCartaSolicitud = async (req, res) => {
+    const { idSolicitud } = req.params
+
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+        revisado: true
+    })
+
+    if (!solicitud) {
+        throw new HttpErrors('No existe la carta de solicitud revisada', 404)
+    }
+
+    const solicitudRevisada = await RevisionCoordinador.findOne({
+        solicitud: solicitud._id,
+        estado: true
+    })
+
+    if (!solicitudRevisada) {
+        throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
+    }
+
+    if (solicitud.empresaSolicitante === null) {
+        const nameFile = `carta-${idSolicitud}.docx`
+
+        const rutaCarta = path.join(
+            process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+        )
+
+        return res.download(rutaCarta)
+    }
+
+    const nameFile = `carta-${idSolicitud}.pdf`
+
+    const rutaCarta = path.join(
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+    )
+
+    res.download(rutaCarta)
+}
+
+const descargarFichaCaracterizacion = async (req, res) => {
+
+}
+
+const descargarDocumentoAspirantes = async (req, res) => {
+
+}
+
+const descargarFormatoMasivo = async (req, res) => {
+
+}
+
 export {
     consultarSolicitudInstructor,
     enviarSolicitud,
@@ -232,5 +288,10 @@ export {
     verFichaCaracterizacionCoordinador,
     verFormatoMasivo,
     verCartaSolicitud,
-    verDocumentoAspirantes
+    verDocumentoAspirantes,
+    revisarSolicituFuncionario,
+    descargarCartaSolicitud,
+    descargarFichaCaracterizacion,
+    descargarDocumentoAspirantes,
+    descargarFormatoMasivo,
 }
