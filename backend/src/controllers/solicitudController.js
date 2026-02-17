@@ -98,14 +98,7 @@ const crearSolicitud = async (req, res) => {
     }
 }
 
-
-const consultarSolicitud = async (req, res) => {
-
-}
-
-
 export {
     tipoSolicitud,
     crearSolicitud,
-    consultarSolicitud
 }
