@@ -1,9 +1,22 @@
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login.jsx";
+import Dashboard from "./pages/dashboard.jsx";
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+
 export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <h1 className="text-4xl font-bold text-purple-500">
-        Tailwind 4 funcionando 🔥
-      </h1>
-    </div>
+    <Route>
+      <Route path="/" element={<Login />} />
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+    </Route>
   );
 }
