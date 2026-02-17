@@ -9,6 +9,8 @@ import uploadPDF from '../middlewares/subirCartaEmpresa.js';
 import {
     tipoSolicitud,
     crearSolicitud,
+    // Elimar despues
+    crearEmpresa
 } from '../controllers/solicitudController.js'
 
 const router = Router()
@@ -26,5 +28,8 @@ router.post(
     uploadPDF.single('archivo'),
     crearSolicitud
 )
+
+// ELiminar despues
+router.post('/',crearEmpresa)
 
 export default router

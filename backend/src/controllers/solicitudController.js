@@ -4,6 +4,7 @@ import solicitudCerradaService from "../services/solicitudCerradaServices.js"
 import solicitudAbiertaService from "../services/solicitudAbiertaservices.js"
 
 import HttpErrors from "../helpers/httpErrors.js"
+import Empresa from "../models/Empresa.js"
 
 const tipoSolicitud = async (req, res) => {
     const { solicitud } = req.params
@@ -61,7 +62,25 @@ const crearSolicitud = async (req, res) => {
     }
 }
 
+// TODO: Prubas subir datos en caso de error
+const crearEmpresa = async (req, res) =>{
+    await Empresa.create({
+        nombreEmpresa: 'Probando',
+        nombreResponsable: 'Hi',
+        emailEmpresa: 'test@gmail.com',
+        nitEmpresa: 3071104,
+        tipoEmpresa: "698ec762559e1dce79141c69",
+        cartaSolicitud: null
+    })
+
+    res.json({
+        msg: 'Good'
+    })
+}
+
 export {
     tipoSolicitud,
     crearSolicitud,
+    // eliminar despues
+    crearEmpresa
 }
