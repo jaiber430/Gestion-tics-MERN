@@ -218,7 +218,7 @@ const verDocumentoAspirantes = async (req, res) => {
     const nameFile = `combinado.pdf`
 
     const rutaCarta = path.join(
-        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'DocumentoAspirantes', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'DocumentosAspirantes', nameFile
     )
 
     res.sendFile(rutaCarta)

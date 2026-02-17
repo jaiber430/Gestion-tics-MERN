@@ -7,6 +7,9 @@ import HttpErrors from '../helpers/httpErrors.js'
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
 import Aspirantes from '../models/Aspirantes.js'
 import Solicitud from '../models/Solicitud.js'
+import { actualizarExcelMasivo } from "../services/excelServices.js";
+import Empresa from '../models/Empresa.js';
+
 
 const registrarAspirante = async (req, res) => {
 
@@ -69,21 +72,9 @@ const registrarAspirante = async (req, res) => {
             throw new HttpErrors('Debe subir el documento PDF', 400);
         }
 
-        // Estructura de los pdf:
-        const carpetaDestino = path.join(
-            'Uploads',
-            String(comprobarSolicitud._id),
-            'DocumentoAspirantes'
-        );
+        // Multer ya guardó el archivo, solo usamos su ruta
+        const rutaFinalPDF = req.file.path;
 
-        await fs.mkdir(carpetaDestino, { recursive: true });
-
-        // nombre final = cedula.pdf
-        const nombreFinal = `${numeroIdentificacion}.pdf`;
-        const rutaFinalPDF = path.join(carpetaDestino, nombreFinal);
-
-        // mover archivo desde temp → carpeta final
-        await fs.rename(req.file.path, rutaFinalPDF);
 
         // guardar en BD
         const nuevoAspirante = new Aspirantes({
@@ -99,23 +90,39 @@ const registrarAspirante = async (req, res) => {
 
         await nuevoAspirante.save();
 
+        // 🔎 Traer el tipo de identificación (para obtener el nombre)
+        const aspiranteConTipo = await Aspirantes.findById(nuevoAspirante._id).populate("tipoIdentificacion");
+
+
+        // 🔎 Traer empresa si existe en la solicitud
+        let codigoEmpresa = "";
+
+    if (comprobarSolicitud.empresaSolicitante) {
+            const empresa = await Empresa.findById(comprobarSolicitud.empresaSolicitante);
+            codigoEmpresa = empresa?.codigoEmpresa || "";
+    }
+
+
+        await actualizarExcelMasivo({
+            solicitudId: comprobarSolicitud._id,
+            tipoIdentificacion: aspiranteConTipo.tipoIdentificacion.nombreTipoIdentificacion,
+            numeroIdentificacion: aspiranteConTipo.numeroIdentificacion,
+            codigoEmpresa: codigoEmpresa
+        });
+
+
         res.json(nuevoAspirante);
 
+        
     } catch (error) {
 
-        if (req.file?.path) {
-            await fs.unlink(req.file.path);
-        }
 
         console.log(error);
         throw new HttpErrors('Error al guardar el aspirante', 500);
     }
 
-
-
-
-
 }
+
 
 const actualizarAspirante = async (req, res) => {
     const { numeroIdentificacion, nombre, apellido, telefono } = req.body
