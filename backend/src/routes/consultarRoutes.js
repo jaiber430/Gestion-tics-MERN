@@ -34,10 +34,10 @@ router.get('/revision-coordinador/ver-documento-combinado/:idSolicitud', checkAu
 router.get('/revision-coordinador/ver-formato-inscripcion-masivo/:idSolicitud', checkAuth, permisosRol('COORDINADOR'), verFormatoMasivo)
 
 router.put('/revision-funcionario/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), revisarSolicituFuncionario)
-router.get('/revision-funcionario/carta-solicitud/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarCartaSolicitud)
-router.get('/revision-funcionario/ver-ficha-caracterizacion/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarFichaCaracterizacion)
-router.get('/revision-funcionario/ver-documento-combinado/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarDocumentoAspirantes)
-router.get('/revision-funcionario/ver-formato-inscripcion-masivo/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarFormatoMasivo)
+router.get('/revision-funcionario/descargar-carta-solicitud/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarCartaSolicitud)
+router.get('/revision-funcionario/descargar-ficha-caracterizacion/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarFichaCaracterizacion)
+router.get('/revision-funcionario/descargar-documento-combinado/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarDocumentoAspirantes)
+router.get('/revision-funcionario/descargar-formato-inscripcion-masivo/:idSolicitud', checkAuth, permisosRol('FUNCIONARIO'), descargarFormatoMasivo)
 
 router.post('/revision-funcionario', checkAuth, permisosRol('INSTRUCTOR'), consultarSolicitudInstructor)
 router.post('/consultas-administrador', checkAuth, permisosRol('INSTRUCTOR'), consultarSolicitudInstructor)

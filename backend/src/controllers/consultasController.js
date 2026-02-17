@@ -268,11 +268,63 @@ const descargarCartaSolicitud = async (req, res) => {
 }
 
 const descargarFichaCaracterizacion = async (req, res) => {
+    const { idSolicitud } = req.params
 
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+        revisado: true
+    })
+
+    if (!solicitud) {
+        throw new HttpErrors('No existe la carta de solicitud revisada', 404)
+    }
+
+    const solicitudRevisada = await RevisionCoordinador.findOne({
+        solicitud: solicitud._id,
+        estado: true
+    })
+
+    if (!solicitudRevisada) {
+        throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
+    }
+
+    const nameFile = `ficha-${idSolicitud}.docx`
+
+    const rutaCarta = path.join(
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+    )
+
+    res.download(rutaCarta)
 }
 
 const descargarDocumentoAspirantes = async (req, res) => {
+    const { idSolicitud } = req.params
 
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+        revisado: true
+    })
+
+    if (!solicitud) {
+        throw new HttpErrors('No existe la carta de solicitud revisada', 404)
+    }
+
+    const solicitudRevisada = await RevisionCoordinador.findOne({
+        solicitud: solicitud._id,
+        estado: true
+    })
+
+    if (!solicitudRevisada) {
+        throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
+    }
+
+    const nameFile = `combinado.pdf`
+
+    const rutaCarta = path.join(
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'DocumentoAspirantes', nameFile
+    )
+
+    res.download(rutaCarta)
 }
 
 const descargarFormatoMasivo = async (req, res) => {
