@@ -6,11 +6,13 @@ const usuarioSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
     apellido: {
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
     rol: {
         type: mongoose.Schema.Types.ObjectId,

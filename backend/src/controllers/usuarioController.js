@@ -55,7 +55,7 @@ const registrarUsuario = async (req, res) => {
 
     // Verificar que la contraseña tenga minimo 8 caracteres
     if (password.length <= 7) {
-        throw new HttpErrors('La contraseña es muy corta', 400)
+        throw new HttpErrors('La contraseña debe tener minimo 8 caracteres', 400)
     }
 
     // Comprobar el contrato
@@ -63,8 +63,10 @@ const registrarUsuario = async (req, res) => {
         throw new HttpErrors('Contrato no valido', 400)
     }
 
+    const datosContrato = (!numeroContrato || !inicioContrato || !finContrato)
+
     // Verificar si al ser contrato se envia su numero
-    if (tipoContrato === 'Contrato' && !numeroContrato || !inicioContrato || !finContrato) {
+    if (tipoContrato === 'Contrato' && datosContrato) {
         throw new HttpErrors('El numero de contrato, su fecha inicio y fin son requeridos', 400)
     }
 
@@ -122,7 +124,7 @@ const iniciarSesion = async (req, res) => {
         throw new HttpErrors('Tu cuenta aun no ha sido verificada', 409)
     }
 
-    if (!existeUsuario.contratoActivo) {
+    if (existeUsuario.tipoContrato === 'Contrato' && !existeUsuario.contratoActivo) {
         throw new HttpErrors('Usted no esta contratado por la entidad', 409)
     }
 

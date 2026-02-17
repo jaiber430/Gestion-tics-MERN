@@ -5,11 +5,13 @@ const aspirantesSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
     apellido: {
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
     archivo: {
         // ruta o URL del PDF
