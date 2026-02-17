@@ -12,89 +12,52 @@ const tipoSolicitud = async (req, res) => {
 }
 
 const crearSolicitud = async (req, res) => {
+
     const { tipo } = req.params
     const { tipoOferta } = req.body
 
-    const tipoSolicitud = 'CampeSENA'
-    // Iniciar Sesion para guardar cambios en varios modelos
+    if (!['campesena', 'regular'].includes(tipo)) {
+        throw new HttpErrors('URL no encontrada', 404)
+    }
+
     const session = await mongoose.startSession()
-    if (tipo === 'campesena') {
-        // Todas las operaciones correctas que usen el la sesion van a ser creadas
-        try {
-            session.startTransaction()
-            // Pedir campos en base a la oferta
-            if (tipoOferta === "Cerrada") {
-                // Enviar datos reqeuridos para la solicitud Si es cerrada
-                const { nuevaSolicitud } = await solicitudCerradaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
 
-                // Si todo sale bien guardar los cambios en modelos, etc
-                await session.commitTransaction()
-                // Finalizar la sesion
-                session.endSession()
+    try {
+        await session.startTransaction()
 
-                // Devolver la respuesta + la solicitud que se creo
-                res.json({
-                    msg: "Solicitud creada con exito",
-                    solicitud: nuevaSolicitud[0]
-                })
-            } else {
-                const { nuevaSolicitud } = await solicitudAbiertaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
+        const tipoSolicitud = tipo === 'campesena'
+            ? 'CampeSENA'
+            : 'Regular'
 
-                await session.commitTransaction()
-                session.endSession()
-
-                res.json({
-                    msg: "Solicitud creada con exito",
-                    solicitud: nuevaSolicitud[0]
-                })
-            }
-        } catch (err) {
-            // Si algo sale mal cancela todo (No guarda nada)
-            await session.abortTransaction()
-            // Finalizar sesión
-            session.endSession()
-            throw err
+        if (tipoOferta === "Cerrada" && !req.file) {
+            throw new HttpErrors('No se envió ningún archivo PDF', 400)
         }
-        // Si la empresa es regular
-    } else if (tipo === 'regular') {
-        // Todas las operaciones correctas que usen el la sesion van a ser creadas
-        const session = await mongoose.startSession()
 
-        const tipoSolicitud = 'Regular'
-        try {
-            session.startTransaction()
-            // Pedir campos en base a la oferta
-            if (tipoOferta === "Abierta") {
+        const service = tipoOferta === "Cerrada"
+            ? solicitudCerradaService
+            : solicitudAbiertaService
 
-                const { nuevaSolicitud } = await solicitudAbiertaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
+        const { nuevaSolicitud } = await service(
+            req.body,
+            session,
+            tipoOferta,
+            req.usuario.id,
+            tipoSolicitud,
+            req.file
+        )
 
-                await session.commitTransaction()
-                session.endSession()
+        await session.commitTransaction()
+        session.endSession()
 
-                res.json({
-                    msg: "Solicitud creada con exito",
-                    solicitud: nuevaSolicitud[0]
-                })
-            } else {
+        res.json({
+            msg: "Solicitud creada con éxito",
+            solicitud: nuevaSolicitud[0]
+        })
 
-                const { nuevaSolicitud } = await solicitudCerradaService(req.body, session, tipoOferta, req.usuario.id, tipoSolicitud)
-
-                await session.commitTransaction()
-                session.endSession()
-
-                res.json({
-                    msg: "Solicitud creada con exito",
-                    solicitud: nuevaSolicitud[0]
-                })
-            }
-        } catch (err) {
-            // Si algo sale mal cancela todo
-            await session.abortTransaction()
-            session.endSession()
-            throw err
-        }
-    } else {
-        throw new HttpErrors('URL no encontada', 404)
+    } catch (err) {
+        await session.abortTransaction()
+        session.endSession()
+        throw err
     }
 }
 

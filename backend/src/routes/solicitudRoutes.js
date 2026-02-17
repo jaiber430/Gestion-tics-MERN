@@ -3,6 +3,7 @@ import { Router } from 'express'
 // ! MIDDLEWARES
 import checkAuth from "../middlewares/checkAuth.js";
 import permisosRol from "../middlewares/permisosRol.js";
+import uploadPDF from '../middlewares/subirCartaEmpresa.js';
 
 // ! CONTROLLERS
 import {
@@ -22,6 +23,7 @@ router.post(
     '/crear-solicitud/:tipo',
     checkAuth,
     permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),
+    uploadPDF.single('archivo'),
     crearSolicitud
 )
 

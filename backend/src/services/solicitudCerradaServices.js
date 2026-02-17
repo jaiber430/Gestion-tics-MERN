@@ -1,5 +1,6 @@
 import Solicitud from "../models/Solicitud.js"
 import Empresa from "../models/Empresa.js"
+import path from 'path'
 
 import solicitudValidator from "../validators/solicitudValidator.js"
 import empresaValidator from "../validators/empresaValidator.js"
@@ -9,12 +10,12 @@ import {generarDocumento} from '../services/wordServices.js'
 
 import HttpErrors from "../helpers/httpErrors.js"
 
-const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud) => {
+const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud, cartaRoute) => {
 
-    const { programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, cartaSolicitud, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
+    const { programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
 
     // VALIDAR TODOS LOS CAMPOS INCLUYENDO LOS DEL HORARIO QUE TÚ ENVÍAS
-    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !cartaSolicitud || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas) {
+    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas) {
         throw new HttpErrors('Todos los campos son requeridos', 400)
     }
 
@@ -41,7 +42,7 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         nitEmpresa: nitEmpresa,
         tipoEmpresa: existeTipoEmpresa._id,
         modelsTiposEmpresa: modelsTiposEmpresa,
-        cartaSolicitud: cartaSolicitud
+        cartaSolicitud: cartaRoute.path
     }], { session })
 
 
@@ -92,7 +93,7 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         fechasSeleccionadas: horario.fechasSeleccionadas
     }], { session });
 
-    generarDocumento(nuevaSolicitud[0], session)
+    await generarDocumento(nuevaSolicitud[0], session)
 
     return {
         nuevaSolicitud,

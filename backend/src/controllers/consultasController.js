@@ -257,7 +257,7 @@ const verSolicitudesFuncionario = async (req, res) => {
 const revisarSolicitudFuncionario = async (req, res) => {
     const session = await mongoose.startSession()
     try {
-        session.startTransaction()
+        await session.startTransaction()
         const { idSolicitud } = req.params
         const { estado, observacion, codigoFicha, codigoSolicitud } = req.body
 

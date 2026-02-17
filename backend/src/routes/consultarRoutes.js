@@ -24,7 +24,7 @@ import {
     subirExcelSofiaPlus,
 } from '../controllers/consultasController.js'
 
-import upload from "../utils/subirExcel.js"
+import upload from "../middlewares/subirExcel.js"
 import checkAuth from '../middlewares/checkAuth.js'
 import permisosRol from '../middlewares/permisosRol.js'
 
