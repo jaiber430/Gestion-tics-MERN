@@ -211,8 +211,8 @@ const recuperarPassword = async (req, res) => {
 
 const verUsuarios = async (req, res) => {
     const verUsuariosNoverificados = await Usuarios.find({
-        // $and => Si cumple ambas condiciones 
-        $and: [
+        // $or => Si cumple ambas condiciones
+        $or: [
             // $ne => Obtener datos diferentes a la petición
             { verificado: { $ne: true } },
             { contratoActivo: { $ne: true } }
@@ -270,7 +270,7 @@ const activarContrato = async (req, res) => {
     usuarioExiste.contratoActivo = contratoActivo || usuarioExiste.contratoActivo
 
     await usuarioExiste.save()
-    res.json({ msg: 'Usuario verificado correctamente' })
+    res.json({ msg: 'Contrato activado correctamente' })
 }
 
 export {
