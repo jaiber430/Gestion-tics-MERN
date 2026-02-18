@@ -27,6 +27,14 @@ const usuarioSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    programaEspecial: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: "modelosProgramasEspeciales",
+    },
+    modelosProgramasEspeciales: {
+        type: String,
+        enum: ['ProgramasEspeciales', 'ProgramasEspecialesCampesena']
+    },
     email: {
         type: String,
         required: true,

@@ -4,9 +4,9 @@ import {
     iniciarSesion,
     registrarUsuario,
     recuperarPassword,
-    comprobarCookies,
     verUsuarios,
-    verificarUsuarios
+    verificarUsuarios,
+    activarContrato
 } from '../controllers/usuarioController.js'
 
 import checkAuth from '../middlewares/checkAuth.js'
@@ -14,35 +14,32 @@ import permisosRol from '../middlewares/permisosRol.js'
 
 const router = Router()
 
-router.post(
-    '/',
-    iniciarSesion
-)
-router.post(
-    '/registrar',
-    registrarUsuario
-)
-router.put(
-    '/recuperar-password',
-    recuperarPassword
-)
+router.post('/login', iniciarSesion)
+
+router.post('/registrar', registrarUsuario)
+
+router.put('/recuperar-password', recuperarPassword)
+
 router.get(
-    '/comprobarCookies',
-    checkAuth,
-    permisosRol('ADMINISTRADOR', 'INSTRUCTOR', 'COORDINADOR', 'FUNCIONARIO', 'CURRICULAR'),
-    comprobarCookies
-)
-router.get(
-    '/verificacion-usuarios',
+    '/ver-usuarios',
     checkAuth,
     permisosRol('ADMINISTRADOR'),
     verUsuarios
 )
-router.put(
-    '/verificacion-usuarios/:id',
+
+router.patch(
+    '/verificar/:id',
     checkAuth,
     permisosRol('ADMINISTRADOR'),
     verificarUsuarios
 )
+
+router.patch(
+    '/activar-contrato/:id',
+    checkAuth,
+    permisosRol('ADMINISTRADOR'),
+    activarContrato
+)
+
 
 export default router
