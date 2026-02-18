@@ -24,21 +24,25 @@ const solicitudSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
     subSectorEconomico: {
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
     convenio: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        uppercase: true,
     },
     ambiente: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        uppercase: true,
     },
     fechaSolicitud: {
         type: Date,

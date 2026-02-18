@@ -6,6 +6,7 @@ const TiposIdentificacionSchema = new mongoose.Schema({
         required: true,
         trim: true,
         unique: true,
+        uppercase: true,
     },
 }, {
     timestamps: true

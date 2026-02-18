@@ -12,7 +12,7 @@ const fichaSchema = new mongoose.Schema({
     estado: {
         type: String,
         enum: ['Creación', 'Creada', 'Lista de espera', 'Matriculada', 'Rechazada'],
-        required: true
+        required: true,
     },
     usuarioSolicitante: {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +21,7 @@ const fichaSchema = new mongoose.Schema({
     observacion: {
         type: String,
         trim: true,
+        uppercase: true,
     },
     excel: {
         type: Boolean,

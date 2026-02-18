@@ -5,6 +5,7 @@ const ProgramasEspecialesSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        uppercase: true,
     },
 },{
     timestamps: true

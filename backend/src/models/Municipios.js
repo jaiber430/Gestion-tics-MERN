@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const municipiosSchema = new mongoose.Schema({
     municipios: {
         type: String,
-        required: true
+        required: true,
+        uppercase: true,
     },
 },{
     timestamps: true

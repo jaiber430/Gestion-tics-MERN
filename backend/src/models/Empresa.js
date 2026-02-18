@@ -4,10 +4,12 @@ const empresaSchema = new mongoose.Schema({
     nombreEmpresa: {
         type: String,
         trim: true,
+        uppercase: true,
     },
     nombreResponsable: {
         type: String,
         trim: true,
+        uppercase: true,
     },
     emailEmpresa: {
         type: String,

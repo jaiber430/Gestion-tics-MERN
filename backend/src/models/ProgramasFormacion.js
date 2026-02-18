@@ -7,6 +7,7 @@ const programasFormacionSchema = new mongoose.Schema({
     },
     nombrePrograma: {
         type: String,
+        uppercase: true,
     },
     versionPrograma: {
         type: String,
@@ -17,7 +18,7 @@ const programasFormacionSchema = new mongoose.Schema({
     },
     modalidad: {
         type: String,
-        default: 'Presencial',
+        default: 'PRESENCIAL',
     },
     area: {
         type: mongoose.Schema.Types.ObjectId,

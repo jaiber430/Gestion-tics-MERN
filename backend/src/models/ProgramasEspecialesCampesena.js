@@ -4,7 +4,8 @@ const programasEspecialesCampesenaSchema = new mongoose.Schema({
     programaEspecial:{
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        uppercase: true,
     },
 },{
     timestamps: true
