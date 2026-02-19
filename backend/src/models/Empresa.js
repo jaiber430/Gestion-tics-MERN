@@ -17,9 +17,28 @@ const empresaSchema = new mongoose.Schema({
         lowercase: true,
         match: [/^\S+@\S+\.\S+$/,],
     },
+    telefonoEmpresa: {
+        type: Number,
+        required: true,
+        trim: true,
+        unique: true,
+    },
     nitEmpresa: {
         type: Number,
         unique: true
+    },
+    fechaCreacion: {
+        type: Date,
+        required: true,
+    },
+    direccionEmpresa: {
+        type: String,
+        required: true,
+    },
+    nombreContactoEmpresa: {
+        type: String,
+        required: true,
+        trim: true,
     },
     tipoEmpresa: {
         type: mongoose.Schema.Types.ObjectId,
@@ -28,6 +47,11 @@ const empresaSchema = new mongoose.Schema({
     modelsTiposEmpresa: {
         type: String,
         enum: ['TiposEmpresa', 'TipoEmpresaRegular']
+    },
+    numeroEmpleadosEmpresa:{
+        type: Number,
+        required: true,
+        trim: true,
     },
     cartaSolicitud: {
         // ruta o URL del PDF
