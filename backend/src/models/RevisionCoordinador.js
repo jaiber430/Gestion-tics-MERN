@@ -19,9 +19,9 @@ const revisionCoordinadorSchema = new mongoose.Schema({
     },
     observacion:{
         type: String,
-        required: true,
         trim: true,
         uppercase: true,
+        default: null,
     },
     fechaRevison:{
         type: Date,

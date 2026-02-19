@@ -18,10 +18,18 @@ const fichaSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuarios',
     },
+    usuarioFuncionario: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuarios',
+    },
     observacion: {
         type: String,
         trim: true,
         uppercase: true,
+    },
+    numeroInscritos:{
+        type: Number,
+        trim: true,
     },
     excel: {
         type: Boolean,

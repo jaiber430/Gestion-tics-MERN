@@ -6,16 +6,16 @@ import solicitudValidator from "../validators/solicitudValidator.js"
 import empresaValidator from "../validators/empresaValidator.js"
 
 import construirHorario from "../services/horarioServices.js"
-import {generarDocumento} from '../services/wordServices.js'
+import { generarDocumento } from '../services/wordServices.js'
 
 import HttpErrors from "../helpers/httpErrors.js"
 
 const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud, cartaRoute) => {
 
-    const { programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, tipoEmpresa, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
+    const { programaFormacion, programaEspecial, cupo, nombreEmpresa, nombreResponsable, emailEmpresa, nitEmpresa, fechaCreacionEmpresa, telefonoEmpresa, direccionEmpresa, nombreContactoEmpresa, numeroEmpleadosEmpresa, tipoEmpresa, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas, instructorTecnico, instructorEmpresarial, instructorFullPopular } = data
 
     // VALIDAR TODOS LOS CAMPOS INCLUYENDO LOS DEL HORARIO QUE TÚ ENVÍAS
-    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas) {
+    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !nombreEmpresa || !nombreResponsable || !emailEmpresa || !nitEmpresa || !tipoEmpresa || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas || !fechaCreacionEmpresa || !telefonoEmpresa || !direccionEmpresa || !nombreContactoEmpresa || !numeroEmpleadosEmpresa || !instructorEmpresarial || !instructorTecnico || !instructorFullPopular) {
         throw new HttpErrors('Todos los campos son requeridos', 400)
     }
 

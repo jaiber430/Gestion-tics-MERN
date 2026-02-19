@@ -271,10 +271,6 @@ const revisarSolicitudFuncionario = async (req, res) => {
             throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
         }
 
-        if (codigoFicha !== codigoSolicitud) {
-            throw new HttpErrors('El codigo de ficha debe ser igual al codigo de solicitud', 400)
-        }
-
         const estadosValidos = ['Creación', 'Creada', 'Lista de espera', 'Matriculada', 'Rechazada']
 
         if (!estadosValidos.includes(estado)) {
