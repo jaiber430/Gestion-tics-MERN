@@ -16,14 +16,38 @@ const tecnicosSchema = new mongoose.Schema({
         // Farmato valido para el correo
         match: [/^\S+@\S+\.\S+$/,],
     },
-    telefonoInstructorTecnico:{
+    telefonoInstructorTecnico: {
         type: Number,
         required: true,
         trim: true,
         unique: true,
         minlength: 10,
     },
-},{
+    mes1: {
+        type: String,
+        trim: true
+    },
+    mes2: {
+        type: String,
+        required: false,
+        trim: true
+    },
+    mes3: {
+        type: String,
+        trim: true,
+        required: false,
+    },
+    mes4: {
+        type: String,
+        required: false,
+        trim: true
+    },
+    mes5: {
+        type: String,
+        trim: true,
+        required: false,
+    },
+}, {
     timestamps: true,
 })
 
