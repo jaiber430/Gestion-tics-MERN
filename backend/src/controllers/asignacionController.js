@@ -80,19 +80,22 @@ const actualizarAsignacion = async (req, res) => {
         throw new HttpErrors()
     }
 
-    const verificarEstadosInstructor = await Usuarios.findById(usuarioInstructor).populate('rol')
+    if (usuarioInstructor) {
+        const verificarEstadosInstructor = await Usuarios.findById(usuarioInstructor).populate('rol')
 
-    await validarUsuarioPorRol(verificarEstadosInstructor, 'INSTRUCTOR')
+        await validarUsuarioPorRol(verificarEstadosInstructor, 'INSTRUCTOR')
+        obtenerdatosAsignacion.usuarioInstructor = verificarEstadosInstructor._id || obtenerdatosAsignacion.usuarioInstructor
+    }
 
-    const verificarEstadosCoordinador = await Usuarios.findById(usuarioCoordinador).populate('rol')
+    if (usuarioCoordinador) {
+        const verificarEstadosCoordinador = await Usuarios.findById(usuarioCoordinador).populate('rol')
+        await validarUsuarioPorRol(verificarEstadosCoordinador, 'COORDINADOR')
+        obtenerdatosAsignacion.usuarioCoordinador = verificarEstadosCoordinador._id || obtenerdatosAsignacion.usuarioCoordinador
 
-    await validarUsuarioPorRol(verificarEstadosCoordinador, 'COORDINADOR')
-
-    obtenerdatosAsignacion.usuarioInstructor = verificarEstadosInstructor._id || obtenerdatosAsignacion.usuarioInstructor
-    obtenerdatosAsignacion.usuarioCoordinador = verificarEstadosCoordinador._id || obtenerdatosAsignacion.usuarioCoordinador
+    }
 
     await obtenerdatosAsignacion.save()
-    res.json({ msg: 'Actualización de asiganción exitosa' })
+    res.json({ msg: 'Actualización de asignación exitosa' })
 
 }
 
