@@ -49,6 +49,11 @@ const usuarioSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    coordinadorAsignado: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuarios',
+        default: null
+    },
     verificado: {
         type: Boolean,
         default: false,

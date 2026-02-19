@@ -7,7 +7,6 @@ import errorMiddleware from './middlewares/errorMiddleare.js'
 import asyncHandle from './helpers/asyncHandler.js'
 
 import usuarioRoutes from './routes/usuarioRoutes.js'
-import asignacionesRoutes from './routes/asignacionesRoutes.js'
 import solicitudRoutes from './routes/solicitudRoutes.js'
 import aspiranteRoutes from './routes/aspiranteRoutes.js'
 import consultarRoutes from './routes/consultarRoutes.js'
@@ -26,7 +25,6 @@ app.use(cors({
 
 
 app.use(`${process.env.APIURL}usuarios`, asyncHandle(usuarioRoutes))
-app.use(`${process.env.APIURL}asignaciones`, asyncHandle(asignacionesRoutes))
 app.use(`${process.env.APIURL}solicitudes`, asyncHandle(solicitudRoutes))
 app.use(`${process.env.APIURL}aspirantes`, asyncHandle(aspiranteRoutes))
 app.use(`${process.env.APIURL}consultas`, asyncHandle(consultarRoutes))

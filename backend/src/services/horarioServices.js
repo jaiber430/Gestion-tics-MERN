@@ -11,7 +11,7 @@ import HttpErrors from "../helpers/httpErrors.js";
 
 const construirHorario = (programa, data) => {
 
-    const { fechasSeleccionadas, horaInicio, fechaInicio } = data;
+    const { fechasSeleccionadas, horaInicio, fechaInicio, } = data;
     validarHorario(fechasSeleccionadas);
 
     const fechasUnicas = [...new Set(fechasSeleccionadas)];
@@ -27,9 +27,14 @@ const construirHorario = (programa, data) => {
         throw new HttpErrors("La fecha de inicio no puede ser mayor a la primera fecha para dictar el curso", 400);
     }
 
-    const { mes1, mes2 } = calcularMeses(fechasSeleccionadas)
-
     const { horaFin } = data;
+    
+    const meses = calcularMeses(
+        fechasSeleccionadas,
+        horaInicio,
+        horaFin
+    );
+
 
     // Calcular duración diaria y total
     const duracionHoras = calcularDuracion(horaInicio, horaFin);
@@ -56,8 +61,7 @@ const construirHorario = (programa, data) => {
         fechaFin,
         horaInicio,
         horaFin,
-        mes1,
-        mes2
+        meses
     };
 };
 

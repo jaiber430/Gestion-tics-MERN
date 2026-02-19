@@ -61,24 +61,70 @@ const iniciarSesion = async (req, res) => {
 }
 
 const registrarUsuario = async (req, res) => {
-    // Obtener los datos del usuario
-    const { nombre, apellido, rol, tipoIdentificacion, numeroIdentificacion, email, password, tipoContrato, numeroContrato, inicioContrato, finContrato, programaEspecial, modelosProgramasEspeciales } = req.body
 
-    //  Comprobar que los campos no lleguen vacios (Solo los requeridos)
+    const {
+        nombre,
+        apellido,
+        rol,
+        tipoIdentificacion,
+        numeroIdentificacion,
+        email,
+        password,
+        tipoContrato,
+        numeroContrato,
+        inicioContrato,
+        finContrato,
+        programaEspecial,
+        modelosProgramasEspeciales,
+        coordinadorAsignado
+    } = req.body
+
+
     if (!nombre || !apellido || !rol || !tipoIdentificacion || !numeroIdentificacion || !email || !password || !tipoContrato) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
 
-    // Verificar que el rol exista
+
     const comprobarRol = await Roles.findById(rol)
 
     if (!comprobarRol) {
         throw new HttpErrors('El rol selecionado no existe', 404)
     }
 
+
+    // VALIDACIÓN INSTRUCTOR
+    if (comprobarRol.nombreRol === "INSTRUCTOR") {
+
+        if (!coordinadorAsignado) {
+            throw new HttpErrors("Debe seleccionar un coordinador", 400)
+        }
+
+        const existeCoordinador = await Usuarios.findById(coordinadorAsignado)
+            .populate("rol")
+
+        if (!existeCoordinador) {
+            throw new HttpErrors("El coordinador seleccionado no existe", 404)
+        }
+
+        if (existeCoordinador.rol.nombreRol !== "COORDINADOR") {
+            throw new HttpErrors("El usuario seleccionado no es coordinador", 400)
+        }
+    }
+
+
+    // Si NO es instructor → eliminar coordinadorAsignado
+    if (comprobarRol.nombreRol !== "INSTRUCTOR") {
+        delete req.body.coordinadorAsignado
+    }
+
+
+    // VALIDACIÓN COORDINADOR
     if (comprobarRol.nombreRol === "COORDINADOR") {
 
-        const programasPermitidos = ["ProgramasEspeciales", "ProgramasEspecialesCampesena"]
+        const programasPermitidos = [
+            "ProgramasEspeciales",
+            "ProgramasEspecialesCampesena"
+        ]
 
         if (!programasPermitidos.includes(modelosProgramasEspeciales)) {
             throw new HttpErrors('El programa especial no es valido', 400)
@@ -89,33 +135,46 @@ const registrarUsuario = async (req, res) => {
         }
 
         if (modelosProgramasEspeciales === "ProgramasEspeciales") {
-            const programaRegular = await ProgramasEspeciales.findById(programaEspecial)
+
+            const programaRegular =
+                await ProgramasEspeciales.findById(programaEspecial)
 
             if (!programaRegular) {
-                throw new HttpErrors('El programa especial regular no existe', 404)
+                throw new HttpErrors(
+                    'El programa especial regular no existe',
+                    404
+                )
             }
+
         } else {
-            const programaRegular = await ProgramasEspecialesCampesena.findById(programaEspecial)
+
+            const programaRegular =
+                await ProgramasEspecialesCampesena.findById(programaEspecial)
 
             if (!programaRegular) {
-                throw new HttpErrors('El programa especial CampeSENA no existe', 404)
+                throw new HttpErrors(
+                    'El programa especial CampeSENA no existe',
+                    404
+                )
             }
         }
     }
+
 
     if (comprobarRol.nombreRol !== "COORDINADOR") {
         delete req.body.programaEspecial
         delete req.body.modelosProgramasEspeciales
     }
 
-    // Verificar que el tipo identificación exista
-    const comprobarTipoIdentificacion = await TiposIdentificacion.findById(tipoIdentificacion)
+
+    const comprobarTipoIdentificacion =
+        await TiposIdentificacion.findById(tipoIdentificacion)
 
     if (!comprobarTipoIdentificacion) {
         throw new HttpErrors('El tipo de identificación no existe', 404)
     }
 
-    // Verificar que el correo y numero de identificación no existan (Evitar duplicados)
+
     const existeUsuario = await Usuarios.findOne({
         $or: [
             { email },
@@ -127,65 +186,64 @@ const registrarUsuario = async (req, res) => {
         throw new HttpErrors('EL usuario ya existe', 409)
     }
 
-    // Verificar que el correo sea valido
+
     const caracteresEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     if (!caracteresEmail.test(email)) {
         throw new HttpErrors('El correo no es valido', 400)
     }
 
-    // Verificar que la contraseña tenga minimo 8 caracteres
+
     if (password.length <= 7) {
         throw new HttpErrors('La contraseña debe tener minimo 8 caracteres', 400)
     }
 
-    // Comprobar el contrato
+
     if (tipoContrato !== 'Contrato' && tipoContrato !== 'Planta') {
         throw new HttpErrors('Contrato no valido', 400)
     }
 
-    const datosContrato = (!numeroContrato || !inicioContrato || !finContrato)
 
-    // Verificar si al ser contrato se envia su numero
-    if (tipoContrato === 'Contrato' && datosContrato) {
-        throw new HttpErrors('El numero de contrato, su fecha inicio y fin son requeridos', 400)
-    }
+    //VALIDACIÓN SOLO SI ES CONTRATO
+    if (tipoContrato === 'Contrato') {
 
-    const inicio = formatearFechaInicio(inicioContrato)
-    const fin = formatearFechaFin(finContrato)
+        if (!numeroContrato || !inicioContrato || !finContrato) {
+            throw new HttpErrors(
+                'El numero de contrato, su fecha inicio y fin son requeridos',
+                400
+            )
+        }
 
-    if (inicio > fin) {
-        throw new HttpErrors('La fecha de finalización no puede ser antes que la de inicio', 400)
-    }
+        const inicio = formatearFechaInicio(inicioContrato)
+        const fin = formatearFechaFin(finContrato)
 
-    // Comprobar si envia el numero de contrato
-    if (numeroContrato) {
-        // Comprobar que el numero de contrato no se repita
-        const numeroContratoExiste = await Usuarios.findOne({ numeroContrato })
+        if (inicio > fin) {
+            throw new HttpErrors(
+                'La fecha de finalización no puede ser antes que la de inicio',
+                400
+            )
+        }
+
+        const numeroContratoExiste =
+            await Usuarios.findOne({ numeroContrato })
+
         if (numeroContratoExiste) {
-            throw new HttpErrors('EL numero de contrato ya existe', 409)
+            throw new HttpErrors(
+                'EL numero de contrato ya existe',
+                409
+            )
         }
     }
 
-    // Crear usuario
+
     await Usuarios.create(req.body)
 
-    // Guardar datos que se desean visualizar
-    const nuevoUsuario = ({
-        nombre: nombre,
-        apellido: apellido,
-        rol: rol,
-        tipoIdentificacion: tipoIdentificacion,
-        numeroIdentificacion: numeroIdentificacion,
-        email: email,
-        tipoContrato: tipoContrato,
-        numeroContrato: numeroContrato
-    })
 
     res.status(200).json({
         msg: "Te has registrado con exito espera la verificación de un administrador"
     })
 }
+
 
 const recuperarPassword = async (req, res) => {
     const { email } = req.body

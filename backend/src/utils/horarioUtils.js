@@ -7,35 +7,37 @@ const ordenarFechas = (fechas) => {
         .sort((a, b) => a - b);
 };
 
-const calcularMeses = (fechasSeleccionadas) => {
+const calcularMeses = (fechasSeleccionadas, horaInicio, horaFin) => {
 
-    if (!Array.isArray(fechasSeleccionadas)) {
-        throw new Error("fechasSeleccionadas debe ser un array");
-    }
-
-    const mes1 = [];
-    const mes2 = [];
+    const mesesMap = {};
 
     fechasSeleccionadas.forEach(fecha => {
 
         const [year, month, day] = fecha.split("-").map(Number);
-        const fechaObj = new Date(year, month - 1, day); // evitar problema zona horaria
+        const fechaObj = new Date(year, month - 1, day);
 
-        const numeroMes = fechaObj.getMonth(); // 0-11
+        const nombreMes = fechaObj
+            .toLocaleString('es-ES', { month: 'long' })
+            .toUpperCase();
 
-        if (numeroMes >= 0 && numeroMes <= 5) {
-            mes1.push(fecha); // guardamos la fecha original
-        } else {
-            mes2.push(fecha);
+        if (!mesesMap[nombreMes]) {
+            mesesMap[nombreMes] = [];
         }
 
+        mesesMap[nombreMes].push(day);
     });
 
-    return {
-        mes1: mes1.join(', '),
-        mes2: mes2.join(', '),
-    };
+    const horasPorDia = calcularDuracion(horaInicio, horaFin);
+
+    return Object.keys(mesesMap).map(nombreMes => ({
+        nombreMes,
+        dias: mesesMap[nombreMes].sort((a, b) => a - b),
+        horaInicio,
+        horaFin,
+        horasPorDia
+    }));
 };
+
 
 
 function calcularDuracion(horaInicio, horaFin) {

@@ -1,83 +1,104 @@
 import Solicitud from '../models/Solicitud.js'
-
 import solicitudValidator from '../validators/solicitudValidator.js'
-
 import construirHorario from './horarioServices.js'
 import { generarDocumento } from './wordServices.js'
-
 import HttpErrors from '../helpers/httpErrors.js'
-
 
 const solicitudAbiertaService = async (data, session, tipoOferta, usuarioCreador, tipoSolicitud) => {
 
-    const { programaFormacion, programaEspecial, cupo, municipio, direccionFormacion, subSectorEconomico, convenio, ambiente, fechaInicio, horaInicio, horaFin, fechasSeleccionadas } = data
+    const {
+        programaFormacion,
+        programaEspecial,
+        cupo,
+        municipio,
+        direccionFormacion,
+        subSectorEconomico,
+        convenio,
+        ambiente,
+        fechaInicio,
+        horaInicio,
+        horaFin,
+        fechasSeleccionadas,
+        tipoInstructor
+    } = data;
 
-    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !fechasSeleccionadas) {
-        throw new HttpErrors('Todos los campos son requeridos', 400)
+    // VALIDAR CAMPOS BASE
+    if (!tipoOferta || !cupo || !direccionFormacion || !subSectorEconomico || !convenio || !ambiente || !programaFormacion || !programaEspecial || !municipio || !fechaInicio || !horaInicio || !horaFin || !fechasSeleccionadas) {
+        throw new HttpErrors('Todos los campos base son requeridos', 400);
     }
 
-    // Guardar id tipo empresa en base a su tipo de solicitud
-    let modelsProgramasEspeciales
-
+    // VALIDACIÓN SOLO PARA CAMPE SENA
     if (tipoSolicitud === "CampeSENA") {
-        modelsProgramasEspeciales = 'ProgramasEspecialesCampesena'
-    } else {
-        modelsProgramasEspeciales = 'ProgramasEspeciales'
+        if (!tipoInstructor) {
+            throw new HttpErrors("Debe indicar el tipo de instructor", 400);
+        }
+
+        if (!["TECNICO", "EMPRESARIAL", "FULLPOPULAR"].includes(tipoInstructor)) {
+            throw new HttpErrors("Tipo de instructor inválido", 400);
+        }
     }
 
+    // Guardar modelo correcto para programas especiales
+    const modelsProgramasEspeciales = tipoSolicitud === "CampeSENA" ? 'ProgramasEspecialesCampesena' : 'ProgramasEspeciales';
 
-    // Verificaciones y Creación del horario
-    const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session, modelsProgramasEspeciales)
+    // Verificaciones y creación del horario
+    const { programaExiste, existeProgramaEspecial, existeMunicipio } = await solicitudValidator(data, session, modelsProgramasEspeciales);
 
     const horario = construirHorario(programaExiste, {
-        fechasSeleccionadas: fechasSeleccionadas,
-        horaInicio: horaInicio,
-        fechaInicio: fechaInicio,
-        horaFin: horaFin
+        fechasSeleccionadas,
+        horaInicio,
+        fechaInicio,
+        horaFin
     });
 
+    // Evitar translape
     const evitarTranslape = await Solicitud.findOne({
-        direccionFormacion: direccionFormacion,
-        ambiente: ambiente,
+        direccionFormacion,
+        ambiente,
         municipio: existeMunicipio._id,
         fechaInicio: horario.fechaInicio,
         fechaFin: horario.fechaFin,
         horaInicio: horario.horaInicio,
         horaFin: horario.horaFin,
         fechasSeleccionadas: horario.fechasSeleccionadas
-    }).session(session)
+    }).session(session);
 
     if (evitarTranslape) {
-        throw new HttpErrors('Ya se ha creado una solicitud en el horario y dirección', 403)
+        throw new HttpErrors('Ya se ha creado una solicitud en el horario y dirección', 403);
     }
 
-    const nuevaSolicitud = await Solicitud.create([{
-        tipoSolicitud: tipoSolicitud,
-        tipoOferta: tipoOferta,
-        cupo: cupo,
-        direccionFormacion: direccionFormacion,
-        subSectorEconomico: subSectorEconomico,
-        convenio: convenio,
-        ambiente: ambiente,
+    // Construcción base de la solicitud
+    const dataSolicitud = {
+        tipoSolicitud,
+        tipoOferta,
+        cupo,
+        direccionFormacion,
+        subSectorEconomico,
+        convenio,
+        ambiente,
         usuarioSolicitante: usuarioCreador,
-        empresaSolicitante: null,
+        empresaSolicitante: null, // abierta no tiene empresa
         municipio: existeMunicipio._id,
         programaFormacion: programaExiste._id,
         programaEspecial: existeProgramaEspecial._id,
         fechaInicio: horario.fechaInicio,
         fechaFin: horario.fechaFin,
-        mes1: horario.mes1,
-        mes2: horario.mes2,
         horaInicio: horario.horaInicio,
         horaFin: horario.horaFin,
-        fechasSeleccionadas: horario.fechasSeleccionadas
-    }], { session });
+        fechasSeleccionadas: horario.fechasSeleccionadas,
+        meses: horario.meses
+    };
 
-    generarDocumento(nuevaSolicitud[0], session)
-
-    return {
-        nuevaSolicitud
+    // Solo para CampeSENA
+    if (tipoSolicitud === "CampeSENA") {
+        dataSolicitud.tipoInstructor = tipoInstructor;
     }
+
+    const nuevaSolicitud = await Solicitud.create([dataSolicitud], { session });
+
+    await generarDocumento(nuevaSolicitud[0], session);
+
+    return { nuevaSolicitud };
 }
 
-export default solicitudAbiertaService
+export default solicitudAbiertaService;
