@@ -97,7 +97,7 @@ export const generarDocumento = async (data, session) => {
         await Municipios.findById(municipio)
 
     const dataEmpresa =
-        await Empresa.findById(empresaSolicitante)
+        await Empresa.findById(empresaSolicitante).session(session)
 
     const fechaInicioFormateada =
         formatearFechaWord(fechaInicio)
@@ -142,14 +142,9 @@ export const generarDocumento = async (data, session) => {
         horaFin: horaFin,
         mes1,
         mes2,
-    }
-
-
-    // SOLO SI ES CAMPE SENA
-    if (tipoSolicitud === "CampeSENA") {
-        dataRender.mes3 = mes3
-        dataRender.mes4 = mes4
-        dataRender.mes5 = mes5
+        mes3: mes3 ? mes3 : '',
+        mes4: mes4 ? mes4 : '',
+        mes5: mes5 ? mes5 : ''
     }
 
 
