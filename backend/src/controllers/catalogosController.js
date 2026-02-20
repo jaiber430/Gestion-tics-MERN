@@ -5,6 +5,8 @@ import ProgramasEspeciales from "../models/ProgramasEspeciales.js"
 import Municipios from "../models/Municipios.js"
 import TipoEmpresa from "../models/TiposEmpresa.js"
 import TipoEmpresaRegular from "../models/TipoEmpresaRegular.js"
+import Roles from "../models/Roles.js"
+import TiposIdentificacion from "../models/TiposIdentificacion.js"
 
 const obtenerTiposEmpresa = async (req, res) => {
     const tipos = await TipoEmpresa.find().select('_id tipoEmpresa')
@@ -32,6 +34,16 @@ const obtenerProgramasFormacion = async (req, res) => {
     res.json(programas)
 }
 
+const obtenerRoles = async (req, res) =>{
+    const roles = await Roles.find().select('nombreRol')
+    res.json(roles)
+}
+
+const obtenerTipoIdentificacion = async (req, res) =>{
+    const tiposIdentificaciones = await TiposIdentificacion.find().select('nombreTipoIdentificacion')
+    res.json(tiposIdentificaciones)
+}
+
 const obtenerProgramasEspeciales = async (req, res) => {
 
     const { tipo } = req.query
@@ -57,4 +69,6 @@ export {
     obtenerMunicipios,
     obtenerTiposEmpresaRegular,
     obtenerTiposEmpresa,
+    obtenerRoles,
+    obtenerTipoIdentificacion,
 }

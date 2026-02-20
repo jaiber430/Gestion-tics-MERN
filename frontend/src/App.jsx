@@ -8,12 +8,14 @@ import Coordinador from './pages/Coordinador'
 import Funcionario from './pages/Funcionario'
 import Administrador from './pages/Administrador'
 import Curricular from './pages/Curricular'
+import Register from './pages/Register'
 
 function App() {
   return (
     <Routes>
 
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
       {/* RUTAS INSTRUCTOR */}
       <Route

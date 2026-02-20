@@ -6,7 +6,8 @@ import {
     recuperarPassword,
     verUsuarios,
     verificarUsuarios,
-    activarContrato
+    activarContrato,
+    coordinadores
 } from '../controllers/usuarioController.js'
 
 import checkAuth from '../middlewares/checkAuth.js'
@@ -15,6 +16,8 @@ import permisosRol from '../middlewares/permisosRol.js'
 const router = Router()
 
 router.post('/login', iniciarSesion)
+
+router.get('/verCoordinadores', coordinadores)
 
 router.post('/registrar', registrarUsuario)
 

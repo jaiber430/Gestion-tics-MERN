@@ -4,7 +4,6 @@ import mongoose, { model } from 'mongoose'
 import Usuarios from '../models/Usuarios.js'
 import Roles from "../models/Roles.js"
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
-import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import ProgramasEspeciales from '../models/ProgramasEspeciales.js'
 import ProgramasEspecialesCampesena from '../models/ProgramasEspecialesCampesena.js'
 
@@ -79,6 +78,7 @@ const registrarUsuario = async (req, res) => {
         coordinadorAsignado
     } = req.body
 
+    console.log(req.body)
 
     if (!nombre || !apellido || !rol || !tipoIdentificacion || !numeroIdentificacion || !email || !password || !tipoContrato) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
@@ -244,6 +244,29 @@ const registrarUsuario = async (req, res) => {
     })
 }
 
+const coordinadores = async (req, res) => {
+    try {
+        // Primero obtenemos el _id del rol 'COORDINADOR'
+        const rolCoordinador = await Roles.findOne({ nombreRol: "COORDINADOR" });
+        if (!rolCoordinador) {
+            return res.status(404).json({ msg: "No existe el rol de coordinador" });
+        }
+
+        // Buscamos usuarios con ese rol, verificados y con contrato activo
+        const coordinadoresEncontrados = await Usuarios.find({
+            rol: rolCoordinador._id,
+            verificado: true,
+            contratoActivo: true
+        })
+        .select("nombre apellido") // Solo campos que quieras mostrar
+        .populate("rol", "nombreRol"); // Popular el rol para mostrar el nombre
+
+        res.json(coordinadoresEncontrados);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al obtener coordinadores" });
+    }
+}
 
 const recuperarPassword = async (req, res) => {
     const { email } = req.body
@@ -337,5 +360,6 @@ export {
     recuperarPassword,
     verUsuarios,
     verificarUsuarios,
-    activarContrato
+    activarContrato,
+    coordinadores,
 }
