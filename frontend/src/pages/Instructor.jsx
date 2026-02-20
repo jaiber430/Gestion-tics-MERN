@@ -1,10 +1,12 @@
 import { useAuth } from '../context/AuthContext'
-import { useNavigate, Outlet } from 'react-router-dom'
+import { useNavigate, Outlet, useLocation } from 'react-router-dom'
+
 
 const Instructor = () => {
     const { user } = useAuth()
     const navigate = useNavigate()
-
+    const location = useLocation();
+    const mostrarCards = location.pathname === '/instructor';
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col">
 
@@ -16,6 +18,13 @@ const Instructor = () => {
                 <p className="text-sm text-slate-300 mt-1">
                     Panel de Instructor
                 </p>
+
+                <button
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+                    onClick={() => navigate('consultas')}
+                >
+                    Ingresar
+                </button>
             </header>
 
             {/* Contenido */}

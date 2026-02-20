@@ -9,6 +9,7 @@ import Funcionario from './pages/Funcionario'
 import Administrador from './pages/Administrador'
 import Curricular from './pages/Curricular'
 import Register from './pages/Register'
+import ConsultasInstructor from './pages/ConsultasInstructor'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         }
       >
         <Route path=":tipo" element={<CrearSolicitud />} />
+        <Route path="consultas" element={<ConsultasInstructor />} />
       </Route>
 
       {/* OTRAS RUTAS */}

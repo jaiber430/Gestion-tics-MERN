@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import path from 'path'
 
-import Solicitud from "../models/Solicitud.js"
+import Solicitud from "../models/Solicitud.js"     
 import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import RevisionCoordinador from '../models/RevisionCoordinador.js'
 import Ficha from "../models/Ficha.js"
@@ -12,12 +12,7 @@ import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
 const consultarSolicitudInstructor = async (req, res) => {
     const verSolicitudesInstructor = await Solicitud
         .find({ usuarioSolicitante: req.usuario.id })
-        .select('tipoSolicitud')
-        .populate({
-            path: 'programaFormacion',
-            select: 'nombrePrograma'
-        })
-        .populate('tipoOferta')
+
     res.json(verSolicitudesInstructor)
 }
 
