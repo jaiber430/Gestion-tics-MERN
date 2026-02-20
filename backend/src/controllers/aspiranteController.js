@@ -90,11 +90,11 @@ const registrarAspirante = async (req, res) => {
 
         await nuevoAspirante.save();
 
-        // 🔎 Traer el tipo de identificación (para obtener el nombre)
+        // Traer el tipo de identificación (para obtener el nombre)
         const aspiranteConTipo = await Aspirantes.findById(nuevoAspirante._id).populate("tipoIdentificacion");
 
 
-        // 🔎 Traer empresa si existe en la solicitud
+        // Traer empresa si existe en la solicitud
         let codigoEmpresa = "";
 
     if (comprobarSolicitud.empresaSolicitante) {
@@ -113,7 +113,7 @@ const registrarAspirante = async (req, res) => {
 
         res.json(nuevoAspirante);
 
-        
+
     } catch (error) {
 
 

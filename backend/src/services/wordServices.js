@@ -156,7 +156,6 @@ export const generarDocumento = async (data, session) => {
 
     const carpetaDestino = path.join(
         process.cwd(),
-        "src",
         "uploads",
         `solicitud-${_id}`,
         'documents'

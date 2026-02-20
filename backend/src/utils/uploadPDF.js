@@ -5,7 +5,7 @@ import fs from 'fs';
 
 
 // ===============================
-// 📂 CONFIGURACIÓN DE ALMACENAMIENTO
+// CONFIGURACIÓN DE ALMACENAMIENTO
 // ===============================
 const storage = multer.diskStorage({
 
@@ -46,7 +46,7 @@ const storage = multer.diskStorage({
 
 
 // ===============================
-// 📄 SOLO PERMITIR PDFs
+// SOLO PERMITIR PDFs
 // ===============================
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
@@ -58,7 +58,7 @@ const fileFilter = (req, file, cb) => {
 
 
 // ===============================
-// 🚀 CONFIGURACIÓN MULTER
+// CONFIGURACIÓN MULTER
 // ===============================
 const upload = multer({
     storage,
@@ -67,7 +67,7 @@ const upload = multer({
 
 
 // ===============================
-// 🔗 FUNCIÓN PARA COMBINAR PDFs
+// FUNCIÓN PARA COMBINAR PDFs
 // ===============================
 const combinarPdfs = async (carpeta) => {
     try {
@@ -95,15 +95,15 @@ const combinarPdfs = async (carpeta) => {
 
         fs.writeFileSync(path.join(carpeta, 'combinado.pdf'), pdfBytes);
 
-        console.log('✅ PDF combinado actualizado');
+        console.log('PDF combinado actualizado');
     } catch (error) {
-        console.error('❌ Error combinando PDFs:', error);
+        console.error('Error combinando PDFs:', error);
     }
 };
 
 
 // ===============================
-// 📌 MIDDLEWARE PARA COMBINAR DESPUÉS DE SUBIR
+// MIDDLEWARE PARA COMBINAR DESPUÉS DE SUBIR
 // ===============================
 export const combinarDespuesDeSubir = async (req, res, next) => {
     try {

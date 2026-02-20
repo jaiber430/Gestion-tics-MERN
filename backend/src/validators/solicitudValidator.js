@@ -7,7 +7,7 @@ import HttpErrors from '../helpers/httpErrors.js'
 
 const solicitudValidator = async (data, session, modelsProgramasEspeciales) => {
 
-    const { programaFormacion, programaEspecial, cupo, municipio } = data
+    const { programaFormacion, programaEspecial, cupo, municipio, tipoOferta } = data
 
     const ProgramasEspecialesPermitidos = {
         ProgramasEspeciales,
@@ -34,9 +34,11 @@ const solicitudValidator = async (data, session, modelsProgramasEspeciales) => {
         throw new HttpErrors('El programa selecionado no existe', 404)
     }
 
-    // Verificar que el cupo no pase del maximo o que tenga el cupo minimo
-    if (cupo < 25 || cupo > 30) {
-        throw new HttpErrors('Cupo no valido', 400)
+    if (tipoOferta === 'Abierta') {
+        // Verificar que el cupo no pase del maximo o que tenga el cupo minimo
+        if (cupo < 25 || cupo > 30) {
+            throw new HttpErrors('Cupo no valido', 400)
+        }
     }
 
     const existeMunicipio = await Municipios.findById(municipio).session(session)
