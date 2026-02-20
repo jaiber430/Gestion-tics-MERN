@@ -11,6 +11,7 @@ import solicitudRoutes from './routes/solicitudRoutes.js'
 import aspiranteRoutes from './routes/aspiranteRoutes.js'
 import consultarRoutes from './routes/consultarRoutes.js'
 import catalogosRoutes from './routes/catalogoRoutes.js'
+import programaRoutes from './routes/programaRoutes.js'
 
 const app = express()
 
@@ -40,6 +41,7 @@ app.use(`${process.env.APIURL}catalogos`, catalogosRoutes)
 app.use(`${process.env.APIURL}solicitudes`, asyncHandle(solicitudRoutes))
 app.use(`${process.env.APIURL}aspirantes`, asyncHandle(aspiranteRoutes))
 app.use(`${process.env.APIURL}consultas`, asyncHandle(consultarRoutes))
+app.use(`${process.env.APIURL}programas`, asyncHandle(programaRoutes))
 
 
 
