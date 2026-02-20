@@ -5,27 +5,30 @@ const empresaSchema = new mongoose.Schema({
         type: String,
         trim: true,
         uppercase: true,
+        required: true,
     },
     nombreResponsable: {
         type: String,
         trim: true,
         uppercase: true,
+        required: true,
     },
     emailEmpresa: {
         type: String,
         trim: true,
         lowercase: true,
-        match: [/^\S+@\S+\.\S+$/,],
+        match: [/^\S+@\S+\.\S+$/],
+        required: true,
     },
     telefonoEmpresa: {
         type: Number,
         required: true,
-        trim: true,
         unique: true,
     },
     nitEmpresa: {
         type: Number,
-        unique: true
+        unique: true,
+        required: true,
     },
     fechaCreacion: {
         type: Date,
@@ -42,20 +45,16 @@ const empresaSchema = new mongoose.Schema({
     },
     tipoEmpresa: {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'modelsTiposEmpresa'
+        ref: 'TipoEmpresaRegular', 
+        required: true
     },
-    modelsTiposEmpresa: {
-        type: String,
-        enum: ['TipoEmpresa', 'TipoEmpresaRegular']
-    },
-    numeroEmpleadosEmpresa:{
+    numeroEmpleadosEmpresa: {
         type: Number,
         required: true,
         trim: true,
     },
     cartaSolicitud: {
-        // ruta o URL del PDF
-        type: String,
+        type: String, // ruta o URL del PDF
         required: false
     },
 }, {

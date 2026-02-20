@@ -1,51 +1,38 @@
-import multer from "multer"
-import fs from "fs"
-import path from "path"
+import multer from "multer";
+import fs from "fs";
+import path from "path";
 
 const storage = multer.diskStorage({
-
     destination: (req, file, cb) => {
+        const { nitEmpresa } = req.body; // usamos NIT de la empresa
+        if (!nitEmpresa) return cb(new Error("No se envió el NIT de la empresa"), null);
 
-        const { idSolicitud } = req.params
+        // Carpeta basada en el NIT
+        const ruta = path.join("uploads", `empresa-${nitEmpresa}`, "documents");
+        fs.mkdirSync(ruta, { recursive: true });
 
-        const ruta = path.join(
-            "uploads",
-            `solicitud-${idSolicitud}`,
-            "documents",
-        )
-
-        fs.mkdirSync(ruta, { recursive: true })
-
-        cb(null, ruta)
+        cb(null, ruta);
     },
 
     filename: (req, file, cb) => {
+        const { nitEmpresa } = req.body;
+        const extension = path.extname(file.originalname);
 
-        const { idSolicitud } = req.params
-        const extension = path.extname(file.originalname)
-
-        cb(null, `carta-${idSolicitud}${extension}`)
+        cb(null, `carta-${nitEmpresa}${extension}`);
     }
-})
+});
 
 const fileFilter = (req, file, cb) => {
-
-    const tipoPermitido = "application/pdf"
-
-    if (file.mimetype !== tipoPermitido) {
-        return cb(new Error("Solo se permiten archivos PDF"), false)
+    if (file.mimetype !== "application/pdf") {
+        return cb(new Error("Solo se permiten archivos PDF"), false);
     }
-
-    cb(null, true)
-}
+    cb(null, true);
+};
 
 const uploadPDF = multer({
     storage,
     fileFilter,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB
-    }
-})
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
 
-export default uploadPDF
-
+export default uploadPDF;

@@ -4,7 +4,6 @@ import {
     obtenerProgramasFormacion,
     obtenerProgramasEspeciales,
     obtenerMunicipios,
-    obtenerTiposEmpresa,
     obtenerTiposEmpresaRegular,
     obtenerRoles,
     obtenerTipoIdentificacion,
@@ -20,7 +19,6 @@ router.get("/programas-especiales", obtenerProgramasEspeciales)
 router.get('/roles', obtenerRoles),
 router.get('/tipos-identificacion', obtenerTipoIdentificacion),
 router.get("/municipios", checkAuth, obtenerMunicipios)
-router.get("/tipos-empresa", checkAuth, obtenerTiposEmpresa)
 router.get("/tipos-empresa-regular", checkAuth, obtenerTiposEmpresaRegular)
 
 

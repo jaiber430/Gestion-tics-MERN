@@ -1,4 +1,6 @@
 import mongoose from "mongoose"
+import fs from 'fs';
+import path from 'path';
 
 import solicitudCerradaService from "../services/solicitudCerradaServices.js"
 import solicitudAbiertaService from "../services/solicitudAbiertaservices.js"
@@ -30,7 +32,7 @@ const crearSolicitud = async (req, res) => {
             ? 'CampeSENA'
             : 'Regular'
 
-            console.log("FILE:", req.file)
+        // console.log("FILE:", req.file)
         if (tipoOferta === "Cerrada" && !req.file) {
             throw new HttpErrors('No se envió ningún archivo PDF', 400)
         }
@@ -48,6 +50,36 @@ const crearSolicitud = async (req, res) => {
             req.file
         )
 
+        // --- Mover PDF de la carpeta del NIT a la carpeta final de la solicitud ---
+
+        // Obtener la empresa asociada a la solicitud
+        const empresa = await Empresa.findById(nuevaSolicitud[0].empresaSolicitante).session(session);
+
+        if (!empresa) {
+            throw new HttpErrors('Empresa no encontrada', 404);
+        }
+
+        if (req.file) {
+            // Carpeta final de la solicitud
+            const rutaDestino = path.join(
+                "uploads",
+                `solicitud-${nuevaSolicitud[0]._id}`,
+                "documents"
+            );
+
+            fs.mkdirSync(rutaDestino, { recursive: true });
+
+            const extension = path.extname(req.file.originalname);
+            const nombreArchivo = `carta-${nuevaSolicitud[0]._id}${extension}`;
+            const rutaFinal = path.join(rutaDestino, nombreArchivo);
+
+            // Mover archivo desde donde lo subió multer
+            fs.renameSync(req.file.path, rutaFinal);
+
+            // Actualizar la empresa con la ruta final del PDF
+            empresa.cartaSolicitud = rutaFinal;
+            await empresa.save({ session });
+        }
         await session.commitTransaction()
         session.endSession()
 
@@ -55,6 +87,10 @@ const crearSolicitud = async (req, res) => {
             msg: "Solicitud creada con éxito",
             solicitud: nuevaSolicitud[0]
         })
+        // return{
+        //     idSolicitud:
+        // }
+        // console.log(req.body._id)
 
     } catch (err) {
         await session.abortTransaction()
@@ -64,7 +100,7 @@ const crearSolicitud = async (req, res) => {
 }
 
 // TODO: Prubas subir datos en caso de error
-const crearEmpresa = async (req, res) =>{
+const crearEmpresa = async (req, res) => {
     await Empresa.create({
         nombreEmpresa: 'Probando',
         nombreResponsable: 'Hi',

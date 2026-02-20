@@ -65,7 +65,6 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
     let modelsProgramasEspeciales
 
     if (tipoSolicitud === "CampeSENA") {
-        modelsTiposEmpresa = "TiposEmpresa"
         modelsProgramasEspeciales = 'ProgramasEspecialesCampesena'
     } else {
         modelsTiposEmpresa = "TipoEmpresaRegular"

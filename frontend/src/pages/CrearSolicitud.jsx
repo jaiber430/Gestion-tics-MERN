@@ -177,15 +177,9 @@ const CrearSolicitud = () => {
     // Cargar tipos de empresa cuando se selecciona oferta cerrada
     useEffect(() => {
         const cargarTiposEmpresa = async () => {
-            if (formData.tipoOferta !== "Cerrada") return
-
             setCargandoTiposEmpresa(true)
             try {
-                // Determinar qué endpoint usar basado en el tipo de solicitud
-                const endpoint = tipo === "campesena"
-                    ? '/catalogos/tipos-empresa'
-                    : '/catalogos/tipos-empresa-regular'
-
+                const endpoint = '/catalogos/tipos-empresa-regular'
                 const { data } = await clienteAxios.get(endpoint)
                 setTiposEmpresa(data)
             } catch (err) {
@@ -197,14 +191,7 @@ const CrearSolicitud = () => {
         }
 
         cargarTiposEmpresa()
-
-        // Resetear tipo de empresa cuando cambia el tipo de oferta
-        if (formData.tipoOferta !== "Cerrada") {
-            setTiposEmpresa([])
-            setTipoEmpresaSeleccionado(null)
-            setFormData(prev => ({ ...prev, tipoEmpresa: '' }))
-        }
-    }, [formData.tipoOferta, tipo])
+    }, [])
 
     // Cargar programas por área
     useEffect(() => {
@@ -326,6 +313,7 @@ const CrearSolicitud = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
+        // --- Validaciones iniciales ---
         if (!programaFormacionSeleccionado) {
             setError("Debe seleccionar un programa de formación")
             return
@@ -357,54 +345,49 @@ const CrearSolicitud = () => {
             return
         }
 
+        // --- Preparación para envío ---
         setLoading(true)
         setError(null)
 
         try {
-
             const fechasOrdenadas = [...fechasSeleccionadas].sort(
                 (a, b) => new Date(a) - new Date(b)
             )
-
             const ultimaFecha = fechasOrdenadas[fechasOrdenadas.length - 1]
             const [yearFin, monthFin, dayFin] = ultimaFecha.split('-').map(Number)
             const fechaFinDate = new Date(yearFin, monthFin - 1, dayFin)
 
+            // --- Crear FormData único ---
             const formDataToSend = new FormData()
 
-            // Agregar todos los campos normales
+            // Agregar campos del formulario excepto cartaSolicitud
             Object.keys(formData).forEach(key => {
-                if (formData[key] !== null && formData[key] !== undefined) {
+                if (formData[key] !== null && formData[key] !== undefined && key !== "cartaSolicitud") {
                     formDataToSend.append(key, formData[key])
                 }
             })
 
-            // Agregar fechas seleccionadas (como string ISO)
-            fechasSeleccionadas.forEach(fecha => {
-                formDataToSend.append("fechasSeleccionadas", fecha)
-            })
-
-            // Agregar fecha fin
-            formDataToSend.append("fechaFin", fechaFinDate.toISOString())
-
-            // Agregar tipoSolicitud
-            formDataToSend.append(
-                "tipoSolicitud",
-                tipo === "campesena" ? "CampeSENA" : "Regular"
-            )
-
-            // El archivo debe llamarse EXACTAMENTE "archivo"
+            // Agregar cartaSolicitud si existe
             if (formData.cartaSolicitud) {
                 formDataToSend.append("cartaSolicitud", formData.cartaSolicitud)
             }
 
-            console.log(formData.archivo)
+            // Agregar fechas y fechaFin
+            fechasSeleccionadas.forEach(fecha => formDataToSend.append("fechasSeleccionadas", fecha))
+            formDataToSend.append("fechaFin", fechaFinDate.toISOString())
+
+            // Agregar tipoSolicitud basado en tipo
+            formDataToSend.append("tipoSolicitud", tipo === "campesena" ? "CampeSENA" : "Regular")
+
+            // --- Enviar datos al backend ---
             const { data } = await clienteAxios.post(
                 `/solicitudes/crear-solicitud/${tipo}`,
                 formDataToSend
             )
 
             setMensaje(data.msg)
+
+            // Redirigir después de 2 segundos
             setTimeout(() => navigate('/instructor'), 2000)
 
         } catch (err) {
@@ -413,7 +396,7 @@ const CrearSolicitud = () => {
             setLoading(false)
         }
     }
-
+    
     const tileDisabled = ({ date, view }) => {
         if (view === 'month') {
             const day = date.getDay()
@@ -462,7 +445,7 @@ const CrearSolicitud = () => {
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
 
-                    {/* ========== SECCIÓN 1: DATOS BÁSICOS ========== */}
+                    {/* SECCIÓN 1: DATOS BÁSICOS */}
                     <select
                         name="tipoOferta"
                         onChange={handleChange}
@@ -514,7 +497,7 @@ const CrearSolicitud = () => {
                         ))}
                     </select>
 
-                    {/* ========== SECCIÓN 2: DATOS ADICIONALES DEL PROGRAMA DE FORMACIÓN ========== */}
+                    {/* DATOS ADICIONALES DEL PROGRAMA DE FORMACIÓN */}
                     {programaFormacionSeleccionado && (
                         <>
                             <div className="col-span-2 grid grid-cols-3 gap-4 mt-2 mb-2">
@@ -583,7 +566,7 @@ const CrearSolicitud = () => {
                         ))}
                     </select>
 
-                    {/* ========== SECCIÓN 3: HORARIO ========== */}
+                    {/* SECCIÓN 3: HORARIO */}
                     <input
                         type="date"
                         name="fechaInicio"
@@ -618,7 +601,7 @@ const CrearSolicitud = () => {
                         required
                     />
 
-                    {/* ========== SECCIÓN 4: FECHA FIN (READ ONLY) ========== */}
+                    {/* SECCIÓN 4: FECHA FIN (READ ONLY) */}
                     <div className="col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Fecha de finalización del curso
@@ -632,7 +615,7 @@ const CrearSolicitud = () => {
                         />
                     </div>
 
-                    {/* ========== SECCIÓN 5: DATOS DE UBICACIÓN ========== */}
+                    {/* SECCIÓN 5: DATOS DE UBICACIÓN  */}
                     <input
                         name="direccionFormacion"
                         placeholder="Dirección de formación"
@@ -684,10 +667,12 @@ const CrearSolicitud = () => {
                         </select>
                     )}
 
-                    {/* ========== SECCIÓN 6: DATOS DE EMPRESA (SOLO PARA OFERTA CERRADA) ========== */}
+                    {/*  DATOS DE EMPRESA (SOLO PARA OFERTA CERRADA) */}
                     {formData.tipoOferta === "Cerrada" && (
                         <div className="col-span-2 mt-4 border-t pt-4">
-                            <h3 className="text-lg font-semibold mb-4 text-gray-800">Datos de la Empresa Solicitante</h3>
+                            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                                Datos de la Empresa Solicitante
+                            </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <input
                                     name="nombreEmpresa"
@@ -777,30 +762,16 @@ const CrearSolicitud = () => {
                                     disabled={cargandoTiposEmpresa}
                                 >
                                     <option value="">
-                                        {cargandoTiposEmpresa ? 'Cargando tipos de empresa...' : 'Seleccione tipo de empresa'}
+                                        {cargandoTiposEmpresa
+                                            ? 'Cargando tipos de empresa...'
+                                            : 'Seleccione tipo de empresa'}
                                     </option>
                                     {tiposEmpresa.map(te => (
                                         <option key={te._id} value={te._id}>
-                                            {tipo === "campesena" ? te.tipoEmpresa : te.tipoEmpresaRegular}
+                                            {te.tipoEmpresaRegular}
                                         </option>
                                     ))}
                                 </select>
-
-                                {/* ========== SECCIÓN 7: DATOS ADICIONALES DEL TIPO DE EMPRESA (READ ONLY) ========== */}
-                                {tipoEmpresaSeleccionado && (
-                                    <div className="col-span-2 bg-gray-50 p-4 rounded border">
-                                        <p className="text-sm text-gray-700 mb-2">
-                                            <span className="font-semibold">Tipo de empresa seleccionado:</span> {
-                                                tipo === "campesena"
-                                                    ? tipoEmpresaSeleccionado.tipoEmpresa
-                                                    : tipoEmpresaSeleccionado.tipoEmpresaRegular
-                                            }
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            ID: {tipoEmpresaSeleccionado._id}
-                                        </p>
-                                    </div>
-                                )}
                                 <div className="col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Carta de solicitud (PDF)
@@ -811,7 +782,7 @@ const CrearSolicitud = () => {
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                cartaSolicitud: e.target.files[0]
+                                                cartaSolicitud: e.target.files[0] // Guardamos el archivo
                                             })
                                         }
                                     />
@@ -820,7 +791,7 @@ const CrearSolicitud = () => {
                         </div>
                     )}
 
-                    {/* ========== SECCIÓN 8: INFO DE HORAS CON TOLERANCIA ========== */}
+                    {/* INFO DE HORAS CON TOLERANCIA */}
                     <div className="col-span-2 bg-gray-100 p-4 rounded mt-4">
                         <div className="grid grid-cols-4 gap-4 text-center">
                             <div className="bg-white p-2 rounded shadow-sm">
@@ -869,7 +840,7 @@ const CrearSolicitud = () => {
                         )}
                     </div>
 
-                    {/* ========== SECCIÓN 9: CALENDARIO ========== */}
+                    {/* CALENDARIO  */}
                     {mostrarCalendario && programaFormacionSeleccionado && (
                         <div className="col-span-2 mt-4">
                             <h3 className="font-semibold mb-2 flex items-center justify-between">
@@ -969,7 +940,6 @@ const CrearSolicitud = () => {
                         </div>
                     )}
 
-                    {/* ========== SECCIÓN 10: BOTÓN DE ENVÍO ========== */}
                     <button
                         type="submit"
                         disabled={loading || !horasCompletadas}

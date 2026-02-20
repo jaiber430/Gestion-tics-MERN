@@ -22,6 +22,7 @@ router.get(
     tipoSolicitud
 )
 
+// console.log(uploadPDF)
 router.post(
     '/crear-solicitud/:tipo',
     checkAuth,

@@ -28,7 +28,7 @@ const construirHorario = (programa, data) => {
     }
 
     const { horaFin } = data;
-    
+
     const meses = calcularMeses(
         fechasSeleccionadas,
         horaInicio,
@@ -41,15 +41,19 @@ const construirHorario = (programa, data) => {
     const cantidadDias = fechasOrdenadas.length;
     const duracionTotal = duracionHoras * cantidadDias;
 
+    const horasPorDia = 10;
+
+    const horasMaximasPermitidas = Number(programa.horas) + horasPorDia;
+
     // Validar duración total
     if (Number(duracionTotal) < programa.horas) {
         throw new HttpErrors(
             `La duración total del curso (${duracionTotal}h) es menor al mínimo de horas requeridas en el programa formación (${programa.horas}h)`,
             400
         );
-    } else if (Number(duracionTotal) > programa.horas) {
+    } else if (Number(duracionTotal) > horasMaximasPermitidas) {
         throw new HttpErrors(
-            `La duración total del curso (${duracionTotal}h) excede la cantidad de horas minimas en el programa formación (${programa.horas}h)`,
+            `La duración total del curso (${duracionTotal}h) excede el máximo permitido (${horasMaximasPermitidas}h, máximo 1 día extra)`,
             400
         );
     }

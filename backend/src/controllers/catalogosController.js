@@ -3,15 +3,9 @@ import ProgramasFormacion from "../models/ProgramasFormacion.js"
 import ProgramaEspecialCampesena from "../models/ProgramasEspecialesCampesena.js"
 import ProgramasEspeciales from "../models/ProgramasEspeciales.js"
 import Municipios from "../models/Municipios.js"
-import TipoEmpresa from "../models/TiposEmpresa.js"
 import TipoEmpresaRegular from "../models/TipoEmpresaRegular.js"
 import Roles from "../models/Roles.js"
 import TiposIdentificacion from "../models/TiposIdentificacion.js"
-
-const obtenerTiposEmpresa = async (req, res) => {
-    const tipos = await TipoEmpresa.find().select('_id tipoEmpresa')
-    res.json(tipos)
-}
 
 const obtenerTiposEmpresaRegular = async (req, res) => {
         const tipos = await TipoEmpresaRegular.find().select('_id tipoEmpresaRegular')
@@ -68,7 +62,6 @@ export {
     obtenerProgramasEspeciales,
     obtenerMunicipios,
     obtenerTiposEmpresaRegular,
-    obtenerTiposEmpresa,
     obtenerRoles,
     obtenerTipoIdentificacion,
 }
