@@ -21,11 +21,12 @@ router.get(
     permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),
     tipoSolicitud
 )
+
 router.post(
     '/crear-solicitud/:tipo',
     checkAuth,
     permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),
-    // uploadPDF.single('archivo'),
+    uploadPDF.single('cartaSolicitud'),
     crearSolicitud
 )
 

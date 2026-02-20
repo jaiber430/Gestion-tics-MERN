@@ -30,9 +30,10 @@ const crearSolicitud = async (req, res) => {
             ? 'CampeSENA'
             : 'Regular'
 
-        // if (tipoOferta === "Cerrada" && !req.file) {
-        //     throw new HttpErrors('No se envió ningún archivo PDF', 400)
-        // }
+            console.log("FILE:", req.file)
+        if (tipoOferta === "Cerrada" && !req.file) {
+            throw new HttpErrors('No se envió ningún archivo PDF', 400)
+        }
 
         const service = tipoOferta === "Cerrada"
             ? solicitudCerradaService
@@ -44,7 +45,7 @@ const crearSolicitud = async (req, res) => {
             tipoOferta,
             req.usuario.id,
             tipoSolicitud,
-            // req.file
+            req.file
         )
 
         await session.commitTransaction()

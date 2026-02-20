@@ -1,22 +1,71 @@
-import { Routes, Route } from "react-router-dom";
-import Login from "./pages/Login.jsx";
-import Dashboard from "./pages/dashboard.jsx";
-import ProtectedRoute from './components/ProtectedRoute.jsx'
+import { Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
 
-export default function App() {
+import Login from './pages/Login'
+import Instructor from './pages/Instructor'
+import CrearSolicitud from './pages/CrearSolicitud'
+import Coordinador from './pages/Coordinador'
+import Funcionario from './pages/Funcionario'
+import Administrador from './pages/Administrador'
+import Curricular from './pages/Curricular'
+
+function App() {
   return (
-    <Route>
-      <Route path="/" element={<Login />} />
+    <Routes>
 
+      <Route path="/login" element={<Login />} />
+
+      {/* RUTAS INSTRUCTOR */}
       <Route
-        path="/dashboard"
+        path="/instructor"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Instructor />
+          </ProtectedRoute>
+        }
+      >
+        <Route path=":tipo" element={<CrearSolicitud />} />
+      </Route>
+
+      {/* OTRAS RUTAS */}
+      <Route
+        path="/coordinador"
+        element={
+          <ProtectedRoute>
+            <Coordinador />
           </ProtectedRoute>
         }
       />
 
-    </Route>
-  );
+      <Route
+        path="/funcionario"
+        element={
+          <ProtectedRoute>
+            <Funcionario />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/administrador"
+        element={
+          <ProtectedRoute>
+            <Administrador />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/curricular"
+        element={
+          <ProtectedRoute>
+            <Curricular />
+          </ProtectedRoute>
+        }
+      />
+
+    </Routes>
+  )
 }
+
+export default App

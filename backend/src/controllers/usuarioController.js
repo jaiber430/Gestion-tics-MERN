@@ -16,7 +16,7 @@ import { formatearFechaInicio, formatearFechaFin } from '../helpers/formatearFec
 const iniciarSesion = async (req, res) => {
     const { numeroIdentificacion, password } = req.body
 
-    const existeUsuario = await Usuarios.findOne({ numeroIdentificacion })
+    const existeUsuario = await Usuarios.findOne({ numeroIdentificacion }).populate('rol')
 
     if (!existeUsuario) {
         throw new HttpErrors('El usuario no existe registrate para usar el sistema', 404)
@@ -52,7 +52,7 @@ const iniciarSesion = async (req, res) => {
         id: existeUsuario._id,
         nombre: existeUsuario.nombre,
         apellido: existeUsuario.apellido,
-        rol: existeUsuario.rol,
+        rol: existeUsuario.rol.nombreRol,
         numeroIdentificacion: existeUsuario.numeroIdentificacion,
         email: existeUsuario.email
     }

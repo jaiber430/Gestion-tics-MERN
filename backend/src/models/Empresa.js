@@ -46,7 +46,7 @@ const empresaSchema = new mongoose.Schema({
     },
     modelsTiposEmpresa: {
         type: String,
-        enum: ['TiposEmpresa', 'TipoEmpresaRegular']
+        enum: ['TipoEmpresa', 'TipoEmpresaRegular']
     },
     numeroEmpleadosEmpresa:{
         type: Number,

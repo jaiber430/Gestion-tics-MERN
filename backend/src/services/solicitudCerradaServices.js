@@ -1,6 +1,6 @@
 import Solicitud from "../models/Solicitud.js"
 import Empresa from "../models/Empresa.js"
-
+import path from 'path'
 import solicitudValidator from "../validators/solicitudValidator.js"
 import empresaValidator from "../validators/empresaValidator.js"
 
@@ -24,7 +24,6 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         direccionEmpresa,
         nombreContactoEmpresa,
         numeroEmpleadosEmpresa,
-        cartaSolicitud,
         tipoEmpresa,
         municipio,
         direccionFormacion,
@@ -88,7 +87,7 @@ const solicitudCerradaService = async (data, session, tipoOferta, usuarioCreador
         tipoEmpresa: existeTipoEmpresa._id,
         modelsTiposEmpresa: modelsTiposEmpresa,
         numeroEmpleadosEmpresa: numeroEmpleadosEmpresa,
-        cartaSolicitud: cartaSolicitud,
+        cartaSolicitud: cartaRoute?.path || null,
     }], { session })
 
 

@@ -99,7 +99,7 @@ const solicitudSchema = new mongoose.Schema({
 
     modelosProgramasEspeciales: {
         type: String,
-        enum: ['ProgramasEspeciales', 'ProgramasEspecialesCampesena']
+        enum: ['ProgramasEspeciales', 'ProgramaEspecialCampesena']
     },
 
     municipio: {
