@@ -21,7 +21,7 @@ const Preinscripcion = () => {
   useEffect(() => {
     const obtenerTipos = async () => {
       try {
-        const { data } = await clienteAxios.get('/aspirantes/tipos'); 
+        const { data } = await clienteAxios.get('/aspirantes');
         setTiposDoc(data);
       } catch (error) {
         console.error("Error al cargar tipos", error);
@@ -259,7 +259,7 @@ export default Preinscripcion;
 //   useEffect(() => {
 //     const obtenerTipos = async () => {
 //       try {
-//         const { data } = await clienteAxios.get('/aspirantes/tipos'); 
+//         const { data } = await clienteAxios.get('/aspirantes'); 
 //         setTiposDoc(data);
 //       } catch (error) {
 //         console.error("Error al cargar tipos de documento", error);

@@ -10,10 +10,8 @@ import {
 
 const router = Router()
 
-// SE OBTIENEN LOS TIPOS DE IDENTIFICACIÓN PARA EL FORMULARIO DE REGISTRO DE ASPIRANTES
-router.get('/tipos', obtenerTiposIdentificacion);
 
-
+router.get('/', obtenerTiposIdentificacion);
 router.put('/actualizar', actualizarAspirante)
 router.delete('/eliminar', eliminarAspirante)
 router.post('/preincripcion-aspirantes/:id', upload.single('pdf'), combinarDespuesDeSubir, registrarAspirante)
