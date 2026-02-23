@@ -10,6 +10,7 @@ import Administrador from './pages/Administrador'
 import Curricular from './pages/Curricular'
 import Register from './pages/Register'
 import ConsultasInstructor from './pages/ConsultasInstructor'
+import Preinscripcion from './pages/Preinscripcion'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/preinscripcion-aspirante/:id" element={<Preinscripcion />} />
 
       {/* RUTAS INSTRUCTOR */}
       <Route

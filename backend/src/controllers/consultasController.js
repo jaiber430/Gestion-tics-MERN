@@ -471,6 +471,38 @@ const subirExcelSofiaPlus = async (req, res) => {
     })
 }
 
+
+// POR AHORA NO---------
+
+// --- NUEVA FUNCIÓN PARA ASPIRANTES (PÚBLICA) ---
+// const obtenerSolicitudPublica = async (req, res) => {
+//     const { idSolicitud } = req.params;
+
+//     try {
+//         // Buscamos la solicitud por ID
+//         // Hacemos populate de 'programaFormacion' para obtener el nombre y las horas
+//         const solicitud = await Solicitud.findById(idSolicitud)
+//             .populate({
+//                 path: 'programaFormacion',
+//                 select: 'nombrePrograma horas' 
+//             });
+
+//         if (!solicitud) {
+//             throw new HttpErrors('La solicitud de preinscripción no existe', 404);
+//         }
+
+//         // Retornamos la solicitud encontrada
+//         res.json(solicitud);
+//     } catch (error) {
+//         // Si el ID no tiene el formato correcto de MongoDB o hay otro error
+//         if (error.kind === 'ObjectId') {
+//             throw new HttpErrors('ID de solicitud no válido', 400);
+//         }
+//         throw error;
+//     }
+// }
+
+
 export {
     consultarSolicitudInstructor,
     enviarSolicitud,
