@@ -10,8 +10,7 @@ import {
 
 const router = Router()
 
-// 1. RUTA FALTANTE: Obtener tipos para el select (Pública)
-// Esta ruta debe ir antes de las que tienen ":id"
+// SE OBTIENEN LOS TIPOS DE IDENTIFICACIÓN PARA EL FORMULARIO DE REGISTRO DE ASPIRANTES
 router.get('/tipos', obtenerTiposIdentificacion);
 
 
