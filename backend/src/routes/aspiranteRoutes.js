@@ -11,7 +11,7 @@ import {
 const router = Router()
 
 
-router.get('/', obtenerTiposIdentificacion);
+router.get('/', obtenerTiposIdentificacion)
 router.put('/actualizar', actualizarAspirante)
 router.delete('/eliminar', eliminarAspirante)
 router.post('/preincripcion-aspirantes/:id', upload.single('pdf'), combinarDespuesDeSubir, registrarAspirante)
