@@ -155,9 +155,23 @@ const contarAspirante = async (req, res) => {
     res.json({ cantidad: cantidadAspirantes })
 }
 
+
+
+// NUEVA FUNCIÓN: Obtener los tipos de la base de datos
+const obtenerTiposIdentificacion = async (req, res) => {
+    try {
+        const tipos = await TiposIdentificacion.find();
+        res.json(tipos);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: "Error al obtener los tipos de identificación" });
+    }
+}
+
 export {
     registrarAspirante,
     actualizarAspirante,
     eliminarAspirante,
-    contarAspirante
+    contarAspirante,
+    obtenerTiposIdentificacion
 }
