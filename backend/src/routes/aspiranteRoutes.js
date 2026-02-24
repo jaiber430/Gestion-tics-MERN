@@ -3,7 +3,7 @@ import upload, { combinarDespuesDeSubir } from '../utils/uploadPDF.js'
 
 import {
     registrarAspirante, 
-    obtenerTiposIdentificacion, obtenerTiposCaracterizacion,
+    obtenerDatosFormulario,
     actualizarAspirante,
     eliminarAspirante,
 } from '../controllers/aspiranteController.js'
@@ -11,7 +11,7 @@ import {
 const router = Router()
 
 
-router.get('/', obtenerTiposIdentificacion, obtenerTiposCaracterizacion)
+router.get('/', obtenerDatosFormulario)
 router.put('/actualizar/:id', actualizarAspirante)
 router.delete('/eliminar/:id', eliminarAspirante)
 router.post('/preincripcion-aspirantes/:id', upload.single('pdf'), combinarDespuesDeSubir, registrarAspirante)

@@ -18,7 +18,7 @@ const registrarAspirante = async (req, res) => {
             apellido,
             tipoIdentificacion,
             numeroIdentificacion,
-            caracterizacion,
+            tipoCaracterizacion,
             telefono,
             email
         } = req.body
@@ -33,7 +33,7 @@ const registrarAspirante = async (req, res) => {
     }
 
     // Validaciones de campos requeridos
-    if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !caracterizacion || !telefono || !email) {
+    if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !tipoCaracterizacion || !telefono || !email) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
 
@@ -55,7 +55,7 @@ const registrarAspirante = async (req, res) => {
         throw new HttpErrors('El numero de identificación ya existe', 400)
     }
 
-    const comprobarCaracterizacion = await Caracterizacion.findById(caracterizacion)
+    const comprobarCaracterizacion = await Caracterizacion.findById(tipoCaracterizacion)
     if (!comprobarCaracterizacion) {
         throw new HttpErrors('La caracterización no existe', 404)
     }
@@ -94,7 +94,7 @@ const registrarAspirante = async (req, res) => {
             archivo: rutaFinalPDF,
             tipoIdentificacion,
             numeroIdentificacion,
-            caracterizacion,
+            tipoCaracterizacion,
             telefono,
             email,
             solicitud: comprobarSolicitud._id
@@ -105,7 +105,7 @@ const registrarAspirante = async (req, res) => {
         // UNA sola consulta trae TODO
         const aspiranteCompleto = await Aspirantes.findById(nuevoAspirante._id)
         .populate("tipoIdentificacion")
-        .populate("caracterizacion");
+        .populate("tipoCaracterizacion");
         
 
 
@@ -122,7 +122,7 @@ const registrarAspirante = async (req, res) => {
             solicitudId: comprobarSolicitud._id,
             tipoIdentificacion: aspiranteCompleto.tipoIdentificacion.nombreTipoIdentificacion,
             numeroIdentificacion: aspiranteCompleto.numeroIdentificacion,
-            caracterizacion: aspiranteCompleto.caracterizacion.caracterizacion,
+            caracterizacion: aspiranteCompleto.tipoCaracterizacion.nombreCaracterizacion,
             codigoEmpresa: codigoEmpresa
         });
 
@@ -180,23 +180,20 @@ const contarAspirante = async (req, res) => {
 
 
 // NUEVA FUNCIÓN: Obtener los tipos de la base de datos
-const obtenerTiposIdentificacion = async (req, res) => {
+const obtenerDatosFormulario = async (req, res) => {
     try {
-        const tipos = await TiposIdentificacion.find();
-        res.json(tipos);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ msg: "Error al obtener los tipos de identificación" });
-    }
-}
 
-const obtenerTiposCaracterizacion = async (req, res) => {
-    try {
-        const tipos = await Caracterizacion.find();
-        res.json(tipos);
+        const tiposIdentificacion = await TiposIdentificacion.find();
+        const caracterizaciones = await Caracterizacion.find();
+
+        res.json({
+            tiposIdentificacion,
+            caracterizaciones
+        });
+
     } catch (error) {
         console.log(error);
-        res.status(500).json({ msg: "Error al obtener los tipos de caracterización" });
+        res.status(500).json({ msg: "Error al obtener los datos del formulario" });
     }
 }
 
@@ -205,6 +202,5 @@ export {
     actualizarAspirante,
     eliminarAspirante,
     contarAspirante,
-    obtenerTiposIdentificacion,
-    obtenerTiposCaracterizacion
+    obtenerDatosFormulario
 }

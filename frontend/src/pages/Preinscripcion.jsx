@@ -5,13 +5,15 @@ import clienteAxios from '../api/axios';
 const Preinscripcion = () => {
   const { id } = useParams();
   const [tiposDoc, setTiposDoc] = useState([]);
-  const [enfocado, setEnfocado] = useState(""); 
+  const [caracterizaciones, setCaracterizaciones] = useState([]);
+  const [enfocado, setEnfocado] = useState("");
   
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
     tipoIdentificacion: "", 
     numeroIdentificacion: "",
+    tipoCaracterizacion: "",
     telefono: "",
     email: "",
     pdf: null 
@@ -22,7 +24,8 @@ const Preinscripcion = () => {
     const obtenerTipos = async () => {
       try {
         const { data } = await clienteAxios.get('/aspirantes');
-        setTiposDoc(data);
+        setTiposDoc(data.tiposIdentificacion);
+        setCaracterizaciones(data.caracterizaciones);
       } catch (error) {
         console.error("Error al cargar tipos", error);
       }
@@ -164,6 +167,7 @@ const Preinscripcion = () => {
             ))}
           </select>
         </div>
+        
 
         {/* Campo Número */}
         <div style={estilos.grupo}>
@@ -178,6 +182,31 @@ const Preinscripcion = () => {
             required
           />
         </div>
+
+
+
+        <div style={estilos.grupo}>
+          <label style={estilos.label("tipoCaracterizacion")}>Caracterización</label>
+
+          <select
+            style={estilos.input("tipoCaracterizacion")}
+            name="tipoCaracterizacion"
+            value={form.tipoCaracterizacion}
+            onFocus={() => setEnfocado("tipoCaracterizacion")}
+            onBlur={() => setEnfocado("")}
+            onChange={handleChange}
+            required
+          >
+            <option value="" disabled hidden></option>
+
+            {caracterizaciones.map(c => (
+              <option key={c._id} value={c._id}>
+                {c.nombreCaracterizacion}
+              </option>
+            ))}
+          </select>
+        </div>
+
 
         {/* Campo Teléfono */}
         <div style={estilos.grupo}>
@@ -236,147 +265,3 @@ const Preinscripcion = () => {
 };
 
 export default Preinscripcion;
-
-
-// import { useParams } from "react-router-dom";
-// import { useState, useEffect } from "react";
-// import clienteAxios from '../api/axios'; 
-
-// const Preinscripcion = () => {
-//   const { id } = useParams();
-//   const [tiposDoc, setTiposDoc] = useState([]);
-//   const [form, setForm] = useState({
-//     nombre: "",
-//     apellido: "",
-//     tipoIdentificacion: "", 
-//     numeroIdentificacion: "",
-//     telefono: "",
-//     email: "",
-//     pdf: null 
-//   });
-
-//   // 1. Cargar tipos de identificación
-//   useEffect(() => {
-//     const obtenerTipos = async () => {
-//       try {
-//         const { data } = await clienteAxios.get('/aspirantes'); 
-//         setTiposDoc(data);
-//       } catch (error) {
-//         console.error("Error al cargar tipos de documento", error);
-//       }
-//     };
-//     obtenerTipos();
-//   }, []);
-
-//   // 2. LA FUNCIÓN QUE TE FALTABA (Asegúrate de que esté aquí dentro)
-//   const handleChange = (e) => {
-//     if (e.target.name === "pdf") {
-//       setForm({ ...form, pdf: e.target.files[0] });
-//     } else {
-//       setForm({ ...form, [e.target.name]: e.target.value });
-//     }
-//   };
-
-//   // 3. Enviar el formulario
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     const formData = new FormData();
-    
-//     // Agregamos cada campo al FormData
-//     formData.append("nombre", form.nombre);
-//     formData.append("apellido", form.apellido);
-//     formData.append("tipoIdentificacion", form.tipoIdentificacion);
-//     formData.append("numeroIdentificacion", form.numeroIdentificacion);
-//     formData.append("telefono", form.telefono);
-//     formData.append("email", form.email);
-//     formData.append("pdf", form.pdf);
-
-//     try {
-//       await clienteAxios.post(`/aspirantes/preincripcion-aspirantes/${id}`, formData, {
-//         headers: { "Content-Type": "multipart/form-data" }
-//       });
-//       alert("¡Registro exitoso!");
-//     } catch (error) {
-//       alert(error.response?.data?.msg || "Error al registrar");
-//     }
-//   };
-
-//   return (
-//     <div className="container-preinscripcion">
-//       <h2>Formulario de Registro</h2>
-//       <form onSubmit={handleSubmit} className="form-preinscripcion">
-//         <input
-//           className="input-field"
-//           name="nombre"
-//           placeholder="Nombre"
-//           onChange={handleChange}
-//           required
-//         />
-
-//         <input
-//           className="input-field"
-//           name="apellido"
-//           placeholder="Apellido"
-//           onChange={handleChange}
-//           required
-//         />
-        
-//         <select 
-//           className="input-field" 
-//           name="tipoIdentificacion" 
-//           onChange={handleChange} 
-//           value={form.tipoIdentificacion}
-//           required
-//         >
-//           <option value="">Seleccione Tipo de Documento</option>
-//           {tiposDoc.map((tipo) => (
-//             <option key={tipo._id} value={tipo._id}>
-//               {tipo.nombreTipoIdentificacion}
-//             </option>
-//           ))}
-//         </select>
-
-//         <input
-//           className="input-field"
-//           name="numeroIdentificacion"
-//           placeholder="Número de Documento"
-//           onChange={handleChange}
-//           required
-//         />
-
-//         <input
-//           className="input-field"
-//           name="telefono"
-//           placeholder="Teléfono"
-//           onChange={handleChange}
-//           required
-//         />
-        
-//         <input
-//           className="input-field"
-//           name="email"
-//           type="email"
-//           placeholder="Correo Electrónico"
-//           onChange={handleChange}
-//           required
-//         />
-
-//         <div className="file-section">
-//             <label>Adjuntar Documento Identidad (PDF):</label>
-//             <input
-//               type="file"
-//               name="pdf"
-//               accept="application/pdf"
-//               onChange={handleChange}
-//               required
-//             />
-            
-//         </div>
-
-//         <button type="submit" className="btn-submit">Inscribirme</button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Preinscripcion;
