@@ -101,7 +101,7 @@ const crearSolicitud = async (req, res) => {
 
 // TODO: Prubas subir datos en caso de error
 const crearEmpresa = async (req, res) => {
-    await Empresa.create({
+    await Caracterizacion.create({
         nombreEmpresa: 'Probando',
         nombreResponsable: 'Hi',
         emailEmpresa: 'test@gmail.com',
