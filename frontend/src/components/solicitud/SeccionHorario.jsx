@@ -3,7 +3,7 @@ import { useSolicitud } from '../../context/SolicitudContext'
 const SeccionHorario = () => {
     const {
         formData, handleChange, setMaxFecha, setMostrarCalendario,
-        fechaFin, programaFormacionSeleccionado
+        fechaFin
     } = useSolicitud()
 
     const handleFechaInicioChange = (e) => {

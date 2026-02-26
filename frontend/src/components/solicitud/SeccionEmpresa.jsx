@@ -7,7 +7,7 @@ const SeccionEmpresa = () => {
         setFieldValue,
         tiposEmpresa,
         cargandoTiposEmpresa,
-        setTipoEmpresaSeleccionado // Ahora sí existe en el contexto
+        setTipoEmpresaSeleccionado 
     } = useSolicitud()
 
     if (formData.tipoOferta !== "Cerrada") return null

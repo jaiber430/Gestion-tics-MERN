@@ -9,7 +9,7 @@ const SeccionDatosBasicos = () => {
         programasFormacion,
         programasEspeciales,
         municipios,
-        programaFormacionSeleccionado, // ✅ AGREGADO - faltaba esto
+        programaFormacionSeleccionado,
         setProgramaFormacionSeleccionado,
         setProgramaEspecialSeleccionado,
         setFechasSeleccionadas,
@@ -114,7 +114,6 @@ const SeccionDatosBasicos = () => {
                 ))}
             </select>
 
-            {/* ✅ Aquí se usa programaFormacionSeleccionado - línea 117 aprox */}
             {programaFormacionSeleccionado && (
                 <div className="col-span-2 grid grid-cols-3 gap-4 mt-2 mb-2">
                     <div>

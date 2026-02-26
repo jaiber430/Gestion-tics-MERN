@@ -7,12 +7,9 @@ export const useSolicitudForm = () => {
         tipo,
         setAreas, setMunicipios, setProgramasEspeciales,
         setTiposEmpresa, setCargandoTiposEmpresa, setError, setLoading, setMensaje,
-        formData, setFormData,
-        setProgramasFormacion, setProgramaFormacionSeleccionado,
-        setProgramaEspecialSeleccionado,
-        setHorasPorDia, setFechasSeleccionadas,
+        formData,
+        setHorasPorDia,
         setFechaFin, setHorasCompletadas, setToleranciaAlcanzada,
-        setMaxFecha, setMostrarCalendario,
         fechasSeleccionadas, horasPorDia, programaFormacionSeleccionado,
         setHorasTotales, setMensajeHorario, horasTotales
     } = useSolicitud()

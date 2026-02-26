@@ -22,7 +22,7 @@ export const SolicitudProvider = ({ children, tipo }) => {
     const [programaEspecialSeleccionado, setProgramaEspecialSeleccionado] = useState(null)
     const [municipios, setMunicipios] = useState([])
     const [tiposEmpresa, setTiposEmpresa] = useState([])
-    const [tipoEmpresaSeleccionado, setTipoEmpresaSeleccionado] = useState(null) // ✅ AGREGADO
+    const [tipoEmpresaSeleccionado, setTipoEmpresaSeleccionado] = useState(null)
     const [cargandoTiposEmpresa, setCargandoTiposEmpresa] = useState(false)
 
     // Estados de fechas y horas
@@ -88,7 +88,7 @@ export const SolicitudProvider = ({ children, tipo }) => {
         programaEspecialSeleccionado, setProgramaEspecialSeleccionado,
         municipios, setMunicipios,
         tiposEmpresa, setTiposEmpresa,
-        tipoEmpresaSeleccionado, setTipoEmpresaSeleccionado, // ✅ AGREGADO
+        tipoEmpresaSeleccionado, setTipoEmpresaSeleccionado,
         cargandoTiposEmpresa, setCargandoTiposEmpresa,
 
         // Fechas y horas
@@ -104,7 +104,7 @@ export const SolicitudProvider = ({ children, tipo }) => {
 
         // Form
         formData,
-        setFormData, // ✅ AGREGADO
+        setFormData,
         handleChange,
         setFieldValue,
         tipo
