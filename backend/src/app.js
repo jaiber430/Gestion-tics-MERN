@@ -19,20 +19,10 @@ app.use(json())
 // Usar cookies para guardar el token
 app.use(cookieParser())
 // Permitir usar cookie en el frontend
-const allowedOrigins = process.env.FRONTEND_URL.split(',')
+const allowedOrigins = process.env.FRONTEND.split(',')
 
 app.use(cors({
-    origin: function (origin, callback) {
-
-        // Permitir peticiones sin origin (como Postman)
-        if (!origin) return callback(null, true)
-
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true)
-        } else {
-            callback(new Error('No permitido por CORS'))
-        }
-    },
+    origin: allowedOrigins,
     credentials: true
 }))
 
