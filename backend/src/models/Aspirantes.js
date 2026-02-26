@@ -27,6 +27,11 @@ const aspirantesSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    caracterizacion: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Caracterizacion",
+    required: true
+    },
     telefono: {
         type: Number,
         required: true,

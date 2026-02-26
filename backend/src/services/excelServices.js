@@ -5,6 +5,7 @@ import ExcelJS from "exceljs";
 export const actualizarExcelMasivo = async ({
     solicitudId,
     tipoIdentificacion,
+    caracterizacion,
     numeroIdentificacion,
     codigoEmpresa = ""
 }) => {
@@ -68,7 +69,7 @@ export const actualizarExcelMasivo = async ({
         worksheet.getCell(`B${fila}`).value = tipoIdentificacion;
         worksheet.getCell(`C${fila}`).value = numeroIdentificacion;
         worksheet.getCell(`D${fila}`).value = "";
-        worksheet.getCell(`E${fila}`).value = ""; // Tipo población (pendiente)
+        worksheet.getCell(`E${fila}`).value = caracterizacion; // Tipo población (pendiente)
         worksheet.getCell(`F${fila}`).value = codigoEmpresa;
 
 

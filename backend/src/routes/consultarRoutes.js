@@ -23,8 +23,6 @@ import {
     descargarFormatoMasivo,
     subirExcelSofiaPlus,
 
-    // PUBLICA
-    //obtenerSolicitudPublica
 } from '../controllers/consultasController.js'
 
 import upload from "../middlewares/subirExcel.js"
@@ -32,9 +30,6 @@ import checkAuth from '../middlewares/checkAuth.js'
 import permisosRol from '../middlewares/permisosRol.js'
 
 const router = Router()
-
-// RUTAS PARA CONSULTAS PUBLICAS
-//router.get('/publica/:idSolicitud', obtenerSolicitudPublica);
 
 // INSTRUCTOR
 

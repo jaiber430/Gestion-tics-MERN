@@ -32,6 +32,6 @@ router.post(
 )
 
 // ELiminar despues
-router.post('/',crearEmpresa)
+router.post('/', crearEmpresa)
 
 export default router

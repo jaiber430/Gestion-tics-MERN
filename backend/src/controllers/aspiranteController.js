@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-// import fs from 'fs/promises';
-// import path from 'path';
 
 import HttpErrors from '../helpers/httpErrors.js'
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
@@ -9,13 +7,21 @@ import Aspirantes from '../models/Aspirantes.js'
 import Solicitud from '../models/Solicitud.js'
 import { actualizarExcelMasivo } from "../services/excelServices.js";
 import Empresa from '../models/Empresa.js';
+import Caracterizacion from '../models/Caracterizacion.js';
 
 
 const registrarAspirante = async (req, res) => {
 
     const { id } = req.params
 
-    const { nombre, apellido, tipoIdentificacion, numeroIdentificacion, telefono, email } = req.body
+    const { nombre,
+            apellido,
+            tipoIdentificacion,
+            numeroIdentificacion,
+            caracterizacion,
+            telefono,
+            email
+        } = req.body
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new HttpErrors('El ID de la solicitud no es válido', 400);
@@ -27,7 +33,7 @@ const registrarAspirante = async (req, res) => {
     }
 
     // Validaciones de campos requeridos
-    if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !telefono || !email) {
+    if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !caracterizacion || !telefono || !email) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
 
@@ -47,6 +53,11 @@ const registrarAspirante = async (req, res) => {
     const comprobarNumeroIdentificacion = await Aspirantes.findOne({ numeroIdentificacion })
     if (comprobarNumeroIdentificacion) {
         throw new HttpErrors('El numero de identificación ya existe', 400)
+    }
+
+    const comprobarCaracterizacion = await Caracterizacion.findById(caracterizacion)
+    if (!comprobarCaracterizacion) {
+        throw new HttpErrors('La caracterización no existe', 404)
     }
 
     const comprobarTelefono = await Aspirantes.findOne({ telefono })
@@ -83,6 +94,7 @@ const registrarAspirante = async (req, res) => {
             archivo: rutaFinalPDF,
             tipoIdentificacion,
             numeroIdentificacion,
+            caracterizacion,
             telefono,
             email,
             solicitud: comprobarSolicitud._id
@@ -90,8 +102,11 @@ const registrarAspirante = async (req, res) => {
 
         await nuevoAspirante.save();
 
-        // Traer el tipo de identificación (para obtener el nombre)
-        const aspiranteConTipo = await Aspirantes.findById(nuevoAspirante._id).populate("tipoIdentificacion");
+        // UNA sola consulta trae TODO
+        const aspiranteCompleto = await Aspirantes.findById(nuevoAspirante._id)
+        .populate("tipoIdentificacion")
+        .populate("caracterizacion");
+        
 
 
         // Traer empresa si existe en la solicitud
@@ -105,8 +120,9 @@ const registrarAspirante = async (req, res) => {
 
         await actualizarExcelMasivo({
             solicitudId: comprobarSolicitud._id,
-            tipoIdentificacion: aspiranteConTipo.tipoIdentificacion.nombreTipoIdentificacion,
-            numeroIdentificacion: aspiranteConTipo.numeroIdentificacion,
+            tipoIdentificacion: aspiranteCompleto.tipoIdentificacion.nombreTipoIdentificacion,
+            numeroIdentificacion: aspiranteCompleto.numeroIdentificacion,
+            caracterizacion: aspiranteCompleto.caracterizacion.caracterizacion,
             codigoEmpresa: codigoEmpresa
         });
 
@@ -125,17 +141,23 @@ const registrarAspirante = async (req, res) => {
 
 
 const actualizarAspirante = async (req, res) => {
-    const { numeroIdentificacion, nombre, apellido, telefono } = req.body
-    const aspirante = await Aspirantes.findOne({ numeroIdentificacion })
+    const { id } = req.params
+    const { numeroIdentificacion, nombre, apellido, tipoIdentificacion, telefono, email } = req.body
+
+    const aspirante = await Aspirantes.findById(id)
 
     if (!aspirante) {
         throw new HttpErrors('El aspirante no existe', 404)
-    } else {
-        aspirante.nombre = nombre || aspirante.nombre
-        aspirante.apellido = apellido || aspirante.apellido
-        aspirante.telefono = telefono || aspirante.telefono
-        await aspirante.save()
     }
+
+    aspirante.nombre = nombre ?? aspirante.nombre
+    aspirante.apellido = apellido ?? aspirante.apellido
+    aspirante.tipoIdentificacion = tipoIdentificacion ?? aspirante.tipoIdentificacion
+    aspirante.numeroIdentificacion = numeroIdentificacion ?? aspirante.numeroIdentificacion
+    aspirante.telefono = telefono ?? aspirante.telefono
+    aspirante.email = email ?? aspirante.email
+
+    await aspirante.save()
 
     res.json({ msg: 'Aspirante actualizado correctamente' })
 }
@@ -168,10 +190,21 @@ const obtenerTiposIdentificacion = async (req, res) => {
     }
 }
 
+const obtenerTiposCaracterizacion = async (req, res) => {
+    try {
+        const tipos = await Caracterizacion.find();
+        res.json(tipos);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: "Error al obtener los tipos de caracterización" });
+    }
+}
+
 export {
     registrarAspirante,
     actualizarAspirante,
     eliminarAspirante,
     contarAspirante,
-    obtenerTiposIdentificacion
+    obtenerTiposIdentificacion,
+    obtenerTiposCaracterizacion
 }
