@@ -52,34 +52,37 @@ const crearSolicitud = async (req, res) => {
 
         // --- Mover PDF de la carpeta del NIT a la carpeta final de la solicitud ---
 
-        // Obtener la empresa asociada a la solicitud
-        const empresa = await Empresa.findById(nuevaSolicitud[0].empresaSolicitante).session(session);
+        // Obtener la empresa asociada a la solicitud SOLO si es oferta cerrada
+        if (nuevaSolicitud[0].tipoOferta === "Cerrada") {
+            const empresa = await Empresa.findById(nuevaSolicitud[0].empresaSolicitante).session(session);
 
-        if (!empresa) {
-            throw new HttpErrors('Empresa no encontrada', 404);
+            if (!empresa) {
+                throw new HttpErrors('Empresa no encontrada', 404);
+            }
+
+            if (req.file) {
+                // Carpeta final de la solicitud
+                const rutaDestino = path.join(
+                    "uploads",
+                    `solicitud-${nuevaSolicitud[0]._id}`,
+                    "documents"
+                );
+
+                fs.mkdirSync(rutaDestino, { recursive: true });
+
+                const extension = path.extname(req.file.originalname);
+                const nombreArchivo = `carta-${nuevaSolicitud[0]._id}${extension}`;
+                const rutaFinal = path.join(rutaDestino, nombreArchivo);
+
+                // Mover archivo desde donde lo subió multer
+                fs.renameSync(req.file.path, rutaFinal);
+
+                // Actualizar la empresa con la ruta final del PDF
+                empresa.cartaSolicitud = rutaFinal;
+                await empresa.save({ session });
+            }
         }
 
-        if (req.file) {
-            // Carpeta final de la solicitud
-            const rutaDestino = path.join(
-                "uploads",
-                `solicitud-${nuevaSolicitud[0]._id}`,
-                "documents"
-            );
-
-            fs.mkdirSync(rutaDestino, { recursive: true });
-
-            const extension = path.extname(req.file.originalname);
-            const nombreArchivo = `carta-${nuevaSolicitud[0]._id}${extension}`;
-            const rutaFinal = path.join(rutaDestino, nombreArchivo);
-
-            // Mover archivo desde donde lo subió multer
-            fs.renameSync(req.file.path, rutaFinal);
-
-            // Actualizar la empresa con la ruta final del PDF
-            empresa.cartaSolicitud = rutaFinal;
-            await empresa.save({ session });
-        }
         await session.commitTransaction()
         session.endSession()
 
@@ -87,10 +90,6 @@ const crearSolicitud = async (req, res) => {
             msg: "Solicitud creada con éxito",
             solicitud: nuevaSolicitud[0]
         })
-        // return{
-        //     idSolicitud:
-        // }
-        // console.log(req.body._id)
 
     } catch (err) {
         await session.abortTransaction()
