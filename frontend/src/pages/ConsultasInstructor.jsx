@@ -4,8 +4,6 @@ import clienteAxios from '../api/axios';
 
 
 const ConsultasInstructor = (e) => {
-    console.log(12)
-
     useEffect(() => {
         const fetchConsultas = async () => {
             try {

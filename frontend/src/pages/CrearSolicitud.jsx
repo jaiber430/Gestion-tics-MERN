@@ -9,6 +9,7 @@ const CrearSolicitudContent = () => {
     const { tipo } = useParams()
 
     const onSubmit = async (e) => {
+        e.preventDefault()
         const success = await handleSubmit(e)
         if (success) {
             setTimeout(() => navigate('/instructor'), 2000)
