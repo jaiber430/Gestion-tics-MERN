@@ -15,6 +15,10 @@ import { formatearFechaInicio, formatearFechaFin } from '../helpers/formatearFec
 const iniciarSesion = async (req, res) => {
     const { numeroIdentificacion, password } = req.body
 
+    if ([numeroIdentificacion, password].includes('')) {
+        throw new HttpErrors('Todas las credenciales son requeridas', 400)
+    }
+
     const existeUsuario = await Usuarios.findOne({ numeroIdentificacion }).populate('rol')
 
     if (!existeUsuario) {
@@ -258,8 +262,8 @@ const coordinadores = async (req, res) => {
             verificado: true,
             contratoActivo: true
         })
-        .select("nombre apellido") // Solo campos que quieras mostrar
-        .populate("rol", "nombreRol"); // Popular el rol para mostrar el nombre
+            .select("nombre apellido") // Solo campos que quieras mostrar
+            .populate("rol", "nombreRol"); // Popular el rol para mostrar el nombre
 
         res.json(coordinadoresEncontrados);
     } catch (error) {
