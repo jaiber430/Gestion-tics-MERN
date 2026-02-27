@@ -197,16 +197,17 @@ const registrarUsuario = async (req, res) => {
         throw new HttpErrors('El correo no es valido', 400)
     }
 
+    if (!email.includes('@sena.edu.co')) {
+        throw new HttpErrors('El correo debe ser dominio sena', 400)
+    }
 
     if (password.length <= 7) {
         throw new HttpErrors('La contraseña debe tener minimo 8 caracteres', 400)
     }
 
-
     if (tipoContrato !== 'Contrato' && tipoContrato !== 'Planta') {
         throw new HttpErrors('Contrato no valido', 400)
     }
-
 
     //VALIDACIÓN SOLO SI ES CONTRATO
     if (tipoContrato === 'Contrato') {
@@ -233,12 +234,17 @@ const registrarUsuario = async (req, res) => {
 
         if (numeroContratoExiste) {
             throw new HttpErrors(
-                'EL numero de contrato ya existe',
+                'El numero de contrato ya existe',
                 409
             )
         }
     }
 
+    if (tipoContrato !== 'Contrato') {
+        delete req.body.numeroContrato
+        delete req.body.inicioContrato
+        delete req.body.finContrato
+    }
 
     await Usuarios.create(req.body)
 
