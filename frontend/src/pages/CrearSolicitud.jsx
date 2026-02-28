@@ -10,8 +10,6 @@ const CrearSolicitud = () => {
     return (
         <div>
             <Header />
-            <h1>Hola mi gente linda gente hermosa {params.tipo}</h1>
-
             {params.tipo === 'regular' ? <SolicitudRegular /> : <SolicitudCampesena />}
         </div>
     )
