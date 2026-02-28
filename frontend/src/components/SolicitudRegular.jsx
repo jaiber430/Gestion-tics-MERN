@@ -52,9 +52,8 @@ const SeccionHorarioRegular = () => {
                 <div className="relative">
                     <input type="text" readOnly
                         value={fechaFin || 'Se calcula al seleccionar los días'}
-                        className={`w-full px-3 py-2 border rounded-lg bg-gray-50 ${
-                            fechaFin ? 'border-amber-500 text-amber-700 font-medium' : 'border-gray-200 text-gray-400'
-                        }`} />
+                        className={`w-full px-3 py-2 border rounded-lg bg-gray-50 ${fechaFin ? 'border-amber-500 text-amber-700 font-medium' : 'border-gray-200 text-gray-400'
+                            }`} />
                     {fechaFin && (
                         <svg className="w-5 h-5 text-amber-500 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -107,21 +106,20 @@ const SolicitudRegularForm = () => {
                             Cancelar
                         </button>
                         <button type="submit" disabled={loading || !horasCompletadas}
-                            className={`px-8 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
-                                loading || !horasCompletadas
+                            className={`px-8 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${loading || !horasCompletadas
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                                     : toleranciaAlcanzada
                                         ? 'bg-yellow-500 text-white hover:bg-yellow-600 shadow-sm'
                                         : 'bg-amber-600 text-white hover:bg-amber-700 shadow-sm'
-                            }`}>
+                                }`}>
                             {loading ? (
                                 <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                 </svg>Procesando...</>
                             ) : !horasCompletadas ? 'Horas incompletas'
-                              : toleranciaAlcanzada ? '⚠ Aprobar con tolerancia'
-                              : '✓ Crear solicitud'}
+                                : toleranciaAlcanzada ? '⚠ Aprobar con tolerancia'
+                                    : '✓ Crear solicitud'}
                         </button>
                     </div>
                 </form>

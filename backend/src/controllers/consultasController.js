@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 import path from 'path'
+import fs from 'fs'
+import { exec } from 'child_process'
+import { promisify } from 'util'
 
-import Solicitud from "../models/Solicitud.js"     
+import Solicitud from "../models/Solicitud.js"
 import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import RevisionCoordinador from '../models/RevisionCoordinador.js'
 import Ficha from "../models/Ficha.js"
@@ -9,9 +12,26 @@ import Ficha from "../models/Ficha.js"
 import HttpErrors from '../helpers/httpErrors.js'
 import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
 
+const execAsync = promisify(exec)
 const consultarSolicitudInstructor = async (req, res) => {
     const verSolicitudesInstructor = await Solicitud
-        .find({ usuarioSolicitante: req.usuario.id })
+        .find({
+            usuarioSolicitante: req.usuario.id
+        })
+        .populate('empresaSolicitante')
+        .populate({
+            path: 'programaEspecial',
+            select: 'programaEspecial' // Solo el campo que necesitas
+        })
+        .populate({
+            path: 'programaFormacion',
+            select: 'nombrePrograma area',
+            populate: {
+                path: 'area',
+                select: 'area'
+            }
+        })
+        .select('-__v') // Excluye campos que no necesitas
 
     res.json(verSolicitudesInstructor)
 }
@@ -43,20 +63,18 @@ const verFichaCaracterizacion = async (req, res) => {
         _id: idSolicitud,
         usuarioSolicitante: req.usuario.id
     })
+    if (!solicitud) throw new HttpErrors('No existe la ficha de caracterización', 404)
 
-    if (!solicitud) {
-        throw new HttpErrors('No existe la ficha de caracterización', 404)
+    const carpeta = path.join(process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents')
+    const rutaDocx = path.join(carpeta, `ficha-${idSolicitud}.docx`)
+    const rutaPdf = path.join(carpeta, `ficha-${idSolicitud}.pdf`)
+
+    if (!fs.existsSync(rutaPdf)) {
+        await execAsync(`"C:\\Program Files\\LibreOffice\\program\\soffice.exe" --headless --convert-to pdf --outdir "${carpeta}" "${rutaDocx}"`)
     }
 
-    const nameFile = `solicitud-${idSolicitud}.docx`
-
-    const rutaFichaCaracterizacion = path.join(
-        process.cwd(), 'src', 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
-    )
-
-    res.sendFile(rutaFichaCaracterizacion)
+    res.sendFile(rutaPdf)
 }
-
 const consultarSolicitudCoordinador = async (req, res) => {
     const verSolicitudes = await UsuarioAsignado
         .find({ usuarioCoordinador: req.usuario.id })
@@ -137,26 +155,6 @@ const revisarSolicitud = async (req, res) => {
         session.endSession()
         throw error
     }
-}
-
-const verFichaCaracterizacionCoordinador = async (req, res) => {
-    const { idSolicitud } = req.params
-
-    const solicitud = await Solicitud.findOne({
-        _id: idSolicitud,
-    })
-
-    if (!solicitud) {
-        throw new HttpErrors('No existe la ficha de caracterización', 404)
-    }
-
-    const nameFile = `ficha-${idSolicitud}.docx`
-
-    const rutaFichaCaracterizacion = path.join(
-        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
-    )
-
-    res.sendFile(rutaFichaCaracterizacion)
 }
 
 const verFormatoMasivo = async (req, res) => {
@@ -484,7 +482,7 @@ const subirExcelSofiaPlus = async (req, res) => {
 //         const solicitud = await Solicitud.findById(idSolicitud)
 //             .populate({
 //                 path: 'programaFormacion',
-//                 select: 'nombrePrograma horas' 
+//                 select: 'nombrePrograma horas'
 //             });
 
 //         if (!solicitud) {
@@ -509,7 +507,6 @@ export {
     verFichaCaracterizacion,
     consultarSolicitudCoordinador,
     revisarSolicitud,
-    verFichaCaracterizacionCoordinador,
     verFormatoMasivo,
     verCartaSolicitud,
     verDocumentoAspirantes,

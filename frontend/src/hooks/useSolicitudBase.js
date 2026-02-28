@@ -7,16 +7,15 @@ const useSolicitudBase = () => {
     const navigate = useNavigate()
     const {
         tipo, mostrarAlerta, setLoading,
-        formData, setFormData,
+        formData,
         setAreas, setMunicipios, setProgramasEspeciales,
         setTiposEmpresa, setCargandoTiposEmpresa,
         fechasSeleccionadas,
         horasPorDia, setHorasPorDia,
-        horasTotales, setHorasTotales,
-        fechaFin, setFechaFin,
+        setHorasTotales,
+        setFechaFin,
         setHorasCompletadas, setToleranciaAlcanzada, setMensajeHorario,
         programaFormacionSeleccionado,
-        setProgramasFormacion, setProgramaFormacionSeleccionado,
     } = useSolicitud()
 
     // Calcular horas por día cuando cambian horaInicio/horaFin

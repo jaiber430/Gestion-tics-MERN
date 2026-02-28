@@ -9,7 +9,6 @@ import {
     // COORDINADOR
     consultarSolicitudCoordinador,
     revisarSolicitud,
-    verFichaCaracterizacionCoordinador,
     verFormatoMasivo,
     verCartaSolicitud,
     verDocumentoAspirantes,
@@ -53,7 +52,7 @@ router.put(
 router.get(
     '/consultas-instructor/:idSolicitud/ficha-caracterizacion',
     checkAuth,
-    permisosRol('INSTRUCTOR'),
+    permisosRol('INSTRUCTOR', 'COORDINADOR'),
     verFichaCaracterizacion
 )
 
@@ -81,13 +80,6 @@ router.get(
     checkAuth,
     permisosRol('COORDINADOR'),
     verCartaSolicitud
-)
-
-router.get(
-    '/revision-coordinador/:idSolicitud/ficha-caracterizacion',
-    checkAuth,
-    permisosRol('COORDINADOR'),
-    verFichaCaracterizacionCoordinador
 )
 
 router.get(
