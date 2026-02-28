@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useSolicitud } from '../../context/SolicitudContext'
 
-const DIAS   = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
 const SelectorCalendario = () => {
     const {
@@ -42,23 +42,23 @@ const SelectorCalendario = () => {
     }
 
     const horasRequeridas = programaFormacionSeleccionado.horas
-    const horasMaximas    = horasRequeridas + (horasPorDia || 0)
+    const horasMaximas = horasRequeridas + (horasPorDia || 0)
 
     const anio = vistaFecha.getFullYear()
-    const mes  = vistaFecha.getMonth()
+    const mes = vistaFecha.getMonth()
 
-    const primerDia    = new Date(anio, mes, 1).getDay()
-    const diasEnMes    = new Date(anio, mes + 1, 0).getDate()
+    const primerDia = new Date(anio, mes, 1).getDay()
+    const diasEnMes = new Date(anio, mes + 1, 0).getDate()
 
     const irMesAnterior = () => setVistaFecha(new Date(anio, mes - 1, 1))
     const irMesSiguiente = () => setVistaFecha(new Date(anio, mes + 1, 1))
 
     const fechaInicioDate = formData.fechaInicio
-        ? (() => { const [y,m,d] = formData.fechaInicio.split('-').map(Number); return new Date(y, m-1, d) })()
+        ? (() => { const [y, m, d] = formData.fechaInicio.split('-').map(Number); return new Date(y, m - 1, d) })()
         : null
 
     const toStr = (y, m, d) =>
-        `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+        `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
     const handleClickDia = (dia) => {
         if (!horasPorDia || horasPorDia <= 0) {
@@ -67,7 +67,7 @@ const SelectorCalendario = () => {
         }
 
         const fechaDate = new Date(anio, mes, dia)
-        const fechaStr  = toStr(anio, mes, dia)
+        const fechaStr = toStr(anio, mes, dia)
 
         // Validar rango
         if (fechaInicioDate && fechaDate < fechaInicioDate) return
@@ -93,14 +93,14 @@ const SelectorCalendario = () => {
 
     const getDiaEstado = (dia) => {
         const fechaDate = new Date(anio, mes, dia)
-        const fechaStr  = toStr(anio, mes, dia)
+        const fechaStr = toStr(anio, mes, dia)
 
         if (fechaInicioDate && fechaDate < fechaInicioDate) return 'bloqueado'
         if (maxFecha && fechaDate > maxFecha) return 'bloqueado'
 
         if (fechasSeleccionadas.includes(fechaStr)) {
-            const ordenadas = [...fechasSeleccionadas].sort((a,b) => new Date(a)-new Date(b))
-            const esUltima  = fechaStr === ordenadas[ordenadas.length - 1]
+            const ordenadas = [...fechasSeleccionadas].sort((a, b) => new Date(a) - new Date(b))
+            const esUltima = fechaStr === ordenadas[ordenadas.length - 1]
             if (esUltima && horasCompletadas) {
                 return toleranciaAlcanzada ? 'ultimo-tolerancia' : 'ultimo-completo'
             }
@@ -111,11 +111,11 @@ const SelectorCalendario = () => {
     }
 
     const estilosDia = {
-        bloqueado:        'text-gray-200 cursor-not-allowed',
-        disponible:       'text-gray-700 hover:bg-green-50 hover:text-green-700 cursor-pointer',
-        seleccionado:     'bg-blue-500 text-white rounded-full cursor-pointer',
-        'ultimo-completo':'bg-green-600 text-white rounded-full ring-2 ring-green-700 font-bold cursor-pointer',
-        'ultimo-tolerancia':'bg-yellow-500 text-white rounded-full ring-2 ring-yellow-600 font-bold cursor-pointer',
+        bloqueado: 'text-gray-200 cursor-not-allowed',
+        disponible: 'text-gray-700 hover:bg-green-50 hover:text-green-700 cursor-pointer',
+        seleccionado: 'bg-blue-500 text-white rounded-full cursor-pointer',
+        'ultimo-completo': 'bg-green-600 text-white rounded-full ring-2 ring-green-700 font-bold cursor-pointer',
+        'ultimo-tolerancia': 'bg-yellow-500 text-white rounded-full ring-2 ring-yellow-600 font-bold cursor-pointer',
     }
 
     // Celdas del calendario (blancos + días)
@@ -134,11 +134,10 @@ const SelectorCalendario = () => {
                     Selecciona los días de formación
                 </h3>
                 {horasCompletadas && (
-                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                        toleranciaAlcanzada
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${toleranciaAlcanzada
                             ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
                             : 'bg-green-100 text-green-700 border border-green-200'
-                    }`}>
+                        }`}>
                         {toleranciaAlcanzada ? '⚠ Con tolerancia' : '✓ Completado'}
                     </span>
                 )}
@@ -200,17 +199,16 @@ const SelectorCalendario = () => {
                         Días seleccionados ({fechasSeleccionadas.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {[...fechasSeleccionadas].sort((a,b) => new Date(a)-new Date(b))
+                        {[...fechasSeleccionadas].sort((a, b) => new Date(a) - new Date(b))
                             .map((fecha, index, arr) => {
-                                const [y,m,d] = fecha.split('-')
-                                const obj     = new Date(y, m-1, d)
+                                const [y, m, d] = fecha.split('-')
+                                const obj = new Date(y, m - 1, d)
                                 const esUltima = index === arr.length - 1
                                 return (
-                                    <span key={fecha} className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                        esUltima && horasCompletadas
+                                    <span key={fecha} className={`px-3 py-1 rounded-full text-xs font-medium ${esUltima && horasCompletadas
                                             ? toleranciaAlcanzada ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'
                                             : 'bg-blue-500 text-white'
-                                    }`}>
+                                        }`}>
                                         {obj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
                                         {esUltima && horasCompletadas && (toleranciaAlcanzada ? ' ⚠' : ' ✓')}
                                     </span>
@@ -221,11 +219,10 @@ const SelectorCalendario = () => {
             )}
 
             {horasCompletadas && (
-                <div className={`p-3 rounded-xl text-center text-sm font-semibold border ${
-                    toleranciaAlcanzada
+                <div className={`p-3 rounded-xl text-center text-sm font-semibold border ${toleranciaAlcanzada
                         ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
                         : 'bg-green-50 border-green-200 text-green-800'
-                }`}>
+                    }`}>
                     {toleranciaAlcanzada
                         ? '⚠ Tolerancia aplicada. No puedes agregar más días.'
                         : '✓ Horas completadas exactamente. No puedes agregar más días.'}
