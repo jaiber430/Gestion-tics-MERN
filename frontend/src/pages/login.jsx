@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
 import Alerta from '../components/Alerta'
-import clienteAxios from '../api/axios'
+
+import useAuth from '../hooks/useAuth'
 
 import logoSena from '../assets/logoSena.png'
 
 const Login = () => {
 
+    const { login } = useAuth()
     const navigation = useNavigate()
 
     const [numeroIdentificacion, setNumeroIdentificacion] = useState('')
@@ -16,14 +18,35 @@ const Login = () => {
 
     const handleSubmit = async e => {
         e.preventDefault()
+
         try {
-            const { data } = await clienteAxios.post('/usuarios/login', { numeroIdentificacion, password })
+
+            const { responseAuth } = await login({ numeroIdentificacion, password })
             setAlerta({
-                msg: data?.msg,
+                msg: responseAuth?.msg,
                 error: false,
             })
 
-            navigation('/dashboard')
+            switch (responseAuth.rol) {
+                case 'INSTRUCTOR':
+                    navigation('/instructor')
+                    break;
+                case 'COORDINADOR':
+                    navigation('/dashboard')
+                    break;
+                case 'FUNCIONARIO':
+                    navigation('/dashboard')
+                    break;
+                case 'ADMINISTRADOR':
+                    navigation('/dashboard')
+                    break;
+                case 'CURRICULAR':
+                    navigation('/dashboard')
+                    break;
+                default:
+                    navigation('/')
+                    break;
+            }
 
         } catch (error) {
             setAlerta({

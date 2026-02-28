@@ -7,7 +7,9 @@ import {
     verUsuarios,
     verificarUsuarios,
     activarContrato,
-    coordinadores
+    coordinadores,
+    logOut,
+    userLoguaeado,
 } from '../controllers/usuarioController.js'
 
 import checkAuth from '../middlewares/checkAuth.js'
@@ -22,6 +24,10 @@ router.get('/verCoordinadores', coordinadores)
 router.post('/registrar', registrarUsuario)
 
 router.put('/recuperar-password', recuperarPassword)
+
+router.post("/logout", logOut)
+
+router.get('/perfil', checkAuth, userLoguaeado)
 
 router.get(
     '/ver-usuarios',

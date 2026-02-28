@@ -44,7 +44,7 @@ const iniciarSesion = async (req, res) => {
     res.cookie('token', token, {
         // No poder acceder al token usando JS
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         sameSite: 'lax',
         // 30d
         maxAge: 30 * 24 * 60 * 60 * 1000
@@ -52,7 +52,6 @@ const iniciarSesion = async (req, res) => {
 
 
     const usuarioLogueado = {
-        id: existeUsuario._id,
         nombre: existeUsuario.nombre,
         apellido: existeUsuario.apellido,
         rol: existeUsuario.rol.nombreRol,
@@ -60,7 +59,7 @@ const iniciarSesion = async (req, res) => {
         email: existeUsuario.email
     }
 
-    res.send(usuarioLogueado)
+    res.json(usuarioLogueado)
 }
 
 const registrarUsuario = async (req, res) => {
@@ -364,6 +363,31 @@ const activarContrato = async (req, res) => {
     res.json({ msg: 'Contrato activado correctamente' })
 }
 
+const logOut = async (req, res) => {
+    res.clearCookie("token")
+    res.json({ msg: "Sesión cerrada satisfactoriamente" })
+}
+
+const userLoguaeado = async (req, res) => {
+
+    const existeUsuario = await Usuarios.findById(req.usuario.id).populate('rol').select('-password')
+
+    if (!existeUsuario) {
+        throw new HttpErrors('Usuario no existe', 404)
+    }
+
+    const usuarioLogueado = {
+        nombre: existeUsuario.nombre,
+        apellido: existeUsuario.apellido,
+        rol: existeUsuario.rol.nombreRol,
+        numeroIdentificacion: existeUsuario.numeroIdentificacion,
+        email: existeUsuario.email
+    }
+
+    res.json(usuarioLogueado)
+
+}
+
 export {
     iniciarSesion,
     registrarUsuario,
@@ -372,4 +396,6 @@ export {
     verificarUsuarios,
     activarContrato,
     coordinadores,
+    logOut,
+    userLoguaeado,
 }
