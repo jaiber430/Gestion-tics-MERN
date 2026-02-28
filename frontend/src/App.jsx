@@ -8,8 +8,11 @@ import Preinscripcion from './pages/Preinscripcion'
 import ProtectedRoute from './components/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
 import Instructor from './pages/Instructor'
-import Coordinador from './pages/Coordinador'
+import CrearSolicitud from './pages/CrearSolicitud'
+import ConsultasInstructor from './pages/ConsultasInstructor'
+import GestionAspirantes from './pages/GestionAspirantes'
 
+import Coordinador from './pages/Coordinador'
 function App() {
   return (
     <AuthProvider>
@@ -20,9 +23,14 @@ function App() {
         <Route path="/preinscripcion-aspirante/:id" element={<Preinscripcion />} />
 
         <Route path='/dashboard' element={<Dashboard />}></Route>
+
         <Route element={<ProtectedRoute />}>
           <Route path='/instructor' element={<Instructor />}></Route>
+          <Route path='/instructor/crear-solicitud/:tipo' element={<CrearSolicitud />}></Route>
+          <Route path='/instructor/consultas-instructor' element={<ConsultasInstructor />}></Route>
+          <Route path='/instructor/gestion-aspirantes' element={<GestionAspirantes />}></Route>
         </Route>
+
         <Route element={<ProtectedRoute />}>
           <Route path='/coordinador' element={<Coordinador />}></Route>
         </Route>

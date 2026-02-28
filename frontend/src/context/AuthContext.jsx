@@ -1,9 +1,13 @@
 import { createContext, useState, useEffect } from "react";
 import clienteAxios from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
+
+    const navigate = useNavigate()
+
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
 
@@ -37,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, navigate }}>
             {children}
         </AuthContext.Provider>
     )
