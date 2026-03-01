@@ -11,6 +11,7 @@ import { actualizarExcelMasivo } from "../services/excelServices.js";
 import Empresa from '../models/Empresa.js';
 import Caracterizacion from '../models/Caracterizacion.js';
 import { combinarPdfs } from '../utils/uploadPDF.js'
+import { emailEliminado } from '../helpers/enviarEmailEliminado.js';
 
 const registrarAspirante = async (req, res) => {
 
@@ -40,11 +41,13 @@ const registrarAspirante = async (req, res) => {
     }
 
     // Verificar que la solicitud existe
-    const comprobarSolicitud = await Solicitud.findById(id)
+    const comprobarSolicitud = await Solicitud.findById(id).populate('programaFormacion')
     if (!comprobarSolicitud) {
         limpiarPDF()
         throw new HttpErrors('La solicitud no existe', 404)
     }
+
+    console.log(comprobarSolicitud.programaFormacion.nombrePrograma)
 
     // Validar que el link esté activo
     if (!comprobarSolicitud.linkPreinscripcion) {
@@ -287,6 +290,8 @@ const actualizarAspirante = async (req, res) => {
 const eliminarAspirante = async (req, res) => {
     const { id } = req.params
 
+    const { motivo } = req.body
+
     // Verificar que el aspirante existe
     const aspirante = await Aspirantes.findById(id)
     if (!aspirante) {
@@ -360,6 +365,19 @@ const eliminarAspirante = async (req, res) => {
 
     // Reactivar el link si había sido desactivado por cupo lleno
     await Solicitud.findByIdAndUpdate(solicitudId, { linkPreinscripcion: true })
+
+    const correoInstructor = await Solicitud.findById(solicitudId).populate('usuarioSolicitante').populate('programaFormacion')
+
+    await emailEliminado({
+        email: aspirante.email,
+        nombre: aspirante.nombre,
+        apellido: aspirante.apellido,
+        motivo,
+        emailInstructor: correoInstructor.usuarioSolicitante.email,
+        nombreInstructor: correoInstructor.usuarioSolicitante.nombre,
+        apellidoInstructor: correoInstructor.usuarioSolicitante.apellido,
+        programaFormacion: correoInstructor.programaFormacion.nombrePrograma
+    })
 
     res.json({ msg: 'Aspirante eliminado correctamente' })
 }

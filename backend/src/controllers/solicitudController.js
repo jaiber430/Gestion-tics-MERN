@@ -7,6 +7,7 @@ import solicitudAbiertaService from "../services/solicitudAbiertaservices.js"
 
 import HttpErrors from "../helpers/httpErrors.js"
 import Empresa from "../models/Empresa.js"
+import Solicitud from "../models/Solicitud.js";
 
 const tipoSolicitud = async (req, res) => {
     const { solicitud } = req.params
@@ -98,6 +99,16 @@ const crearSolicitud = async (req, res) => {
     }
 }
 
+const infoSolicitud = async (req, res) => {
+    const { id } = req.params
+
+    const dataSolicitud = await Solicitud.findById(id)
+        .populate('usuarioSolicitante')
+        .populate('programaFormacion')
+
+    res.json(dataSolicitud)
+}
+
 // TODO: Prubas subir datos en caso de error
 const crearEmpresa = async (req, res) => {
     await Caracterizacion.create({
@@ -117,6 +128,7 @@ const crearEmpresa = async (req, res) => {
 export {
     tipoSolicitud,
     crearSolicitud,
+    infoSolicitud,
     // eliminar despues
     crearEmpresa
 }

@@ -9,7 +9,7 @@ import ProgramasEspecialesCampesena from '../models/ProgramasEspecialesCampesena
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarJWT from '../helpers/generarJWT.js'
-import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
+// import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
 import { formatearFechaInicio, formatearFechaFin } from '../helpers/formatearFechas.js'
 
 const iniciarSesion = async (req, res) => {
@@ -280,23 +280,23 @@ const coordinadores = async (req, res) => {
 const recuperarPassword = async (req, res) => {
     const { email } = req.body
 
-    const existeEmail = await Usuarios.findOne({ email })
-    if (!existeEmail) {
-        throw new HttpErrors('El correo no ha sido encontrado', 404)
-    }
+    // const existeEmail = await Usuarios.findOne({ email })
+    // if (!existeEmail) {
+    //     throw new HttpErrors('El correo no ha sido encontrado', 404)
+    // }
 
-    const generarPassword = uuidv4()
-    const passwordActualizada = generarPassword.slice(0, 8)
+    // const generarPassword = uuidv4()
+    // const passwordActualizada = generarPassword.slice(0, 8)
 
-    emailRecuperacion({
-        email: existeEmail.email,
-        passwordActualizada: passwordActualizada
-    })
+    // emailRecuperacion({
+    //     email: existeEmail.email,
+    //     passwordActualizada: passwordActualizada
+    // })
 
-    existeEmail.password = passwordActualizada
+    // existeEmail.password = passwordActualizada
 
-    await existeEmail.save()
-    res.json({ msg: 'Se ha enviado a su correo la nueva contraseña' })
+    // await existeEmail.save()
+    // res.json({ msg: 'Se ha enviado a su correo la nueva contraseña' })
 }
 
 const verUsuarios = async (req, res) => {

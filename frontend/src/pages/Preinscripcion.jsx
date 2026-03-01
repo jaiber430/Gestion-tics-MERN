@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 import clienteAxios from '../api/axios'
 import Alerta from '../components/Alerta'
+import { formatearFechaFin, formatearFechaInicio } from "../helpers/formatearFechas"
 
 const campoBase = "w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/70 focus:bg-white focus:border-green-400 focus:ring-4 focus:ring-green-100 outline-none transition-all duration-300"
 
@@ -19,11 +20,11 @@ const Campo = ({ label, icono, children }) => (
 
 const ICONOS = {
     persona: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
-    doc:     "M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2",
-    tel:     "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z",
-    email:   "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
-    caract:  "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
-    pdf:     "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+    doc: "M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2",
+    tel: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z",
+    email: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+    caract: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
+    pdf: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
 }
 
 const FORM_INICIAL = {
@@ -34,11 +35,13 @@ const FORM_INICIAL = {
 
 const Preinscripcion = () => {
     const { id } = useParams()
-    const [tiposDoc, setTiposDoc]                         = useState([])
+    const [tiposDoc, setTiposDoc] = useState([])
     const [tiposCaracterizacion, setTiposCaracterizacion] = useState([])
-    const [cargando, setCargando]                         = useState(false)
-    const [alerta, setAlerta]                             = useState({})
-    const [form, setForm]                                 = useState(FORM_INICIAL)
+    const [dataSolicitud, setDataSolicitud] = useState([])
+    const [cargando, setCargando] = useState(false)
+    const [alerta, setAlerta] = useState({})
+    const [form, setForm] = useState(FORM_INICIAL)
+    const [modalInfo, setModalInfo] = useState(false)
 
     const mostrarAlerta = (msg, error = false) => {
         setAlerta({ msg, error })
@@ -48,13 +51,14 @@ const Preinscripcion = () => {
     useEffect(() => {
         const cargarCatalogos = async () => {
             try {
-                const [tiposRes, caractRes] = await Promise.all([
+                const [tiposRes, caractRes, solicitudRes] = await Promise.all([
                     clienteAxios.get('/aspirantes'),
-                    clienteAxios.get('/aspirantes/caracterizacion')
+                    clienteAxios.get('/aspirantes/caracterizacion'),
+                    clienteAxios.get(`/solicitudes/info-solicitud/${id}`)
                 ])
-                console.log(caractRes)
                 setTiposDoc(tiposRes.data)
                 setTiposCaracterizacion(caractRes.data)
+                setDataSolicitud(solicitudRes.data)
             } catch {
                 mostrarAlerta("Error al cargar los datos del formulario", true)
             }
@@ -115,6 +119,102 @@ const Preinscripcion = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-6 mt-4">
 
+                        {/* Botón para abrir modal */}
+                        <button
+                            type="button"
+                            onClick={() => setModalInfo(true)}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-green-200 text-green-700 rounded-xl hover:bg-green-50 transition-colors duration-300 text-sm font-medium"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Conocer detalles del curso
+                        </button>
+
+                        {/* Modal */}
+                        {modalInfo && (
+                            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-white/50 overflow-hidden">
+
+                                    {/* Header */}
+                                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <h3 className="text-white font-semibold">Detalles del curso</h3>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setModalInfo(false)}
+                                            className="text-white/80 hover:text-white transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {/* Contenido */}
+                                    <div className="p-6 space-y-4">
+
+                                        {/* Programa */}
+                                        <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                                            <p className="text-xs text-green-600 uppercase tracking-wider font-medium mb-1">Programa</p>
+                                            <p className="text-slate-800 font-bold text-lg">{dataSolicitud.programaFormacion.nombrePrograma}</p>
+                                            <p className="text-slate-500 text-sm mt-1">{dataSolicitud.programaFormacion.horas} horas — {dataSolicitud.programaFormacion.modalidad}</p>
+                                        </div>
+
+                                        {/* Grid de datos */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-slate-50 rounded-xl p-3">
+                                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Fecha inicio</p>
+                                                <p className="text-slate-700 font-medium text-sm">{formatearFechaInicio(dataSolicitud.fechaInicio)}</p>
+                                            </div>
+                                            <div className="bg-slate-50 rounded-xl p-3">
+                                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Fecha fin</p>
+                                                <p className="text-slate-700 font-medium text-sm">{formatearFechaFin(dataSolicitud.fechaFin)}</p>
+                                            </div>
+                                            <div className="bg-slate-50 rounded-xl p-3">
+                                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Hora inicio</p>
+                                                <p className="text-slate-700 font-medium text-sm">{dataSolicitud.horaInicio}</p>
+                                            </div>
+                                            <div className="bg-slate-50 rounded-xl p-3">
+                                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Hora fin</p>
+                                                <p className="text-slate-700 font-medium text-sm">{dataSolicitud.horaFin}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Dirección */}
+                                        <div className="bg-slate-50 rounded-xl p-3">
+                                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Dirección</p>
+                                            <p className="text-slate-700 font-medium text-sm">{dataSolicitud.direccionFormacion}</p>
+                                        </div>
+
+                                        {/* Instructor */}
+                                        <div className="bg-slate-50 rounded-xl p-3">
+                                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Instructor</p>
+                                            <p className="text-slate-700 font-medium text-sm">
+                                                {dataSolicitud.usuarioSolicitante.nombre} {dataSolicitud.usuarioSolicitante.apellido}
+                                            </p>
+                                            <p className="text-slate-400 text-xs mt-0.5"><strong>Email de contacto: </strong>{dataSolicitud.usuarioSolicitante.email}</p>
+                                        </div>
+
+                                    </div>
+
+                                    {/* Footer */}
+                                    <div className="px-6 pb-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => setModalInfo(false)}
+                                            className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-green-200 text-sm"
+                                        >
+                                            Cerrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {/* Nombre y Apellido */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Campo label="Nombre" icono={ICONOS.persona}>
