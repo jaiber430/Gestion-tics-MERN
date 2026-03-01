@@ -110,3 +110,6 @@ export const combinarDespuesDeSubir = async (req, res, next) => {
 }
 
 export default upload
+export {
+    combinarPdfs
+}

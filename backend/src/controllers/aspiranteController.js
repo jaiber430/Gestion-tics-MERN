@@ -10,7 +10,7 @@ import Solicitud from '../models/Solicitud.js'
 import { actualizarExcelMasivo } from "../services/excelServices.js";
 import Empresa from '../models/Empresa.js';
 import Caracterizacion from '../models/Caracterizacion.js';
-
+import { combinarPdfs } from '../utils/uploadPDF.js'
 
 const registrarAspirante = async (req, res) => {
 
@@ -217,17 +217,17 @@ const actualizarAspirante = async (req, res) => {
         if (fs.existsSync(rutaAnterior)) {
             fs.renameSync(rutaAnterior, rutaNueva)
             aspirante.archivo = rutaNueva
-            console.log(`PDF renombrado: ${numeroAnterior}.pdf → ${numeroNuevo}.pdf`)
         }
 
-        // Eliminar el combinado para que se regenere con el nuevo nombre
+        // Eliminar el combinado anterior
         const rutaCombinado = path.join(carpetaAspirantes, 'combinado.pdf')
         if (fs.existsSync(rutaCombinado)) {
             fs.unlinkSync(rutaCombinado)
-            console.log('PDF combinado eliminado para regenerar')
         }
-    }
 
+        // Regenerar el combinado con el nuevo nombre
+        await combinarPdfs(carpetaAspirantes)
+    }
     // ===============================
     // 2. ACTUALIZAR CAMPOS
     // ===============================
