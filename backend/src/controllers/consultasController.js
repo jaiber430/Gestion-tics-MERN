@@ -13,6 +13,7 @@ import Aspirantes from '../models/Aspirantes.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
+import Usuarios from '../models/Usuarios.js'
 
 const execAsync = promisify(exec)
 const consultarSolicitudInstructor = async (req, res) => {
@@ -77,32 +78,25 @@ const verFichaCaracterizacion = async (req, res) => {
 
     res.sendFile(rutaPdf)
 }
+
 const consultarSolicitudCoordinador = async (req, res) => {
-    const verSolicitudes = await UsuarioAsignado
-        .find({ usuarioCoordinador: req.usuario.id })
-        .populate({
-            path: 'usuarioInstructor',
-            select: 'nombre apellido'
-        })
-        .lean()
+    try {
+        const usuarios = await Usuarios.find({ coordinadorAsignado: req.usuario.id })
+        console.log(usuarios)
 
-    const verUsuarios = verSolicitudes
-        .filter(usuarios => usuarios.usuarioInstructor)
-        .map(usuario => usuario.usuarioInstructor._id)
+        const dataInstructor = usuarios.map(u => u._id)
+        // console.log(dataInstructor)
 
-    const solicitud = await Solicitud
-        .find({
-            usuarioSolicitante: { $in: verUsuarios },
-            revisado: true
+        const solicitudes = await Solicitud.find({
+            usuarioSolicitante: { $in: dataInstructor },
+            revisado: true,
         })
-        .select('tipoSolicitud')
-        .populate({
-            path: 'usuarioSolicitante',
-            select: 'nombre apellido'
-        })
-        .populate('tipoOferta')
+        console.log(solicitudes)
 
-    res.json(solicitud)
+        res.json(solicitudes)
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 const verPdfAspirantes = async (req, res) => {

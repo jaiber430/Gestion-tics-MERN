@@ -12,6 +12,7 @@ import Instructor from './pages/Instructor'
 import CrearSolicitud from './pages/CrearSolicitud'
 import ConsultasInstructor from './pages/ConsultasInstructor'
 import GestionAspirantes from './pages/GestionAspirantes'
+import ReportesCoordinador from './pages/ReportesCoordinador'
 
 import Coordinador from './pages/Coordinador'
 function App() {
@@ -35,6 +36,7 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path='/coordinador' element={<Coordinador />}></Route>
+          <Route path='/coordinador/reportes' element={<ReportesCoordinador />}></Route>
         </Route>
 
       </Routes>
