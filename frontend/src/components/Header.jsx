@@ -11,7 +11,6 @@ const Header = () => {
     if (!user) return null
 
     const params = useParams()
-    console.log(params)
 
     const [openMenu, setOpenMenu] = useState(false)
 
@@ -154,6 +153,18 @@ const Header = () => {
                             >
                                 Gestionar Aspirantes
                             </NavLink>
+
+                            {params.id ? (<NavLink
+                                className={({ isActive }) =>
+                                    `h-full flex items-center px-1 border-b-2 transition-colors
+                                        ${isActive
+                                        ? "text-green-600 border-green-600 font-medium"
+                                        : "text-slate-500 border-transparent hover:text-slate-700"
+                                    }`
+                                }
+                            >
+                                Detalles Aspirantes
+                            </NavLink>) : ''}
 
                         </div>
                     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import clienteAxios from '../api/axios'
 import Alerta from '../components/Alerta'
+import { useNavigate } from 'react-router-dom'
 
 const GestionAspirantes = () => {
 
@@ -9,17 +10,20 @@ const GestionAspirantes = () => {
     const [porcentajes, setPorcentajes] = useState({})
     const [alerta, setAlerta] = useState({})
 
+    const navigate = useNavigate()
+
     useEffect(() => {
         const verOfertas = async () => {
             try {
                 const { data } = await clienteAxios.get('/consultas/consultas-instructor')
+                console.log(data)
                 setDataOferta(data)
 
                 // Por cada oferta, pedir sus preinscritos
                 const porcentajesCalc = {}
                 await Promise.all(data.map(async (oferta) => {
                     try {
-                        const { data } = await clienteAxios.get(`/aspirantes/aspirantes/preinscritos/${oferta._id}`)
+                        const { data } = await clienteAxios.get(`/aspirantes/preinscritos/${oferta._id}`)
                         console.log(data)
                         const cupoTotal = oferta.cupo || 1
                         const total = data || 0
@@ -45,17 +49,22 @@ const GestionAspirantes = () => {
         return 'bg-green-500'
     }
 
-    const copiarAlPortapapeles = (id) => {
-        const link = `${window.location.origin}/preinscripcion-aspirante/${id}`
-        navigator.clipboard.writeText(link)
-        setAlerta({
-            msg: 'Link copiado correctamente',
-            error: false
-        })
+    const copiarAlPortapapeles = (id, linkPre) => {
+        if (linkPre) {
+            const link = `${window.location.origin}/preinscripcion-aspirante/${id}`
+            navigator.clipboard.writeText(link)
+            setAlerta({
+                msg: 'Link copiado correctamente',
+                error: false
+            })
 
-        setTimeout(() => {
-            setAlerta({})
-        }, 3000)
+            setTimeout(() => {
+                setAlerta({})
+            }, 3000)
+        } else {
+            navigate(`/instructor/ver-detalles-aspirantes/${id}`)
+        }
+
     }
 
     return (
@@ -172,10 +181,13 @@ const GestionAspirantes = () => {
                                             {/* Botón copiar */}
                                             <div>
                                                 <button
-                                                    onClick={() => copiarAlPortapapeles(oferta._id)}
-                                                    className="px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg shadow-md transition"
+                                                    onClick={() => copiarAlPortapapeles(oferta._id, oferta.linkPreinscripcion)}
+                                                    className={`px-5 py-2 text-white text-sm font-medium rounded-lg shadow-md transition ${oferta.linkPreinscripcion
+                                                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                                                        : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                                                        }`}
                                                 >
-                                                    Copiar link
+                                                    {oferta.linkPreinscripcion ? 'Copiar link' : 'Ver detalles'}
                                                 </button>
                                             </div>
 

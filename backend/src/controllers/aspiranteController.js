@@ -14,7 +14,8 @@ const registrarAspirante = async (req, res) => {
 
     const { id } = req.params
 
-    const { nombre,
+    const {
+        nombre,
         apellido,
         tipoIdentificacion,
         numeroIdentificacion,
@@ -23,71 +24,107 @@ const registrarAspirante = async (req, res) => {
         email
     } = req.body
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new HttpErrors('El ID de la solicitud no es válido', 400);
+    // Helper para limpiar el PDF si algo falla
+    const limpiarPDF = () => {
+        if (req.file?.path && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path)
+        }
     }
 
+    // Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        limpiarPDF()
+        throw new HttpErrors('El ID de la solicitud no es válido', 400)
+    }
+
+    // Verificar que la solicitud existe
     const comprobarSolicitud = await Solicitud.findById(id)
     if (!comprobarSolicitud) {
+        limpiarPDF()
         throw new HttpErrors('La solicitud no existe', 404)
+    }
+
+    // Validar que el link esté activo
+    if (!comprobarSolicitud.linkPreinscripcion) {
+        limpiarPDF()
+        throw new HttpErrors('El link de preinscripción ya no está disponible', 400)
     }
 
     // Validaciones de campos requeridos
     if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !tipoCaracterizacion || !telefono || !email) {
+        limpiarPDF()
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
 
+    // Verificar si el cupo ya está lleno ANTES de guardar
     const contarAspirantes = await Aspirantes.countDocuments({ solicitud: comprobarSolicitud._id })
-    if (String(contarAspirantes) === String(comprobarSolicitud.cupo)) {
+    if (contarAspirantes >= comprobarSolicitud.cupo) {
+        limpiarPDF()
         throw new HttpErrors('La solicitud ya tiene el máximo de aspirantes permitidos', 400)
     }
-
 
     // Validar tipo de identificación
     const comprobarTipoIdentificacion = await TiposIdentificacion.findById(tipoIdentificacion)
     if (!comprobarTipoIdentificacion) {
+        limpiarPDF()
         throw new HttpErrors('El tipo de identificación no existe', 404)
     }
 
-    // Validar duplicados
-    const comprobarNumeroIdentificacion = await Aspirantes.findOne({ numeroIdentificacion })
+    // Validar duplicado — número de identificación en esta solicitud
+    const comprobarNumeroIdentificacion = await Aspirantes.findOne({
+        numeroIdentificacion,
+        solicitud: comprobarSolicitud._id
+    })
     if (comprobarNumeroIdentificacion) {
-        throw new HttpErrors('El numero de identificación ya existe', 400)
+        limpiarPDF()
+        throw new HttpErrors('El numero de identificación ya está registrado en esta solicitud', 400)
     }
 
+    // Validar que la caracterización existe
     const comprobarCaracterizacion = await Caracterizacion.findById(tipoCaracterizacion)
     if (!comprobarCaracterizacion) {
+        limpiarPDF()
         throw new HttpErrors('La caracterización no existe', 404)
     }
 
-    const comprobarTelefono = await Aspirantes.findOne({ telefono })
+    // Validar duplicado — teléfono en esta solicitud
+    const comprobarTelefono = await Aspirantes.findOne({
+        telefono,
+        solicitud: comprobarSolicitud._id
+    })
     if (comprobarTelefono) {
-        throw new HttpErrors('El numero de telefono ya existe', 400)
+        limpiarPDF()
+        throw new HttpErrors('El numero de telefono ya está registrado en esta solicitud', 400)
     }
 
-    const comprobarEmail = await Aspirantes.findOne({ email })
+    // Validar duplicado — email en esta solicitud
+    const comprobarEmail = await Aspirantes.findOne({
+        email,
+        solicitud: comprobarSolicitud._id
+    })
     if (comprobarEmail) {
-        throw new HttpErrors('El correo ya existe', 400)
+        limpiarPDF()
+        throw new HttpErrors('El correo ya está registrado en esta solicitud', 400)
     }
 
     // Validar formato de email
     const caracteresEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!caracteresEmail.test(email)) {
+        limpiarPDF()
         throw new HttpErrors('El correo no es valido', 400)
     }
 
+    // Validar que se haya subido el PDF
+    if (!req.file) {
+        throw new HttpErrors('Debe subir el documento PDF', 400)
+    }
 
     try {
 
-        if (!req.file) {
-            throw new HttpErrors('Debe subir el documento PDF', 400);
-        }
+        // Multer ya guardó el archivo, usamos su ruta
+        const rutaFinalPDF = req.file.path
 
-        // Multer ya guardó el archivo, solo usamos su ruta
-        const rutaFinalPDF = req.file.path;
-
-
-        // guardar en BD
+        // Guardar aspirante en BD
         const nuevoAspirante = new Aspirantes({
             nombre,
             apellido,
@@ -98,45 +135,50 @@ const registrarAspirante = async (req, res) => {
             telefono,
             email,
             solicitud: comprobarSolicitud._id
-        });
+        })
 
-        await nuevoAspirante.save();
+        await nuevoAspirante.save()
 
-        // UNA sola consulta trae TODO
+        // Una sola consulta con populate para obtener datos completos
         const aspiranteCompleto = await Aspirantes.findById(nuevoAspirante._id)
-            .populate("tipoIdentificacion")
-            .populate("caracterizacion");
-
-
+            .populate('tipoIdentificacion')
+            .populate('caracterizacion')
 
         // Traer empresa si existe en la solicitud
-        let codigoEmpresa = "";
-
+        let codigoEmpresa = ''
         if (comprobarSolicitud.empresaSolicitante) {
-            const empresa = await Empresa.findById(comprobarSolicitud.empresaSolicitante);
-            codigoEmpresa = empresa?.codigoEmpresa || "";
+            const empresa = await Empresa.findById(comprobarSolicitud.empresaSolicitante)
+            codigoEmpresa = empresa?.codigoEmpresa || ''
         }
 
-
+        // Actualizar excel con el nuevo aspirante
         await actualizarExcelMasivo({
             solicitudId: comprobarSolicitud._id,
             tipoIdentificacion: aspiranteCompleto.tipoIdentificacion.nombreTipoIdentificacion,
             numeroIdentificacion: aspiranteCompleto.numeroIdentificacion,
             caracterizacion: aspiranteCompleto.caracterizacion.caracterizacion,
-            codigoEmpresa: codigoEmpresa
-        });
+            codigoEmpresa
+        })
 
+        // Verificar si con este aspirante se llenó el cupo
+        const conteoFinal = await Aspirantes.countDocuments({ solicitud: comprobarSolicitud._id })
+        if (conteoFinal >= comprobarSolicitud.cupo) {
+            // Desactivar link — ya no se pueden inscribir más
+            comprobarSolicitud.linkPreinscripcion = false
+            await comprobarSolicitud.save()
+        }
 
-        res.json(nuevoAspirante);
-
+        res.json({ msg: 'Te haz preinscrito satisfactoriamente' })
 
     } catch (error) {
+        console.log(error)
 
+        // Si algo falló después de que multer guardó el PDF, eliminarlo
+        limpiarPDF()
 
-        console.log(error);
-        throw new HttpErrors('Error al guardar el aspirante', 500);
+        if (error instanceof HttpErrors) throw error
+        throw new HttpErrors('Error al guardar el aspirante', 500)
     }
-
 }
 
 
@@ -163,12 +205,12 @@ const actualizarAspirante = async (req, res) => {
 }
 
 const eliminarAspirante = async (req, res) => {
-    const { numeroIdentificacion } = req.body
-    const aspirante = await Aspirantes.findOne({ numeroIdentificacion })
+    const { id } = req.params
+    const aspirante = await Aspirantes.findById(id)
     if (!aspirante) {
         throw new HttpErrors('El aspirante no existe', 404)
     }
-    await Aspirantes.deleteOne({ numeroIdentificacion })
+    await Aspirantes.findByIdAndDelete(id) 
     res.json({ mensaje: 'Aspirante eliminado correctamente' })
 }
 
@@ -205,11 +247,27 @@ const preinscritos = async (req, res) => {
 
     const existeSolicitud = await Solicitud.findById(id)
 
-    if(!existeSolicitud){
+    if (!existeSolicitud) {
         throw new HttpErrors('Solicitud no encontarda', 404)
     }
 
     const verAspirantesPreinscritos = await Aspirantes.countDocuments({ solicitud: id })
+    // console.log(verAspirantesPreinscritos)
+
+    res.json(verAspirantesPreinscritos)
+
+}
+
+const preinscritosAspirantes = async (req, res) => {
+    const { id } = req.params
+
+    const existeSolicitud = await Solicitud.findById(id)
+
+    if (!existeSolicitud) {
+        throw new HttpErrors('Solicitud no encontarda', 404)
+    }
+
+    const verAspirantesPreinscritos = await Aspirantes.find({ solicitud: id }).populate('tipoIdentificacion')
     // console.log(verAspirantesPreinscritos)
 
     res.json(verAspirantesPreinscritos)
@@ -223,5 +281,6 @@ export {
     preinscritos,
     contarAspirante,
     obtenerTiposIdentificacion,
-    obtenerTiposCaracterizacion
+    obtenerTiposCaracterizacion,
+    preinscritosAspirantes
 }

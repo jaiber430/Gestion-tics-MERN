@@ -8,6 +8,7 @@ import {
     preinscritos,
     actualizarAspirante,
     eliminarAspirante,
+    preinscritosAspirantes
 } from '../controllers/aspiranteController.js'
 
 const router = Router()
@@ -15,9 +16,10 @@ const router = Router()
 
 router.get('/', obtenerTiposIdentificacion)
 router.get('/caracterizacion', obtenerTiposCaracterizacion)
-router.get('/aspirantes/preinscritos/:id', preinscritos)
+router.get('/preinscritos/:id', preinscritos)
+router.get('/preinscritos-aspirantes/:id', preinscritosAspirantes)
 router.put('/actualizar/:id', actualizarAspirante)
 router.delete('/eliminar/:id', eliminarAspirante)
-router.post('/preincripcion-aspirantes/:id', upload.single('pdf'), combinarDespuesDeSubir, registrarAspirante)
+router.put('/preincripcion-aspirantes/:id', upload.single('pdf'), combinarDespuesDeSubir, registrarAspirante)
 
 export default router

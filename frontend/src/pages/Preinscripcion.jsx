@@ -79,7 +79,7 @@ const Preinscripcion = () => {
         })
 
         try {
-            const { data } = await clienteAxios.post(`/aspirantes/preincripcion-aspirantes/${id}`, formData)
+            const { data } = await clienteAxios.put(`/aspirantes/preincripcion-aspirantes/${id}`, formData)
             mostrarAlerta(data?.msg || "¡Inscripción exitosa!")
             setTimeout(() => setForm(FORM_INICIAL), 4000)
         } catch (err) {

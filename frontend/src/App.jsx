@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext'
 import Login from './pages/login'
 import Register from './pages/Register'
 import Preinscripcion from './pages/Preinscripcion'
+import VerDetallesAspirantes from './components/VerDetallesAspirantes'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
@@ -21,6 +22,7 @@ function App() {
         <Route path='/' element={<Login />}></Route>
         <Route path='/register' element={<Register />}></Route>
         <Route path="/preinscripcion-aspirante/:id" element={<Preinscripcion />} />
+        <Route path="/instructor/ver-detalles-aspirantes/:id" element={<VerDetallesAspirantes />} />
 
         <Route path='/dashboard' element={<Dashboard />}></Route>
 
