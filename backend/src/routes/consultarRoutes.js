@@ -88,7 +88,7 @@ router.get(
 router.get(
     '/revision-coordinador/:idSolicitud/documento-aspirantes',
     checkAuth,
-    permisosRol('COORDINADOR'),
+    permisosRol('COORDINADOR', 'INSTRUCTOR'),
     verDocumentoAspirantes
 )
 

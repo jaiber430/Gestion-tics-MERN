@@ -104,6 +104,17 @@ const VerDetallesAspirantes = () => {
         window.open(`http://localhost:4000/gestion-tics/api/consultas/revision-coordinador/${params.id}/formato-masivo`, '_blank')
     ]
 
+    const handleVerCombinado = async () => {
+        try {
+            window.open(`http://localhost:4000/gestion-tics/api/consultas/revision-coordinador/${params.id}/documento-aspirantes`, '_blank')
+        } catch (error) {
+            setAlerta({
+                msg: error?.response?.data?.msg,
+                error: true
+            })
+        }
+    }
+
     if (cargando) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -193,7 +204,9 @@ const VerDetallesAspirantes = () => {
                         className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
                         Ver masivo
                     </button>
-                    <button className="px-4 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-900 transition-colors">
+                    <button
+                        onClick={handleVerCombinado}
+                        className="px-4 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-900 transition-colors">
                         Ver combinado
                     </button>
                 </div>
