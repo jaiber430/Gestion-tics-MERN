@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
-
+import path from 'path'
+import fs from 'fs'
+import ExcelJS from "exceljs";
 
 import HttpErrors from '../helpers/httpErrors.js'
 import TiposIdentificacion from '../models/TiposIdentificacion.js'
@@ -186,32 +188,180 @@ const actualizarAspirante = async (req, res) => {
     const { id } = req.params
     const { numeroIdentificacion, nombre, apellido, tipoIdentificacion, telefono, email } = req.body
 
+    // Verificar que el aspirante existe
     const aspirante = await Aspirantes.findById(id)
-
+        .populate('tipoIdentificacion')
+        .populate('caracterizacion')
     if (!aspirante) {
         throw new HttpErrors('El aspirante no existe', 404)
     }
 
+    const solicitudId = aspirante.solicitud
+    const carpetaAspirantes = path.join(
+        process.cwd(),
+        'uploads',
+        `solicitud-${solicitudId}`,
+        'DocumentosAspirantes'
+    )
+
+    // ===============================
+    // 1. SI CAMBIA NUMERO DE IDENTIFICACION — RENOMBRAR EL PDF
+    // ===============================
+    const numeroAnterior = aspirante.numeroIdentificacion
+    const numeroNuevo = numeroIdentificacion ?? numeroAnterior
+
+    if (String(numeroNuevo) !== String(numeroAnterior)) {
+        const rutaAnterior = path.join(carpetaAspirantes, `${numeroAnterior}.pdf`)
+        const rutaNueva = path.join(carpetaAspirantes, `${numeroNuevo}.pdf`)
+
+        if (fs.existsSync(rutaAnterior)) {
+            fs.renameSync(rutaAnterior, rutaNueva)
+            aspirante.archivo = rutaNueva
+            console.log(`PDF renombrado: ${numeroAnterior}.pdf → ${numeroNuevo}.pdf`)
+        }
+
+        // Eliminar el combinado para que se regenere con el nuevo nombre
+        const rutaCombinado = path.join(carpetaAspirantes, 'combinado.pdf')
+        if (fs.existsSync(rutaCombinado)) {
+            fs.unlinkSync(rutaCombinado)
+            console.log('PDF combinado eliminado para regenerar')
+        }
+    }
+
+    // ===============================
+    // 2. ACTUALIZAR CAMPOS
+    // ===============================
     aspirante.nombre = nombre ?? aspirante.nombre
     aspirante.apellido = apellido ?? aspirante.apellido
     aspirante.tipoIdentificacion = tipoIdentificacion ?? aspirante.tipoIdentificacion
-    aspirante.numeroIdentificacion = numeroIdentificacion ?? aspirante.numeroIdentificacion
+    aspirante.numeroIdentificacion = numeroNuevo
     aspirante.telefono = telefono ?? aspirante.telefono
     aspirante.email = email ?? aspirante.email
 
     await aspirante.save()
+
+    // Volver a poblar después de guardar para tener datos actualizados
+    const aspiranteActualizado = await Aspirantes.findById(id)
+        .populate('tipoIdentificacion')
+        .populate('caracterizacion')
+
+    // ===============================
+    // 3. ACTUALIZAR FILA EN EL EXCEL
+    // ===============================
+    const rutaExcel = path.join(
+        process.cwd(),
+        'uploads',
+        `solicitud-${solicitudId}`,
+        'documents',
+        'excel masivo',
+        `masivo-${solicitudId}.xlsx`
+    )
+
+    if (fs.existsSync(rutaExcel)) {
+        const workbook = new ExcelJS.Workbook()
+        await workbook.xlsx.readFile(rutaExcel)
+        const worksheet = workbook.getWorksheet(1)
+
+        // Buscar la fila por el numero de identificacion anterior
+        let filaEncontrada = null
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) return // saltar encabezado
+            if (String(row.getCell('C').value) === String(numeroAnterior)) {
+                filaEncontrada = rowNumber
+            }
+        })
+
+        // Actualizar la fila encontrada con los nuevos datos
+        if (filaEncontrada) {
+            worksheet.getCell(`B${filaEncontrada}`).value = aspiranteActualizado.tipoIdentificacion?.nombreTipoIdentificacion || ''
+            worksheet.getCell(`C${filaEncontrada}`).value = aspiranteActualizado.numeroIdentificacion
+            worksheet.getCell(`E${filaEncontrada}`).value = aspiranteActualizado.caracterizacion?.caracterizacion || ''
+            await workbook.xlsx.writeFile(rutaExcel)
+            console.log(`Fila ${filaEncontrada} actualizada en el excel`)
+        }
+    }
 
     res.json({ msg: 'Aspirante actualizado correctamente' })
 }
 
 const eliminarAspirante = async (req, res) => {
     const { id } = req.params
+
+    // Verificar que el aspirante existe
     const aspirante = await Aspirantes.findById(id)
     if (!aspirante) {
         throw new HttpErrors('El aspirante no existe', 404)
     }
-    await Aspirantes.findByIdAndDelete(id) 
-    res.json({ mensaje: 'Aspirante eliminado correctamente' })
+
+    // Obtener la solicitud para construir las rutas
+    const solicitudId = aspirante.solicitud
+    const carpetaAspirantes = path.join(
+        process.cwd(),
+        'uploads',
+        `solicitud-${solicitudId}`,
+        'DocumentosAspirantes'
+    )
+
+    // ===============================
+    // 1. ELIMINAR EL PDF DEL ASPIRANTE
+    // ===============================
+    if (aspirante.archivo && fs.existsSync(aspirante.archivo)) {
+        fs.unlinkSync(aspirante.archivo)
+        console.log(`PDF eliminado: ${aspirante.archivo}`)
+    }
+
+    // ===============================
+    // 2. ELIMINAR EL COMBINADO (se regenerará sin este aspirante)
+    // ===============================
+    const rutaCombinado = path.join(carpetaAspirantes, 'combinado.pdf')
+    if (fs.existsSync(rutaCombinado)) {
+        fs.unlinkSync(rutaCombinado)
+        console.log('PDF combinado eliminado')
+    }
+
+    // ===============================
+    // 3. ELIMINAR DEL EXCEL MASIVO
+    // ===============================
+    const rutaExcel = path.join(
+        process.cwd(),
+        'uploads',
+        `solicitud-${solicitudId}`,
+        'documents',
+        'excel masivo',
+        `masivo-${solicitudId}.xlsx`
+    )
+
+    if (fs.existsSync(rutaExcel)) {
+        const workbook = new ExcelJS.Workbook()
+        await workbook.xlsx.readFile(rutaExcel)
+        const worksheet = workbook.getWorksheet(1)
+
+        // Buscar la fila que tenga el numeroIdentificacion del aspirante
+        let filaEncontrada = null
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) return // saltar encabezado
+            if (String(row.getCell('C').value) === String(aspirante.numeroIdentificacion)) {
+                filaEncontrada = rowNumber
+            }
+        })
+
+        // Eliminar la fila encontrada
+        if (filaEncontrada) {
+            worksheet.spliceRows(filaEncontrada, 1)
+            await workbook.xlsx.writeFile(rutaExcel)
+            console.log(`Fila ${filaEncontrada} eliminada del excel`)
+        }
+    }
+
+    // ===============================
+    // 4. ELIMINAR DE LA BD
+    // ===============================
+    await Aspirantes.findByIdAndDelete(id)
+
+    // Reactivar el link si había sido desactivado por cupo lleno
+    await Solicitud.findByIdAndUpdate(solicitudId, { linkPreinscripcion: true })
+
+    res.json({ msg: 'Aspirante eliminado correctamente' })
 }
 
 const contarAspirante = async (req, res) => {

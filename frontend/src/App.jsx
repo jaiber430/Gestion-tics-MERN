@@ -22,7 +22,6 @@ function App() {
         <Route path='/' element={<Login />}></Route>
         <Route path='/register' element={<Register />}></Route>
         <Route path="/preinscripcion-aspirante/:id" element={<Preinscripcion />} />
-        <Route path="/instructor/ver-detalles-aspirantes/:id" element={<VerDetallesAspirantes />} />
 
         <Route path='/dashboard' element={<Dashboard />}></Route>
 
@@ -31,6 +30,7 @@ function App() {
           <Route path='/instructor/crear-solicitud/:tipo' element={<CrearSolicitud />}></Route>
           <Route path='/instructor/consultas-instructor' element={<ConsultasInstructor />}></Route>
           <Route path='/instructor/gestion-aspirantes' element={<GestionAspirantes />}></Route>
+          <Route path="/instructor/ver-detalles-aspirantes/:id" element={<VerDetallesAspirantes />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>
