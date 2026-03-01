@@ -147,11 +147,6 @@ const GestionAspirantes = () => {
                                                 <h4 className="text-2xl font-bold text-slate-800">
                                                     {oferta.programaFormacion?.nombrePrograma}
                                                 </h4>
-                                                <p className="text-sm text-slate-600 mt-1">
-                                                    Duración: <span className="font-semibold">
-                                                        {oferta.programaFormacion?.horas || 0} horas
-                                                    </span>
-                                                </p>
                                             </div>
 
                                             {/* Progreso */}

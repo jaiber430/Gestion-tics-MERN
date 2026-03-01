@@ -97,7 +97,7 @@ const VerDetallesAspirantes = () => {
     }
 
     const handleVerPDF = (aspiranteId) => {
-        window.open(`/api/aspirantes/pdf/${aspiranteId}`, '_blank')
+        window.open(`http://localhost:4000/gestion-tics/api/consultas/consultas-instructor/${aspiranteId}`, '_blank')
     }
 
     if (cargando) {

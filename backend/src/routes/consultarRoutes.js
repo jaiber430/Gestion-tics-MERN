@@ -5,6 +5,7 @@ import {
     consultarSolicitudInstructor,
     enviarSolicitud,
     verFichaCaracterizacion,
+    verPdfAspirantes,
 
     // COORDINADOR
     consultarSolicitudCoordinador,
@@ -55,6 +56,8 @@ router.get(
     permisosRol('INSTRUCTOR', 'COORDINADOR'),
     verFichaCaracterizacion
 )
+
+router.get('/consultas-instructor/:idAspirante', checkAuth, permisosRol('INSTRUCTOR'), verPdfAspirantes)
 
 // COORDINADOR
 

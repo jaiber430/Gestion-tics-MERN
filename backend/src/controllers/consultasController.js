@@ -8,6 +8,7 @@ import Solicitud from "../models/Solicitud.js"
 import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import RevisionCoordinador from '../models/RevisionCoordinador.js'
 import Ficha from "../models/Ficha.js"
+import Aspirantes from '../models/Aspirantes.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
@@ -102,6 +103,26 @@ const consultarSolicitudCoordinador = async (req, res) => {
 
     res.json(solicitud)
 }
+
+const verPdfAspirantes = async (req, res) => {
+    const { idAspirante } = req.params
+
+    const aspirante = await Aspirantes.findById(idAspirante)
+    if (!aspirante) {
+        throw new HttpErrors('El aspirante no existe', 404)
+    }
+
+    if (!aspirante.archivo) {
+        throw new HttpErrors('El aspirante no tiene PDF registrado', 404)
+    }
+
+    if (!fs.existsSync(aspirante.archivo)) {
+        throw new HttpErrors('El archivo no existe en el servidor', 404)
+    }
+
+    res.sendFile(path.resolve(aspirante.archivo))
+}
+
 
 const revisarSolicitud = async (req, res) => {
     const { idSolicitud } = req.params
@@ -516,5 +537,6 @@ export {
     descargarFichaCaracterizacion,
     descargarDocumentoAspirantes,
     descargarFormatoMasivo,
-    subirExcelSofiaPlus
+    subirExcelSofiaPlus,
+    verPdfAspirantes
 }
