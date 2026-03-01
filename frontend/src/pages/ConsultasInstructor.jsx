@@ -2,10 +2,12 @@ import { useEffect, useState } from "react"
 import Header from "../components/Header"
 import clienteAxios from "../api/axios"
 import VerFichaCaracterizacion from "../components/VerFichaCaracterizacion"
+import Alerta from "../components/Alerta"
 
 const ConsultasInstructor = () => {
 
     const [dataOferta, setDataOferta] = useState([])
+    const [alerta, setAlerta] = useState({})
 
     useEffect(() => {
 
@@ -24,10 +26,34 @@ const ConsultasInstructor = () => {
 
     }, [])
 
+    const handleClick = async (idSolicitud) => {
+        try {
+            const { data } = await clienteAxios.put(`/consultas/enviar-solicitud/${idSolicitud}`)
+            setAlerta({
+                msg: data?.msg,
+                error: false
+            })
+            setTimeout(() => {
+                setAlerta({})
+            }, 3000)
+        } catch (error) {
+            setAlerta({
+                msg: error?.response?.data?.msg,
+                error: true
+            })
+            setTimeout(() => {
+                setAlerta({})
+            }, 3000)
+        }
+    }
+
     return (
         <div>
             <Header />
-            <div className="space-y-6">
+
+            {alerta.msg && <Alerta alerta={alerta} />}
+
+            <div className="space-y-6 mt-15">
                 {dataOferta.map((oferta, index) => (
                     <div
                         key={oferta._id}
@@ -87,14 +113,14 @@ const ConsultasInstructor = () => {
 
                                 {/* Badge de estado mejorado */}
                                 <div className="flex items-center gap-3">
-                                    <span className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 ${oferta.revisado
+                                    {/* <span className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 ${oferta.revisado
                                         ? 'bg-green-50 text-green-700 border border-green-200'
                                         : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                                         }`}>
                                         <span className={`w-2 h-2 rounded-full ${oferta.revisado ? 'bg-green-500 animate-pulse' : 'bg-yellow-500 animate-pulse'
                                             }`}></span>
                                         {oferta.revisado ? 'Revisado' : 'Pendiente de revisión'}
-                                    </span>
+                                    </span> */}
                                 </div>
                             </div>
 
@@ -198,16 +224,27 @@ const ConsultasInstructor = () => {
                                     </span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <VerFichaCaracterizacion id={oferta._id}/>
-                                    <button className={`px-4 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 font-medium ${oferta.revisado
-                                        ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                                        : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200'
-                                        }`}>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Enviar solicitud
-                                    </button>
+                                    <VerFichaCaracterizacion id={oferta._id} />
+                                    {oferta.revisado ?
+                                        <button
+                                            disabled
+                                            onClick={() => handleClick(oferta._id)}
+                                            className={`px-4 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-200`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Solicitud enviada
+                                        </button>
+                                        :
+                                        <button
+                                            onClick={() => handleClick(oferta._id)}
+                                            className={`px-4 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 font-mediumbg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Enviar solicitud
+                                        </button>
+                                    }
                                 </div>
                             </div>
                         </div>

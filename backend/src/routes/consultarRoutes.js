@@ -43,7 +43,7 @@ router.get(
 
 // Enviar solicitud
 router.put(
-    '/consultas-instructor/:idSolicitud',
+    '/enviar-solicitud/:idSolicitud',
     checkAuth,
     permisosRol('INSTRUCTOR'),
     enviarSolicitud

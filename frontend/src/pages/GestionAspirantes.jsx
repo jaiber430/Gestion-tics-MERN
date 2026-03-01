@@ -130,7 +130,7 @@ const GestionAspirantes = () => {
                                             }`}>
                                             <span className={`w-2 h-2 rounded-full ${oferta.revisado ? 'bg-green-500' : 'bg-yellow-500'
                                                 }`}></span>
-                                            {oferta.revisado ? 'Revisado' : 'Pendiente de revisión'}
+                                            {oferta.revisado ? 'Solicitud enviada' : 'Aun no se envia la solicitud'}
                                         </span>
                                     </div>
 
