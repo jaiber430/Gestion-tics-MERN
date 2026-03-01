@@ -13,24 +13,29 @@ const GestionAspirantes = () => {
         const verOfertas = async () => {
             try {
                 const { data } = await clienteAxios.get('/consultas/consultas-instructor')
-
                 setDataOferta(data)
 
+                // Por cada oferta, pedir sus preinscritos
                 const porcentajesCalc = {}
-                data.forEach(oferta => {
-                    const cupoTotal = oferta.cupo || 1
-                    const aspirantesActuales = oferta.aspirantesRegistrados?.length || 0
-                    const porcentaje = Math.min((aspirantesActuales / cupoTotal) * 100, 100)
-                    porcentajesCalc[oferta._id] = porcentaje
-                })
+                await Promise.all(data.map(async (oferta) => {
+                    try {
+                        const { data } = await clienteAxios.get(`/aspirantes/aspirantes/preinscritos/${oferta._id}`)
+                        console.log(data)
+                        const cupoTotal = oferta.cupo || 1
+                        const total = data || 0
+                        porcentajesCalc[oferta._id] = Math.min((total / cupoTotal) * 100, 100)
+                    } catch {
+                        porcentajesCalc[oferta._id] = 0
+                    }
+                }))
 
                 setPorcentajes(porcentajesCalc)
 
             } catch (error) {
+                console.log(error)
                 setAlerta({ msg: 'Error cargando ofertas', error: true })
             }
         }
-
         verOfertas()
     }, [])
 
@@ -48,7 +53,7 @@ const GestionAspirantes = () => {
             error: false
         })
 
-        setTimeout(() =>{
+        setTimeout(() => {
             setAlerta({})
         }, 3000)
     }
@@ -76,7 +81,7 @@ const GestionAspirantes = () => {
 
                         const porcentaje = porcentajes[oferta._id] || 0
                         const cupoTotal = oferta.cupo || 1
-                        const aspirantesActuales = oferta.aspirantesRegistrados?.length || 0
+                        const aspirantesActuales = Math.round((porcentaje / 100) * cupoTotal)
 
                         return (
                             <div
@@ -86,8 +91,8 @@ const GestionAspirantes = () => {
 
                                 {/* Barra lateral */}
                                 <div className={`absolute left-0 top-0 bottom-0 w-2 ${oferta.revisado
-                                        ? 'bg-gradient-to-b from-green-500 to-emerald-400'
-                                        : 'bg-gradient-to-b from-yellow-500 to-amber-400'
+                                    ? 'bg-gradient-to-b from-green-500 to-emerald-400'
+                                    : 'bg-gradient-to-b from-yellow-500 to-amber-400'
                                     }`}></div>
 
                                 <div className="pl-6 p-6">
@@ -111,8 +116,8 @@ const GestionAspirantes = () => {
                                         </div>
 
                                         <span className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 ${oferta.revisado
-                                                ? 'bg-green-50 text-green-700 border border-green-200'
-                                                : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                                            ? 'bg-green-50 text-green-700 border border-green-200'
+                                            : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                                             }`}>
                                             <span className={`w-2 h-2 rounded-full ${oferta.revisado ? 'bg-green-500' : 'bg-yellow-500'
                                                 }`}></span>

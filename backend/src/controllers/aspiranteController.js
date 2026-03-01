@@ -15,13 +15,13 @@ const registrarAspirante = async (req, res) => {
     const { id } = req.params
 
     const { nombre,
-            apellido,
-            tipoIdentificacion,
-            numeroIdentificacion,
-            caracterizacion,
-            telefono,
-            email
-        } = req.body
+        apellido,
+        tipoIdentificacion,
+        numeroIdentificacion,
+        tipoCaracterizacion,
+        telefono,
+        email
+    } = req.body
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new HttpErrors('El ID de la solicitud no es válido', 400);
@@ -33,7 +33,7 @@ const registrarAspirante = async (req, res) => {
     }
 
     // Validaciones de campos requeridos
-    if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !caracterizacion || !telefono || !email) {
+    if (!nombre || !apellido || !tipoIdentificacion || !numeroIdentificacion || !tipoCaracterizacion || !telefono || !email) {
         throw new HttpErrors('Todos los datos son requeridos', 400)
     }
 
@@ -55,7 +55,7 @@ const registrarAspirante = async (req, res) => {
         throw new HttpErrors('El numero de identificación ya existe', 400)
     }
 
-    const comprobarCaracterizacion = await Caracterizacion.findById(caracterizacion)
+    const comprobarCaracterizacion = await Caracterizacion.findById(tipoCaracterizacion)
     if (!comprobarCaracterizacion) {
         throw new HttpErrors('La caracterización no existe', 404)
     }
@@ -94,7 +94,7 @@ const registrarAspirante = async (req, res) => {
             archivo: rutaFinalPDF,
             tipoIdentificacion,
             numeroIdentificacion,
-            caracterizacion,
+            caracterizacion: comprobarCaracterizacion._id,
             telefono,
             email,
             solicitud: comprobarSolicitud._id
@@ -104,18 +104,18 @@ const registrarAspirante = async (req, res) => {
 
         // UNA sola consulta trae TODO
         const aspiranteCompleto = await Aspirantes.findById(nuevoAspirante._id)
-        .populate("tipoIdentificacion")
-        .populate("caracterizacion");
-        
+            .populate("tipoIdentificacion")
+            .populate("caracterizacion");
+
 
 
         // Traer empresa si existe en la solicitud
         let codigoEmpresa = "";
 
-    if (comprobarSolicitud.empresaSolicitante) {
+        if (comprobarSolicitud.empresaSolicitante) {
             const empresa = await Empresa.findById(comprobarSolicitud.empresaSolicitante);
             codigoEmpresa = empresa?.codigoEmpresa || "";
-    }
+        }
 
 
         await actualizarExcelMasivo({
@@ -186,7 +186,7 @@ const obtenerTiposIdentificacion = async (req, res) => {
         res.json(tipos);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ msg: "Error al obtener los tipos de identificación" });
+        throw new HttpErrors("Error al obtener los tipos de identificación", 404);
     }
 }
 
@@ -196,14 +196,31 @@ const obtenerTiposCaracterizacion = async (req, res) => {
         res.json(tipos);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ msg: "Error al obtener los tipos de caracterización" });
+        throw new HttpErrors("Error al obtener los tipos de caracterización", 404);
     }
+}
+
+const preinscritos = async (req, res) => {
+    const { id } = req.params
+
+    const existeSolicitud = await Solicitud.findById(id)
+
+    if(!existeSolicitud){
+        throw new HttpErrors('Solicitud no encontarda', 404)
+    }
+
+    const verAspirantesPreinscritos = await Aspirantes.countDocuments({ solicitud: id })
+    // console.log(verAspirantesPreinscritos)
+
+    res.json(verAspirantesPreinscritos)
+
 }
 
 export {
     registrarAspirante,
     actualizarAspirante,
     eliminarAspirante,
+    preinscritos,
     contarAspirante,
     obtenerTiposIdentificacion,
     obtenerTiposCaracterizacion
