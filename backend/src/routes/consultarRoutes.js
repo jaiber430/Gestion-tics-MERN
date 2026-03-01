@@ -95,7 +95,7 @@ router.get(
 router.get(
     '/revision-coordinador/:idSolicitud/formato-masivo',
     checkAuth,
-    permisosRol('COORDINADOR'),
+    permisosRol('COORDINADOR', 'INSTRUCTOR'),
     verFormatoMasivo
 )
 

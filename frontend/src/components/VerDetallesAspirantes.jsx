@@ -100,6 +100,10 @@ const VerDetallesAspirantes = () => {
         window.open(`http://localhost:4000/gestion-tics/api/consultas/consultas-instructor/${aspiranteId}`, '_blank')
     }
 
+    const handleMasivo = async () => [
+        window.open(`http://localhost:4000/gestion-tics/api/consultas/revision-coordinador/${params.id}/formato-masivo`, '_blank')
+    ]
+
     if (cargando) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -184,7 +188,9 @@ const VerDetallesAspirantes = () => {
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">
-                    <button className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
+                    <button
+                        onClick={handleMasivo}
+                        className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
                         Ver masivo
                     </button>
                     <button className="px-4 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-900 transition-colors">

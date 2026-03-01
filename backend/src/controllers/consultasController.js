@@ -3,6 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import ExcelJS from "exceljs";
 
 import Solicitud from "../models/Solicitud.js"
 import UsuarioAsignado from '../models/UsuarioAsignado.js'
@@ -181,22 +182,58 @@ const revisarSolicitud = async (req, res) => {
 const verFormatoMasivo = async (req, res) => {
     const { idSolicitud } = req.params
 
-    const solicitud = await Solicitud.findOne({
-        _id: idSolicitud,
-    })
-
-    if (!solicitud) {
-        throw new HttpErrors('No existe el formato de aspirantes masivo', 404)
-    }
-
-    const nameFile = `masivo-${idSolicitud}.xlsx`
-
-    const rutaMasivo = path.join(
-        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+    const rutaExcel = path.join(
+        process.cwd(),
+        'uploads',
+        `solicitud-${idSolicitud}`,
+        'documents',
+        'excel masivo',
+        `masivo-${idSolicitud}.xlsx`
     )
 
-    res.sendFile(rutaMasivo)
+    if (!fs.existsSync(rutaExcel)) {
+        throw new HttpErrors('El excel no existe', 404)
+    }
+
+    // Leer el excel y convertir a HTML
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.readFile(rutaExcel)
+    const worksheet = workbook.getWorksheet(1)
+
+    // Construir tabla HTML
+    let html = `
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            table { border-collapse: collapse; width: 100%; }
+                            th { background-color: #16a34a; color: white; padding: 10px; text-align: left; }
+                            td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; }
+                            tr:nth-child(even) { background-color: #f9fafb; }
+                            tr:hover { background-color: #f0fdf4; }
+                        </style>
+                    </head>
+                    <body>
+                        <table>
+                `
+
+    worksheet.eachRow((row, rowNumber) => {
+        html += '<tr>'
+        row.eachCell({ includeEmpty: true }, (cell) => {
+            if (rowNumber === 1) {
+                html += `<th>${cell.value ?? ''}</th>`
+            } else {
+                html += `<td>${cell.value ?? ''}</td>`
+            }
+        })
+        html += '</tr>'
+    })
+
+    html += `</table></body></html>`
+
+    res.send(html)
 }
+
 
 const verCartaSolicitud = async (req, res) => {
     const { idSolicitud } = req.params
