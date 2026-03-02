@@ -146,7 +146,7 @@ const DetallesSolicitudes = () => {
                             <Fila label="Convenio" value={s?.convenio} />
                             <Fila label="Nombre de la empresa" value={s?.empresaSolicitante?.nombreEmpresa} />
                             <Fila label="NIT" value={s?.empresaSolicitante?.nitEmpresa} />
-                            <Fila label="Fecha de creación" value={formatearFechaInicio(s?.empresaSolicitante?.fechaCreacion)} />
+                            <Fila label="Fecha de creación" value={s?.empresaSolicitante?.fechaCreacion ? formatearFechaInicio(s?.empresaSolicitante?.fechaCreacion) : ''} />
                             <Fila label="Tipo de empresa" value={s?.empresaSolicitante?.tipoEmpresa?.tipoEmpresaRegular} />
                             <Fila label="Dirección" value={s?.empresaSolicitante?.direccionEmpresa} />
                             <Fila label="Representante" value={s?.empresaSolicitante?.nombreResponsable} />
@@ -162,7 +162,7 @@ const DetallesSolicitudes = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         }>
-                            <Fila label="Municipio" value={s?.municipio?.municipios} />
+                            <Fila label="Municipio" value={s?.municipio?.municipios.toUpperCase()} />
                             <Fila label="Departamento" value={s?.departamento} />
                             <Fila label="Dirección de formación" value={s?.direccionFormacion} />
                             <Fila label="Ambiente" value={s?.ambiente} />
