@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { NavLink, } from 'react-router-dom'
+import { NavLink, useParams, } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
 import CerrarSesion from './CerrarSesion'
 import logoSena from '../assets/logoSena.png'
 
-const HeaderCoordinador = () => {
+const HeaderFuncionario = () => {
+    const params = useParams()
     const { user } = useAuth()
 
     // Si no hay usuario, no renderizar nada o mostrar un placeholder
@@ -35,7 +36,7 @@ const HeaderCoordinador = () => {
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-2">
                                     <h1 className="text-xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-                                        Panel Coordinador
+                                        Panel Funcionario
                                     </h1>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs">
@@ -61,7 +62,7 @@ const HeaderCoordinador = () => {
                                     </p>
                                     <div className="flex items-center gap-1.5 justify-end">
                                         <span className="w-1.5 h-1.5 bg-green-600 rounded-full animate-pulse"></span>
-                                        <span className="text-xs font-medium text-green-600">Coordinador</span>
+                                        <span className="text-xs font-medium text-green-600">Funcionario</span>
                                         <span className="text-xs text-slate-400">·</span>
                                         <span className="text-xs text-slate-500">
                                             ID: INS-{new Date().getFullYear()}
@@ -103,7 +104,7 @@ const HeaderCoordinador = () => {
                         <div className="flex items-center gap-6 h-12 text-sm">
 
                             <NavLink
-                                to="/coordinador"
+                                to="/funcionario"
                                 end
                                 className={({ isActive }) =>
                                     `h-full flex items-center px-1 border-b-2 transition-colors
@@ -116,8 +117,22 @@ const HeaderCoordinador = () => {
                                 Inicio
                             </NavLink>
 
+                            {params.id ?
+                                <NavLink
+                                    to={`/funcionario/conocer-detalles-solicitud/${params.id}`}
+                                    className={({ isActive }) =>
+                                        `h-full flex items-center px-1 border-b-2 transition-colors
+                                        ${isActive
+                                            ? "text-green-600 border-green-600 font-medium"
+                                            : "text-slate-500 border-transparent hover:text-slate-700"
+                                        }`
+                                    }
+                                >
+                                    Detalles de la solicitud
+                                </NavLink> : ''}
+
                             <NavLink
-                                to="/coordinador/reportes"
+                                to="/funcionario/reportes"
                                 className={({ isActive }) =>
                                     `h-full flex items-center px-1 border-b-2 transition-colors
                                         ${isActive
@@ -150,4 +165,4 @@ const HeaderCoordinador = () => {
     )
 }
 
-export default HeaderCoordinador
+export default HeaderFuncionario

@@ -35,6 +35,10 @@ const usuarioSchema = new mongoose.Schema({
         type: String,
         enum: ['ProgramasEspeciales', 'ProgramasEspecialesCampesena']
     },
+    telefono: {
+        type: Number,
+        required: true,
+    },
     email: {
         type: String,
         required: true,

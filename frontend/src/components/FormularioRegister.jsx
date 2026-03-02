@@ -11,6 +11,7 @@ const FormularioRegister = () => {
         rol: '',
         tipoIdentificacion: '',
         numeroIdentificacion: '',
+        telefono: '',
         email: '',
         password: '',
         tipoContrato: '',
@@ -142,6 +143,7 @@ const FormularioRegister = () => {
                 rol: '',
                 tipoIdentificacion: '',
                 numeroIdentificacion: '',
+                telefono:'',
                 email: '',
                 password: '',
                 tipoContrato: '',
@@ -283,6 +285,23 @@ const FormularioRegister = () => {
                             placeholder="Ej: 1234567890"
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/70 focus:bg-white placeholder:text-slate-400 focus:border-green-400 focus:ring-4 focus:ring-green-100 outline-none transition-all duration-300"
 
+                        />
+                    </div>
+
+                    <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                            </svg>
+                            Número de teléfono <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="telefono"
+                            value={formData.telefono}
+                            onChange={handleChange}
+                            placeholder="Ej: 1234567890"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/70 focus:bg-white placeholder:text-slate-400 focus:border-green-400 focus:ring-4 focus:ring-green-100 outline-none transition-all duration-300"
                         />
                     </div>
                 </div>

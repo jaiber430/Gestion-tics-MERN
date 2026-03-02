@@ -24,6 +24,7 @@ import {
     descargarDocumentoAspirantes,
     descargarFormatoMasivo,
     subirExcelSofiaPlus,
+    verDetallesSolicitud,
 
 } from '../controllers/consultasController.js'
 
@@ -118,6 +119,8 @@ router.get(
     permisosRol('FUNCIONARIO'),
     verSolicitudesFuncionario
 )
+
+router.get('/solicitudes-funcionario/:id', checkAuth, permisosRol('FUNCIONARIO'), verDetallesSolicitud)
 
 // Revisar solicitud
 router.put(

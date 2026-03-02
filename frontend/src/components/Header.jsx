@@ -113,7 +113,7 @@ const Header = () => {
                                     }`
                                 }
                             >
-                                Dashboard
+                                Inicio
                             </NavLink>
 
                             {params.tipo ? (<NavLink

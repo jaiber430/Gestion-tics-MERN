@@ -35,7 +35,7 @@ const Login = () => {
                     navigation('/coordinador')
                     break;
                 case 'FUNCIONARIO':
-                    navigation('/dashboard')
+                    navigation('/funcionario')
                     break;
                 case 'ADMINISTRADOR':
                     navigation('/dashboard')

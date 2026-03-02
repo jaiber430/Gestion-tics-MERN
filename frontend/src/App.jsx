@@ -15,6 +15,9 @@ import GestionAspirantes from './pages/GestionAspirantes'
 import ReportesCoordinador from './pages/ReportesCoordinador'
 
 import Coordinador from './pages/Coordinador'
+import Funcionario from './pages/Funcionario'
+import ReportesFuncionario from './pages/ReportesFuncionario'
+import DetallesSolicitudes from './components/DetallesSolicitudes'
 function App() {
   return (
     <AuthProvider>
@@ -38,6 +41,13 @@ function App() {
           <Route path='/coordinador' element={<Coordinador />}></Route>
           <Route path='/coordinador/reportes' element={<ReportesCoordinador />}></Route>
         </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route path='/funcionario' element={<Funcionario />}></Route>
+          <Route path='/funcionario/reportes' element={<ReportesFuncionario />}></Route>
+          <Route path='/funcionario/conocer-detalles-solicitud/:id' element={<DetallesSolicitudes />}></Route>
+        </Route>
+
 
       </Routes>
     </AuthProvider>

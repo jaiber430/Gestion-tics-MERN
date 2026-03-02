@@ -70,6 +70,7 @@ const registrarUsuario = async (req, res) => {
         rol,
         tipoIdentificacion,
         numeroIdentificacion,
+        telefono,
         email,
         password,
         tipoContrato,
@@ -182,6 +183,7 @@ const registrarUsuario = async (req, res) => {
         $or: [
             { email },
             { numeroIdentificacion },
+            { telefono },
         ]
     })
 
