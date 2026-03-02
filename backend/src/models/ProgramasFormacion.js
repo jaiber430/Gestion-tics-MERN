@@ -38,7 +38,6 @@ const programasFormacionSchema = new mongoose.Schema({
 
     area: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Area',
         ref: 'Areas',
         required: true,
     },

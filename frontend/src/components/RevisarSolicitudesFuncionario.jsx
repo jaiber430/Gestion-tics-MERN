@@ -15,7 +15,10 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
 
     const [estado, setEstado] = useState('')
     const [observacion, setObservacion] = useState('')
+    const [subirArchivo, setSubirArchivo] = useState(false)
     const [alerta, setAlerta] = useState({})
+    const [codigoFicha, setCodigoFicha] = useState('')
+    const [codigoSolicitud, setCodigoSolicitud] = useState('')
 
     const handlerChangeStatus = (e) => {
         setEstado(e.target.value)
@@ -93,6 +96,27 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                 setAlerta({})
             }, 3000)
         }
+    }
+
+    const handleExcelMasivo = async (idSolicitud) => {
+        try {
+            const response = await clienteAxios.get(
+                `/consultas/revision-funcionario/${idSolicitud}/descargar-formato`,
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: 'application/xlsx' })
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = 'formato-inscripcion-masivo.xlsx'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            setTimeout(() => window.URL.revokeObjectURL(url), 10000)
+        } catch (error) {
+            console.log(error)
+        }
+        setSubirArchivo(true)
     }
 
     return (
@@ -175,11 +199,41 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                                 }`}
                                         />
                                     </div>
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Código ficha</label>
+                                        <input
+                                            type='number'
+                                            value={codigoFicha}
+                                            onChange={e => setCodigoFicha(e.target.value)}
+                                            disabled={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'}
+                                            placeholder={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN' ? 'No disponible' : 'Ingresa el código...'}
+                                            className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
+                                                ${estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'
+                                                    ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'border-slate-200 bg-white text-slate-700'
+                                                }`}
+                                        />
+                                    </div>
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Código Solicitud</label>
+                                        <input
+                                            type='number'
+                                            value={codigoSolicitud}
+                                            onChange={e => setCodigoSolicitud(e.target.value)}
+                                            disabled={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'}
+                                            placeholder={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN' ? 'No disponible' : 'Ingresa el código...'}
+                                            className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
+                                                    ${estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'
+                                                    ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'border-slate-200 bg-white text-slate-700'
+                                                }`}
+                                        />
+                                    </div>
                                 </div>
                                 {/* Botones de documentos — lo más importante */}
                                 <div className="flex flex-wrap gap-3 mb-6">
 
-                                    {/* Ver aspirantes */}
+                                    {/* Descargar aspirantes */}
                                     <button
                                         onClick={() => handlerDocumentosAspirantes(s.solicitud._id)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
@@ -190,13 +244,16 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                     </button>
 
                                     {/* Excel masivo — destacado */}
-                                    <button type="button"
-                                        className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        Descargar Excel masivo
-                                    </button>
+                                    {subirArchivo ?
+                                        <input type='file' /> :
+                                        <button
+                                            onClick={() => handleExcelMasivo(s?.solicitud._id)}
+                                            className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Descargar Excel masivo
+                                        </button>}
 
                                     {/* Ver ficha */}
                                     <button

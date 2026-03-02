@@ -41,7 +41,7 @@ const Login = () => {
                     navigation('/dashboard')
                     break;
                 case 'CURRICULAR':
-                    navigation('/dashboard')
+                    navigation('/curricular')
                     break;
                 default:
                     navigation('/')

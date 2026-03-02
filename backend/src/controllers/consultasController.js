@@ -381,85 +381,6 @@ const verDetallesSolicitud = async (req, res) => {
     res.status(200).json(revisionesAprobadas)
 }
 
-const revisarSolicitudFuncionario = async (req, res) => {
-    const session = await mongoose.startSession()
-    try {
-        await session.startTransaction()
-        const { idSolicitud } = req.params
-        const { estado, observacion, codigoFicha, codigoSolicitud } = req.body
-
-        // Verificar que la solicitud exista y esté revisada
-        const solicitud = await Solicitud.findOne({
-            _id: idSolicitud,
-            revisado: true
-        }).session(session)
-
-        if (!solicitud) {
-            throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
-        }
-
-        const estadosValidos = ['Creación', 'Creada', 'Lista de espera', 'Matriculada', 'Rechazada']
-
-        if (!estadosValidos.includes(estado)) {
-            throw new HttpErrors('Estado no válido', 400)
-        }
-
-        const updateSolicitud = await Solicitud.findOneAndUpdate(
-            { _id: idSolicitud },
-            { codigoSolicitud: codigoSolicitud },
-            {
-                new: true,
-                upsert: true,
-                session
-            }
-        )
-
-        const estadosPermitidosCodigo = [
-            'Creada',
-            'Matriculada',
-            'Rechazada'
-        ]
-
-        if (codigoFicha !== null && !estadosPermitidosCodigo.includes(estado) && codigoSolicitud !== null) {
-            throw new HttpErrors('El código de ficha y código de solicitud solo pueden asignarse cuando el estado es Rechazado, creado o matriculado', 403)
-        }
-
-        // Objeto que puede cambiar
-        const dataFicha = {
-            solicitud: idSolicitud,
-            estado,
-            observacion,
-            usuarioSolicitante: solicitud.usuarioSolicitante,
-            fechaRevisonFicha: new Date()
-        }
-
-        if (codigoFicha !== undefined) {
-            dataFicha.codigoFicha = codigoFicha
-        }
-
-        const fichaUpdate = await Ficha.findOneAndUpdate(
-            { solicitud: idSolicitud },
-            dataFicha,
-            {
-                new: true,
-                upsert: true,
-                session
-            }
-        )
-
-        await session.commitTransaction()
-        session.endSession()
-        res.status(200).json({
-            msg: "Revisión realizada correctamente",
-            fichaUpdate
-        })
-    } catch (error) {
-        await session.abortTransaction()
-        session.endSession()
-        throw error
-    }
-}
-
 const descargarCartaSolicitud = async (req, res) => {
     const { idSolicitud } = req.params
 
@@ -574,10 +495,89 @@ const descargarFormatoMasivo = async (req, res) => {
     const nameFile = `masivo-${idSolicitud}.xlsx`
 
     const rutaMasivo = path.join(
-        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', 'excel masivo', nameFile
     )
 
     res.download(rutaMasivo)
+}
+
+const revisarSolicitudFuncionario = async (req, res) => {
+    const session = await mongoose.startSession()
+    try {
+        await session.startTransaction()
+        const { idSolicitud } = req.params
+        const { estado, observacion, codigoFicha, codigoSolicitud } = req.body
+
+        // Verificar que la solicitud exista y esté revisada
+        const solicitud = await Solicitud.findOne({
+            _id: idSolicitud,
+            revisado: true
+        }).session(session)
+
+        if (!solicitud) {
+            throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
+        }
+
+        const estadosValidos = ['CREACIÓN', 'CREADA', 'LISTA DE ESPERA', 'MATRICULADA', 'RECHAZADA']
+
+        if (!estadosValidos.includes(estado)) {
+            throw new HttpErrors('Estado no válido', 400)
+        }
+
+        const updateSolicitud = await Solicitud.findOneAndUpdate(
+            { _id: idSolicitud },
+            { codigoSolicitud: codigoSolicitud },
+            {
+                new: true,
+                upsert: true,
+                session
+            }
+        )
+
+        const estadosPermitidosCodigo = [
+            'Creada',
+            'Matriculada',
+            'Rechazada'
+        ]
+
+        if (codigoFicha !== null && !estadosPermitidosCodigo.includes(estado) && codigoSolicitud !== null) {
+            throw new HttpErrors('El código de ficha y código de solicitud solo pueden asignarse cuando el estado es Rechazado, creado o matriculado', 403)
+        }
+
+        // Objeto que puede cambiar
+        const dataFicha = {
+            solicitud: idSolicitud,
+            estado,
+            observacion,
+            usuarioSolicitante: solicitud.usuarioSolicitante,
+            fechaRevisonFicha: new Date()
+        }
+
+        if (codigoFicha !== undefined) {
+            dataFicha.codigoFicha = codigoFicha
+        }
+
+        const fichaUpdate = await Ficha.findOneAndUpdate(
+            { solicitud: idSolicitud },
+            dataFicha,
+            {
+                new: true,
+                upsert: true,
+                session
+            }
+        )
+
+        await session.commitTransaction()
+        session.endSession()
+        res.status(200).json({
+            msg: "Revisión realizada correctamente",
+            fichaUpdate
+        })
+    } catch (error) {
+        await session.abortTransaction()
+        session.endSession()
+        throw error
+    }
 }
 
 const subirExcelSofiaPlus = async (req, res) => {

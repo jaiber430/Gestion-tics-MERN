@@ -18,6 +18,10 @@ import Coordinador from './pages/Coordinador'
 import Funcionario from './pages/Funcionario'
 import ReportesFuncionario from './pages/ReportesFuncionario'
 import DetallesSolicitudes from './components/DetallesSolicitudes'
+
+import CrearPrograma from './pages/CrearPrograma'
+import Curricular from './pages/Curricular'
+
 function App() {
   return (
     <AuthProvider>
@@ -46,6 +50,11 @@ function App() {
           <Route path='/funcionario' element={<Funcionario />}></Route>
           <Route path='/funcionario/reportes' element={<ReportesFuncionario />}></Route>
           <Route path='/funcionario/conocer-detalles-solicitud/:id' element={<DetallesSolicitudes />}></Route>
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route path='/curricular' element={<Curricular />}></Route>
+          <Route path='/curricular/crear-programa/:id' element={<CrearPrograma />}></Route>
         </Route>
 
 

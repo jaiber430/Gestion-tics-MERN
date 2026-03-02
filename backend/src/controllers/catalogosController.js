@@ -56,6 +56,13 @@ const obtenerMunicipios = async (req, res) => {
     res.json(municipios)
 }
 
+const obtenerProgramas = async (req, res) =>{
+
+    const programasFormacion = await ProgramasFormacion.find().populate('Areas')
+
+    res.json(programasFormacion)
+}
+
 export {
     obtenerAreas,
     obtenerProgramasFormacion,
@@ -64,4 +71,5 @@ export {
     obtenerTiposEmpresaRegular,
     obtenerRoles,
     obtenerTipoIdentificacion,
+    obtenerProgramas,
 }
