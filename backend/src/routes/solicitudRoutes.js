@@ -9,6 +9,7 @@ import uploadPDF from '../middlewares/subirCartaEmpresa.js';
 import {
     tipoSolicitud,
     crearSolicitud,
+    infoSolicitud,
     // Elimar despues
     crearEmpresa
 } from '../controllers/solicitudController.js'
@@ -30,6 +31,13 @@ router.post(
     uploadPDF.single('cartaSolicitud'),
     crearSolicitud
 )
+
+router.get('/info-solicitud/:id',
+    checkAuth,
+    permisosRol('ADMINISTRADOR', 'INSTRUCTOR'),
+    infoSolicitud
+)
+
 
 // ELiminar despues
 router.post('/', crearEmpresa)

@@ -1,74 +1,56 @@
 import { Routes, Route } from 'react-router-dom'
-import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './context/AuthContext'
 
-import Login from './pages/Login'
-import Instructor from './pages/Instructor'
-import CrearSolicitud from './pages/CrearSolicitud'
-import Coordinador from './pages/Coordinador'
-import Funcionario from './pages/Funcionario'
-import Administrador from './pages/Administrador'
-import Curricular from './pages/Curricular'
+import Login from './pages/login'
 import Register from './pages/Register'
 import Preinscripcion from './pages/Preinscripcion'
+import VerDetallesAspirantes from './components/VerDetallesAspirantes'
 
+import ProtectedRoute from './components/ProtectedRoute'
+import Dashboard from './pages/Dashboard'
+import Instructor from './pages/Instructor'
+import CrearSolicitud from './pages/CrearSolicitud'
+import ConsultasInstructor from './pages/ConsultasInstructor'
+import GestionAspirantes from './pages/GestionAspirantes'
+import ReportesCoordinador from './pages/ReportesCoordinador'
+
+import Coordinador from './pages/Coordinador'
+import Funcionario from './pages/Funcionario'
+import ReportesFuncionario from './pages/ReportesFuncionario'
+import DetallesSolicitudes from './components/DetallesSolicitudes'
 function App() {
   return (
-    <Routes>
+    <AuthProvider>
+      <Routes>
 
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/preinscripcion-aspirante/:id" element={<Preinscripcion />} />
+        <Route path='/' element={<Login />}></Route>
+        <Route path='/register' element={<Register />}></Route>
+        <Route path="/preinscripcion-aspirante/:id" element={<Preinscripcion />} />
 
-      {/* RUTAS INSTRUCTOR */}
-      <Route
-        path="/instructor"
-        element={
-          <ProtectedRoute>
-            <Instructor />
-          </ProtectedRoute>
-        }
-      >
-        <Route path=":tipo" element={<CrearSolicitud />} />
-      </Route>
+        <Route path='/dashboard' element={<Dashboard />}></Route>
 
-      {/* OTRAS RUTAS */}
-      <Route
-        path="/coordinador"
-        element={
-          <ProtectedRoute>
-            <Coordinador />
-          </ProtectedRoute>
-        }
-      />
+        <Route element={<ProtectedRoute />}>
+          <Route path='/instructor' element={<Instructor />}></Route>
+          <Route path='/instructor/crear-solicitud/:tipo' element={<CrearSolicitud />}></Route>
+          <Route path='/instructor/consultas-instructor' element={<ConsultasInstructor />}></Route>
+          <Route path='/instructor/gestion-aspirantes' element={<GestionAspirantes />}></Route>
+          <Route path="/instructor/ver-detalles-aspirantes/:id" element={<VerDetallesAspirantes />} />
+        </Route>
 
-      <Route
-        path="/funcionario"
-        element={
-          <ProtectedRoute>
-            <Funcionario />
-          </ProtectedRoute>
-        }
-      />
+        <Route element={<ProtectedRoute />}>
+          <Route path='/coordinador' element={<Coordinador />}></Route>
+          <Route path='/coordinador/reportes' element={<ReportesCoordinador />}></Route>
+        </Route>
 
-      <Route
-        path="/administrador"
-        element={
-          <ProtectedRoute>
-            <Administrador />
-          </ProtectedRoute>
-        }
-      />
+        <Route element={<ProtectedRoute />}>
+          <Route path='/funcionario' element={<Funcionario />}></Route>
+          <Route path='/funcionario/reportes' element={<ReportesFuncionario />}></Route>
+          <Route path='/funcionario/conocer-detalles-solicitud/:id' element={<DetallesSolicitudes />}></Route>
+        </Route>
 
-      <Route
-        path="/curricular"
-        element={
-          <ProtectedRoute>
-            <Curricular />
-          </ProtectedRoute>
-        }
-      />
 
-    </Routes>
+      </Routes>
+    </AuthProvider>
   )
 }
 

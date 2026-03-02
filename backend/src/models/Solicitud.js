@@ -109,7 +109,7 @@ const solicitudSchema = new mongoose.Schema({
 
     departamento: {
         type: String,
-        default: "Cauca",
+        default: "CAUCA",
     },
 
     // ===============================

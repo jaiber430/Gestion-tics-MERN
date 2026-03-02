@@ -5,14 +5,16 @@ import {
     consultarSolicitudInstructor,
     enviarSolicitud,
     verFichaCaracterizacion,
+    verPdfAspirantes,
 
     // COORDINADOR
     consultarSolicitudCoordinador,
     revisarSolicitud,
-    verFichaCaracterizacionCoordinador,
     verFormatoMasivo,
     verCartaSolicitud,
     verDocumentoAspirantes,
+    verFichaCaracterizacionCoordinador,
+    obtenerRevisiones,
 
     // FUNCIONARIO
     verSolicitudesFuncionario,
@@ -22,6 +24,7 @@ import {
     descargarDocumentoAspirantes,
     descargarFormatoMasivo,
     subirExcelSofiaPlus,
+    verDetallesSolicitud,
 
 } from '../controllers/consultasController.js'
 
@@ -43,7 +46,7 @@ router.get(
 
 // Enviar solicitud
 router.put(
-    '/consultas-instructor/:idSolicitud',
+    '/enviar-solicitud/:idSolicitud',
     checkAuth,
     permisosRol('INSTRUCTOR'),
     enviarSolicitud
@@ -57,7 +60,15 @@ router.get(
     verFichaCaracterizacion
 )
 
+router.get('/consultas-instructor/:idAspirante', checkAuth, permisosRol('INSTRUCTOR'), verPdfAspirantes)
+
 // COORDINADOR
+router.get(
+    '/consultas-coordinador/:idSolicitud/ficha-caracterizacion',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    verFichaCaracterizacionCoordinador
+)
 
 // Listar solicitudes
 router.get(
@@ -66,6 +77,8 @@ router.get(
     permisosRol('COORDINADOR'),
     consultarSolicitudCoordinador
 )
+
+router.get('/obtener-revisiones-coordinador', checkAuth, permisosRol('COORDINADOR'), obtenerRevisiones)
 
 // Revisar solicitud
 router.put(
@@ -84,23 +97,16 @@ router.get(
 )
 
 router.get(
-    '/revision-coordinador/:idSolicitud/ficha-caracterizacion',
-    checkAuth,
-    permisosRol('COORDINADOR'),
-    verFichaCaracterizacionCoordinador
-)
-
-router.get(
     '/revision-coordinador/:idSolicitud/documento-aspirantes',
     checkAuth,
-    permisosRol('COORDINADOR'),
+    permisosRol('COORDINADOR', 'INSTRUCTOR'),
     verDocumentoAspirantes
 )
 
 router.get(
     '/revision-coordinador/:idSolicitud/formato-masivo',
     checkAuth,
-    permisosRol('COORDINADOR'),
+    permisosRol('COORDINADOR', 'INSTRUCTOR'),
     verFormatoMasivo
 )
 
@@ -113,6 +119,8 @@ router.get(
     permisosRol('FUNCIONARIO'),
     verSolicitudesFuncionario
 )
+
+router.get('/solicitudes-funcionario/:id', checkAuth, permisosRol('FUNCIONARIO'), verDetallesSolicitud)
 
 // Revisar solicitud
 router.put(

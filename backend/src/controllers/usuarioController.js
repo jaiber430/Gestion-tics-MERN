@@ -9,11 +9,15 @@ import ProgramasEspecialesCampesena from '../models/ProgramasEspecialesCampesena
 
 import HttpErrors from '../helpers/httpErrors.js'
 import generarJWT from '../helpers/generarJWT.js'
-import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
+// import { emailRecuperacion } from '../helpers/enviarEmailRecuperarPassword.js'
 import { formatearFechaInicio, formatearFechaFin } from '../helpers/formatearFechas.js'
 
 const iniciarSesion = async (req, res) => {
     const { numeroIdentificacion, password } = req.body
+
+    if ([numeroIdentificacion, password].includes('')) {
+        throw new HttpErrors('Todas las credenciales son requeridas', 400)
+    }
 
     const existeUsuario = await Usuarios.findOne({ numeroIdentificacion }).populate('rol')
 
@@ -40,7 +44,7 @@ const iniciarSesion = async (req, res) => {
     res.cookie('token', token, {
         // No poder acceder al token usando JS
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         sameSite: 'lax',
         // 30d
         maxAge: 30 * 24 * 60 * 60 * 1000
@@ -48,7 +52,6 @@ const iniciarSesion = async (req, res) => {
 
 
     const usuarioLogueado = {
-        id: existeUsuario._id,
         nombre: existeUsuario.nombre,
         apellido: existeUsuario.apellido,
         rol: existeUsuario.rol.nombreRol,
@@ -56,7 +59,7 @@ const iniciarSesion = async (req, res) => {
         email: existeUsuario.email
     }
 
-    res.send(usuarioLogueado)
+    res.json(usuarioLogueado)
 }
 
 const registrarUsuario = async (req, res) => {
@@ -67,6 +70,7 @@ const registrarUsuario = async (req, res) => {
         rol,
         tipoIdentificacion,
         numeroIdentificacion,
+        telefono,
         email,
         password,
         tipoContrato,
@@ -179,6 +183,7 @@ const registrarUsuario = async (req, res) => {
         $or: [
             { email },
             { numeroIdentificacion },
+            { telefono },
         ]
     })
 
@@ -193,16 +198,17 @@ const registrarUsuario = async (req, res) => {
         throw new HttpErrors('El correo no es valido', 400)
     }
 
+    if (!email.includes('@sena.edu.co')) {
+        throw new HttpErrors('El correo debe ser dominio sena', 400)
+    }
 
     if (password.length <= 7) {
         throw new HttpErrors('La contraseña debe tener minimo 8 caracteres', 400)
     }
 
-
     if (tipoContrato !== 'Contrato' && tipoContrato !== 'Planta') {
         throw new HttpErrors('Contrato no valido', 400)
     }
-
 
     //VALIDACIÓN SOLO SI ES CONTRATO
     if (tipoContrato === 'Contrato') {
@@ -229,12 +235,17 @@ const registrarUsuario = async (req, res) => {
 
         if (numeroContratoExiste) {
             throw new HttpErrors(
-                'EL numero de contrato ya existe',
+                'El numero de contrato ya existe',
                 409
             )
         }
     }
 
+    if (tipoContrato !== 'Contrato') {
+        delete req.body.numeroContrato
+        delete req.body.inicioContrato
+        delete req.body.finContrato
+    }
 
     await Usuarios.create(req.body)
 
@@ -258,8 +269,8 @@ const coordinadores = async (req, res) => {
             verificado: true,
             contratoActivo: true
         })
-        .select("nombre apellido") // Solo campos que quieras mostrar
-        .populate("rol", "nombreRol"); // Popular el rol para mostrar el nombre
+            .select("nombre apellido") // Solo campos que quieras mostrar
+            .populate("rol", "nombreRol"); // Popular el rol para mostrar el nombre
 
         res.json(coordinadoresEncontrados);
     } catch (error) {
@@ -271,23 +282,23 @@ const coordinadores = async (req, res) => {
 const recuperarPassword = async (req, res) => {
     const { email } = req.body
 
-    const existeEmail = await Usuarios.findOne({ email })
-    if (!existeEmail) {
-        throw new HttpErrors('El correo no ha sido encontrado', 404)
-    }
+    // const existeEmail = await Usuarios.findOne({ email })
+    // if (!existeEmail) {
+    //     throw new HttpErrors('El correo no ha sido encontrado', 404)
+    // }
 
-    const generarPassword = uuidv4()
-    const passwordActualizada = generarPassword.slice(0, 8)
+    // const generarPassword = uuidv4()
+    // const passwordActualizada = generarPassword.slice(0, 8)
 
-    emailRecuperacion({
-        email: existeEmail.email,
-        passwordActualizada: passwordActualizada
-    })
+    // emailRecuperacion({
+    //     email: existeEmail.email,
+    //     passwordActualizada: passwordActualizada
+    // })
 
-    existeEmail.password = passwordActualizada
+    // existeEmail.password = passwordActualizada
 
-    await existeEmail.save()
-    res.json({ msg: 'Se ha enviado a su correo la nueva contraseña' })
+    // await existeEmail.save()
+    // res.json({ msg: 'Se ha enviado a su correo la nueva contraseña' })
 }
 
 const verUsuarios = async (req, res) => {
@@ -354,6 +365,31 @@ const activarContrato = async (req, res) => {
     res.json({ msg: 'Contrato activado correctamente' })
 }
 
+const logOut = async (req, res) => {
+    res.clearCookie("token")
+    res.json({ msg: "Sesión cerrada satisfactoriamente" })
+}
+
+const userLoguaeado = async (req, res) => {
+
+    const existeUsuario = await Usuarios.findById(req.usuario.id).populate('rol').select('-password')
+
+    if (!existeUsuario) {
+        throw new HttpErrors('Usuario no existe', 404)
+    }
+
+    const usuarioLogueado = {
+        nombre: existeUsuario.nombre,
+        apellido: existeUsuario.apellido,
+        rol: existeUsuario.rol.nombreRol,
+        numeroIdentificacion: existeUsuario.numeroIdentificacion,
+        email: existeUsuario.email
+    }
+
+    res.json(usuarioLogueado)
+
+}
+
 export {
     iniciarSesion,
     registrarUsuario,
@@ -362,4 +398,6 @@ export {
     verificarUsuarios,
     activarContrato,
     coordinadores,
+    logOut,
+    userLoguaeado,
 }

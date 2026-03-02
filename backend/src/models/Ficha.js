@@ -11,7 +11,7 @@ const fichaSchema = new mongoose.Schema({
     },
     estado: {
         type: String,
-        enum: ['Creación', 'Creada', 'Lista de espera', 'Matriculada', 'Rechazada'],
+        enum: ['CREACIÓN', 'CREADA', 'LISTA DE ESPERA', 'MATRICULADA', 'RECHAZADA'],
         required: true,
     },
     usuarioSolicitante: {
