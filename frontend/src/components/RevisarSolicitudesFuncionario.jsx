@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Alerta from './Alerta'
+import clienteAxios from '../api/axios'
 
 const ESTADOS_CONFIG = {
     'CREACIÓN': { barra: 'from-blue-500 to-blue-400', badge: 'bg-blue-50 text-blue-700 border-blue-200', boton: 'from-blue-600 to-blue-500 shadow-blue-200' },
@@ -19,6 +20,79 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
     const handlerChangeStatus = (e) => {
         setEstado(e.target.value)
         if (e.target.value !== 'RECHAZADA') setObservacion('')
+    }
+
+    const handlerDocumentosAspirantes = async (idSolicitud) => {
+        try {
+            const response = await clienteAxios.get(
+                `/consultas/revision-funcionario/${idSolicitud}/descargar-documento`,
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: 'application/pdf' })
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = 'documentos-aspirantes.pdf'
+            link.click()
+            setTimeout(() => window.URL.revokeObjectURL(url), 10000)
+        } catch (error) {
+            setAlerta({
+                msg: error?.response?.data?.msg || 'Error al descargar el documento',
+                error: true
+            })
+            setTimeout(() => {
+                setAlerta({})
+            }, 3000)
+        }
+    }
+
+    const handlerCartaSolicitud = async (idSolicitud) => {
+        try {
+            console.log(12)
+            const response = await clienteAxios.get(
+                `/consultas/revision-funcionario/${idSolicitud}/descargar-carta`,
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: 'application/pdf' })
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = 'carta-solicitud.pdf'
+            link.click()
+            setTimeout(() => window.URL.revokeObjectURL(url), 10000)
+        } catch (error) {
+            setAlerta({
+                msg: error?.response?.data?.msg || 'Error al descargar el documento',
+                error: true
+            })
+            setTimeout(() => {
+                setAlerta({})
+            }, 3000)
+        }
+    }
+
+    const handlerFichaCaracterizacion = async (idSolicitud) => {
+        try {
+            const response = await clienteAxios.get(
+                `/consultas/revision-funcionario/${idSolicitud}/descargar-ficha`,
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: 'application/pdf' })
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = 'ficha-caracterizacion.pdf'
+            link.click()
+            setTimeout(() => window.URL.revokeObjectURL(url), 10000)
+        } catch (error) {
+            setAlerta({
+                msg: error?.response?.data?.msg || 'Error al descargar el documento',
+                error: true
+            })
+            setTimeout(() => {
+                setAlerta({})
+            }, 3000)
+        }
     }
 
     return (
@@ -106,7 +180,8 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                 <div className="flex flex-wrap gap-3 mb-6">
 
                                     {/* Ver aspirantes */}
-                                    <button type="button"
+                                    <button
+                                        onClick={() => handlerDocumentosAspirantes(s.solicitud._id)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -124,7 +199,8 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                     </button>
 
                                     {/* Ver ficha */}
-                                    <button type="button"
+                                    <button
+                                        onClick={() => handlerFichaCaracterizacion(s.solicitud?._id)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -133,7 +209,8 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                     </button>
 
                                     {/* Carta solicitud — siempre disponible */}
-                                    <button type="button"
+                                    <button
+                                        onClick={() => handlerCartaSolicitud(s.solicitud?._id)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />

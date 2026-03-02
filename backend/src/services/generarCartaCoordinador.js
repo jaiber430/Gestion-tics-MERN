@@ -2,10 +2,14 @@ import fs from "fs"
 import path from "path"
 import PizZip from "pizzip"
 import Docxtemplater from "docxtemplater"
+import { exec } from "child_process"
+import { promisify } from "util"
 
 import Usuarios from "../models/Usuarios.js"
 import ProgramasFormacion from "../models/ProgramasFormacion.js"
 import Solicitud from "../models/Solicitud.js"
+
+const execAsync = promisify(exec)
 
 const generarCartaCoordinador = async (coordinador, instructor, solicitud, session) => {
     // Crear la ruta donde se encuntra la plantilla
@@ -33,11 +37,11 @@ const generarCartaCoordinador = async (coordinador, instructor, solicitud, sessi
         email: dataCoordinador.email,
         convenio: solicitudSend.convenio,
         programaFormacion: programaFormacion.nombrePrograma,
-    }, { session })
+    })
 
     const buffer = doc.getZip().generate({
         type: "nodebuffer"
-    }, { session })
+    })
 
     const carpetaDestino = path.join(process.cwd(), "uploads", `solicitud-${solicitud}`, 'documents')
     if (!fs.existsSync(carpetaDestino)) {
@@ -49,6 +53,10 @@ const generarCartaCoordinador = async (coordinador, instructor, solicitud, sessi
     const rutaFinal = path.join(carpetaDestino, nombreArchivo)
 
     fs.writeFileSync(rutaFinal, buffer)
+
+    const { stdout, stderr } = await execAsync(`"C:\\Program Files\\LibreOffice\\program\\soffice.exe" --headless --convert-to pdf --outdir "${carpetaDestino}" "${rutaFinal}"`)
+    console.log('stdout:', stdout)
+    console.log('stderr:', stderr)
 }
 
 export default generarCartaCoordinador

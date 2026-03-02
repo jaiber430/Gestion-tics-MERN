@@ -17,13 +17,7 @@ const Funcionario = () => {
                 ])
                 setSolicitud(solicitudRes.data)
             } catch (error) {
-                setAlerta({
-                    msg: error?.response?.data?.msg,
-                    error: true
-                })
-                setTimeout(() => {
-                    setAlerta({})
-                }, 3000)
+                console.log(error?.response?.data?.msg)
             }
         }
         obtenerSolicitudes()

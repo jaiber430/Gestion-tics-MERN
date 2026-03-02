@@ -481,16 +481,6 @@ const descargarCartaSolicitud = async (req, res) => {
         throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
     }
 
-    if (solicitud.empresaSolicitante === null) {
-        const nameFile = `carta-${idSolicitud}.docx`
-
-        const rutaCarta = path.join(
-            process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
-        )
-
-        return res.download(rutaCarta)
-    }
-
     const nameFile = `carta-${idSolicitud}.pdf`
 
     const rutaCarta = path.join(
@@ -521,7 +511,7 @@ const descargarFichaCaracterizacion = async (req, res) => {
         throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
     }
 
-    const nameFile = `ficha-${idSolicitud}.docx`
+    const nameFile = `ficha-${idSolicitud}.pdf`
 
     const rutaCarta = path.join(
         process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', nameFile
@@ -554,7 +544,7 @@ const descargarDocumentoAspirantes = async (req, res) => {
     const nameFile = `combinado.pdf`
 
     const rutaCarta = path.join(
-        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'DocumentoAspirantes', nameFile
+        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'DocumentosAspirantes', nameFile
     )
 
     res.download(rutaCarta)
