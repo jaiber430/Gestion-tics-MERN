@@ -25,6 +25,8 @@ import {
     descargarFormatoMasivo,
     subirExcelSofiaPlus,
     verDetallesSolicitud,
+    verFichas,
+    obtenerEstadoFicha
 
 } from '../controllers/consultasController.js'
 
@@ -159,12 +161,26 @@ router.get(
     descargarFormatoMasivo
 )
 
+router.get(
+    '/revision-funcionario/:idSolicitud/estado-excel',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    verFichas
+)
+
 router.post(
     '/revision-funcionario/subir-excel/:idSolicitud',
     checkAuth,
     permisosRol('FUNCIONARIO'),
     upload.single('archivo'),
     subirExcelSofiaPlus
+)
+
+router.get(
+    '/revision-funcionario/:idSolicitud/estado-ficha',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    obtenerEstadoFicha
 )
 
 export default router

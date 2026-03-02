@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Alerta from './Alerta'
 import clienteAxios from '../api/axios'
@@ -13,16 +13,71 @@ const ESTADOS_CONFIG = {
 
 const RevisarSolicitudesFuncionario = ({ solicitud }) => {
 
-    const [estado, setEstado] = useState('')
-    const [observacion, setObservacion] = useState('')
-    const [subirArchivo, setSubirArchivo] = useState(false)
+    const [fichas, setFichas] = useState({})
+    const [estadosLocal, setEstadosLocal] = useState({})
+    const [observacionesLocal, setObservacionesLocal] = useState({})
+    const [codigosFicha, setCodigosFicha] = useState({})
+    const [codigosSolicitud, setCodigosSolicitud] = useState({})
+    const [numerosInscritos, setNumerosInscritos] = useState({})
+    const [excelListo, setExcelListo] = useState({}) // { [idSolicitud]: bool }
     const [alerta, setAlerta] = useState({})
-    const [codigoFicha, setCodigoFicha] = useState('')
-    const [codigoSolicitud, setCodigoSolicitud] = useState('')
 
-    const handlerChangeStatus = (e) => {
-        setEstado(e.target.value)
-        if (e.target.value !== 'RECHAZADA') setObservacion('')
+    useEffect(() => {
+        if (!solicitud?.length) return
+        const obtenerDatos = async () => {
+            try {
+                const resultados = await Promise.all(
+                    solicitud.map(s =>
+                        clienteAxios.get(`/consultas/revision-funcionario/${s.solicitud._id}/estado-ficha`)
+                            .then(({ data }) => ({ id: s.solicitud._id, data }))
+                            .catch(() => ({ id: s.solicitud._id, data: null }))
+                    )
+                )
+
+                const fichasMap = {}
+                const estadosMap = {}
+                const observacionesMap = {}
+                const codigosFichaMap = {}
+                const codigosSolicitudMap = {}
+                const numerosInscritosMap = {}
+                const excelMap = {}
+
+                resultados.forEach(({ id, data }) => {
+                    fichasMap[id] = data
+                    estadosMap[id] = data?.estado || ''
+                    // Precargar observación según el estado guardado
+                    observacionesMap[id] =
+                        data?.observacionCreacion ||
+                        data?.observacionCreada ||
+                        data?.observacionMatriculada ||
+                        data?.observacionRechazada || ''
+                    codigosFichaMap[id] = data?.codigoFicha || ''
+                    codigosSolicitudMap[id] = solicitud.find(s => s.solicitud._id === id)?.solicitud?.codigoSolicitud || ''
+                    numerosInscritosMap[id] = data?.numeroInscritos || ''
+                    excelMap[id] = data?.excel ?? true
+                })
+
+                setFichas(fichasMap)
+                setEstadosLocal(estadosMap)
+                setObservacionesLocal(observacionesMap)
+                setCodigosFicha(codigosFichaMap)
+                setCodigosSolicitud(codigosSolicitudMap)
+                setNumerosInscritos(numerosInscritosMap)
+                setExcelListo(excelMap)
+            } catch (error) {
+                console.error(error)
+            }
+        }
+        obtenerDatos()
+    }, [])
+
+    const handlerChangeStatus = (idSolicitud, value) => {
+        setEstadosLocal(prev => ({ ...prev, [idSolicitud]: value }))
+        // Limpiar todos los campos al cambiar estado
+        setObservacionesLocal(prev => ({ ...prev, [idSolicitud]: '' }))
+        setCodigosFicha(prev => ({ ...prev, [idSolicitud]: '' }))
+        setCodigosSolicitud(prev => ({ ...prev, [idSolicitud]: '' }))
+        setNumerosInscritos(prev => ({ ...prev, [idSolicitud]: '' }))
     }
 
     const handlerDocumentosAspirantes = async (idSolicitud) => {
@@ -36,22 +91,18 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
             const link = document.createElement('a')
             link.href = url
             link.download = 'documentos-aspirantes.pdf'
+            document.body.appendChild(link)
             link.click()
+            document.body.removeChild(link)
             setTimeout(() => window.URL.revokeObjectURL(url), 10000)
         } catch (error) {
-            setAlerta({
-                msg: error?.response?.data?.msg || 'Error al descargar el documento',
-                error: true
-            })
-            setTimeout(() => {
-                setAlerta({})
-            }, 3000)
+            setAlerta({ msg: error?.response?.data?.msg || 'Error al descargar el documento', error: true })
+            setTimeout(() => setAlerta({}), 3000)
         }
     }
 
     const handlerCartaSolicitud = async (idSolicitud) => {
         try {
-            console.log(12)
             const response = await clienteAxios.get(
                 `/consultas/revision-funcionario/${idSolicitud}/descargar-carta`,
                 { responseType: 'blob' }
@@ -61,16 +112,13 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
             const link = document.createElement('a')
             link.href = url
             link.download = 'carta-solicitud.pdf'
+            document.body.appendChild(link)
             link.click()
+            document.body.removeChild(link)
             setTimeout(() => window.URL.revokeObjectURL(url), 10000)
         } catch (error) {
-            setAlerta({
-                msg: error?.response?.data?.msg || 'Error al descargar el documento',
-                error: true
-            })
-            setTimeout(() => {
-                setAlerta({})
-            }, 3000)
+            setAlerta({ msg: error?.response?.data?.msg || 'Error al descargar el documento', error: true })
+            setTimeout(() => setAlerta({}), 3000)
         }
     }
 
@@ -85,16 +133,13 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
             const link = document.createElement('a')
             link.href = url
             link.download = 'ficha-caracterizacion.pdf'
+            document.body.appendChild(link)
             link.click()
+            document.body.removeChild(link)
             setTimeout(() => window.URL.revokeObjectURL(url), 10000)
         } catch (error) {
-            setAlerta({
-                msg: error?.response?.data?.msg || 'Error al descargar el documento',
-                error: true
-            })
-            setTimeout(() => {
-                setAlerta({})
-            }, 3000)
+            setAlerta({ msg: error?.response?.data?.msg || 'Error al descargar el documento', error: true })
+            setTimeout(() => setAlerta({}), 3000)
         }
     }
 
@@ -104,7 +149,7 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                 `/consultas/revision-funcionario/${idSolicitud}/descargar-formato`,
                 { responseType: 'blob' }
             )
-            const blob = new Blob([response.data], { type: 'application/xlsx' })
+            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
             const url = window.URL.createObjectURL(blob)
             const link = document.createElement('a')
             link.href = url
@@ -113,10 +158,59 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
             link.click()
             document.body.removeChild(link)
             setTimeout(() => window.URL.revokeObjectURL(url), 10000)
+            // Al descargar → cambiar a modo subir
+            setExcelListo(prev => ({ ...prev, [idSolicitud]: false }))
         } catch (error) {
-            console.log(error)
+            setAlerta({ msg: error?.response?.data?.msg || 'Error al descargar el Excel', error: true })
+            setTimeout(() => setAlerta({}), 3000)
         }
-        setSubirArchivo(true)
+    }
+
+    const handleSubirExcel = async (e, idSolicitud) => {
+        const archivo = e.target.files[0]
+        if (!archivo) return
+        try {
+            const formData = new FormData()
+            formData.append('archivo', archivo)
+            await clienteAxios.post(
+                `/consultas/revision-funcionario/subir-excel/${idSolicitud}`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            )
+            // Al subir → volver a modo descargar
+            setExcelListo(prev => ({ ...prev, [idSolicitud]: true }))
+            setAlerta({ msg: 'Excel subido correctamente', error: false })
+            setTimeout(() => setAlerta({}), 3000)
+        } catch (error) {
+            setAlerta({ msg: error?.response?.data?.msg || 'Error al subir el Excel', error: true })
+            setTimeout(() => setAlerta({}), 3000)
+        }
+    }
+
+    const handleSubmit = async (idSolicitud, e) => {
+        e.preventDefault()
+        try {
+            const { data } = await clienteAxios.put(
+                `/consultas/revision-funcionario/${idSolicitud}`,
+                {
+                    estado: estadosLocal[idSolicitud],
+                    observacion: observacionesLocal[idSolicitud],
+                    codigoFicha: codigosFicha[idSolicitud],
+                    codigoSolicitud: codigosSolicitud[idSolicitud],
+                    numeroInscritos: numerosInscritos[idSolicitud]
+                }
+            )
+            // Actualizar ficha local con el nuevo estado guardado
+            setFichas(prev => ({ ...prev, [idSolicitud]: { ...prev[idSolicitud], estado: estadosLocal[idSolicitud] } }))
+            setAlerta({ msg: data?.msg, error: false })
+            setTimeout(() => setAlerta({}), 3000)
+        } catch (error) {
+            setAlerta({
+                msg: error?.response?.data?.msg || 'Error al guardar la revisión',
+                error: true,
+            })
+            setTimeout(() => setAlerta({}), 3000)
+        }
     }
 
     return (
@@ -126,7 +220,11 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
 
             {solicitud.map((s, index) => {
 
-                const config = ESTADOS_CONFIG[estado] || { barra: 'from-yellow-500 to-amber-400' }
+                const idSolicitud = s.solicitud._id
+                const ficha = fichas[idSolicitud]
+                const estadoActual = estadosLocal[idSolicitud] || ''
+                const bloqueado = ficha?.estado === 'MATRICULADA'
+                const config = ESTADOS_CONFIG[estadoActual] || { barra: 'from-yellow-500 to-amber-400' }
 
                 return (
                     <div
@@ -143,16 +241,22 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full font-medium">#{index + 1}</span>
-                                        {estado && (
+                                        {estadoActual && (
                                             <span className={`px-3 py-0.5 border rounded-full text-xs font-semibold ${config.badge}`}>
-                                                {estado}
+                                                {estadoActual}
+                                            </span>
+                                        )}
+                                        {/* Badge bloqueado si es matriculada */}
+                                        {bloqueado && (
+                                            <span className="px-3 py-0.5 border rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border-slate-200">
+                                                Finalizado
                                             </span>
                                         )}
                                     </div>
                                     <h2 className="text-2xl font-bold text-slate-800 leading-tight">
                                         {s.solicitud?.programaFormacion?.nombrePrograma || '—'}
                                     </h2>
-                                    <span>{s.solicitud?.tipoSolicitud}</span>
+                                    <span className="text-sm text-slate-500">{s.solicitud?.tipoSolicitud}</span>
                                 </div>
 
                                 {/* Link esquina superior derecha */}
@@ -166,16 +270,20 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                 </Link>
                             </div>
 
-                            <form onSubmit={(e) => e.preventDefault()}>
+                            <form onSubmit={(e) => handleSubmit(idSolicitud, e)}>
 
-                                {/* Select + Observación */}
+                                {/* Select + Observación + Códigos + Inscritos */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+                                    {/* Estado */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Estado</label>
                                         <select
-                                            value={estado}
-                                            onChange={handlerChangeStatus}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 transition-all bg-white text-slate-700">
+                                            value={estadoActual}
+                                            onChange={e => handlerChangeStatus(idSolicitud, e.target.value)}
+                                            disabled={bloqueado}
+                                            className={`w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 transition-all bg-white text-slate-700
+                                                ${bloqueado ? 'opacity-60 cursor-not-allowed bg-slate-100' : ''}`}>
                                             <option value=''>Seleccione un estado</option>
                                             <option value='CREACIÓN'>Creación</option>
                                             <option value='CREADA'>Creada</option>
@@ -184,58 +292,83 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                             <option value='RECHAZADA'>Rechazada</option>
                                         </select>
                                     </div>
+
+                                    {/* Observación */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Observación</label>
                                         <textarea
-                                            value={observacion}
-                                            onChange={e => setObservacion(e.target.value)}
-                                            disabled={estado === 'LISTA DE ESPERA' || estado === ''}
-                                            placeholder={estado === 'LISTA DE ESPERA' || estado === '' ? 'Solo disponible al rechazar' : 'Escribe la observación...'}
+                                            value={observacionesLocal[idSolicitud] || ''}
+                                            onChange={e => setObservacionesLocal(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
+                                            disabled={bloqueado || estadoActual === 'LISTA DE ESPERA' || estadoActual === ''}
+                                            placeholder={bloqueado || estadoActual === 'LISTA DE ESPERA' || estadoActual === '' ? 'No disponible' : 'Escribe la observación...'}
                                             rows={2}
                                             className={`w-full px-4 py-2.5 border rounded-xl transition-all resize-none focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                ${estado === 'LISTA DE ESPERA' || estado === ''
+                                                ${bloqueado || estadoActual === 'LISTA DE ESPERA' || estadoActual === ''
                                                     ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'border-slate-200 bg-white text-slate-700'
                                                 }`}
                                         />
                                     </div>
+
+                                    {/* Código ficha */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Código ficha</label>
                                         <input
                                             type='number'
-                                            value={codigoFicha}
-                                            onChange={e => setCodigoFicha(e.target.value)}
-                                            disabled={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'}
-                                            placeholder={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN' ? 'No disponible' : 'Ingresa el código...'}
+                                            value={codigosFicha[idSolicitud] || ''}
+                                            onChange={e => setCodigosFicha(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
+                                            disabled={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')}
+                                            placeholder={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA') ? 'No disponible' : 'Ingresa el código...'}
                                             className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                ${estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'
+                                                ${bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')
                                                     ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'border-slate-200 bg-white text-slate-700'
                                                 }`}
                                         />
                                     </div>
+
+                                    {/* Código solicitud */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Código Solicitud</label>
                                         <input
                                             type='number'
-                                            value={codigoSolicitud}
-                                            onChange={e => setCodigoSolicitud(e.target.value)}
-                                            disabled={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'}
-                                            placeholder={estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN' ? 'No disponible' : 'Ingresa el código...'}
+                                            value={codigosSolicitud[idSolicitud] || ''}
+                                            onChange={e => setCodigosSolicitud(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
+                                            disabled={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')}
+                                            placeholder={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA') ? 'No disponible' : 'Ingresa el código...'}
                                             className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                    ${estado === 'LISTA DE ESPERA' || estado === '' || estado === 'CREACIÓN'
+                                                ${bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')
+                                                    ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'border-slate-200 bg-white text-slate-700'
+                                                }`}
+                                        />
+                                    </div>
+
+                                    {/* Número de inscritos */}
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Número de inscritos</label>
+                                        <input
+                                            type='number'
+                                            value={numerosInscritos[idSolicitud] || ''}
+                                            onChange={e => setNumerosInscritos(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
+                                            disabled={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')}
+                                            placeholder={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA') ? 'No disponible' : 'Ingresa el número...'}
+                                            className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
+                                                ${bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')
                                                     ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'border-slate-200 bg-white text-slate-700'
                                                 }`}
                                         />
                                     </div>
                                 </div>
+
                                 {/* Botones de documentos — lo más importante */}
                                 <div className="flex flex-wrap gap-3 mb-6">
 
                                     {/* Descargar aspirantes */}
                                     <button
-                                        onClick={() => handlerDocumentosAspirantes(s.solicitud._id)}
+                                        type="button"
+                                        onClick={() => handlerDocumentosAspirantes(idSolicitud)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -243,21 +376,36 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                         Descargar Documentos Aspirantes
                                     </button>
 
-                                    {/* Excel masivo — destacado */}
-                                    {subirArchivo ?
-                                        <input type='file' /> :
+                                    {/* Excel masivo — descarga o subida según estado */}
+                                    {excelListo[idSolicitud] !== false ? (
                                         <button
-                                            onClick={() => handleExcelMasivo(s?.solicitud._id)}
+                                            type="button"
+                                            onClick={() => handleExcelMasivo(idSolicitud)}
                                             className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                             Descargar Excel masivo
-                                        </button>}
+                                        </button>
+                                    ) : (
+                                        <label className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 shadow-sm cursor-pointer">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                            Subir Excel masivo
+                                            <input
+                                                type='file'
+                                                className="hidden"
+                                                accept=".xlsx,.xls"
+                                                onChange={(e) => handleSubirExcel(e, idSolicitud)}
+                                            />
+                                        </label>
+                                    )}
 
                                     {/* Ver ficha */}
                                     <button
-                                        onClick={() => handlerFichaCaracterizacion(s.solicitud?._id)}
+                                        type="button"
+                                        onClick={() => handlerFichaCaracterizacion(idSolicitud)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -267,7 +415,8 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
 
                                     {/* Carta solicitud — siempre disponible */}
                                     <button
-                                        onClick={() => handlerCartaSolicitud(s.solicitud?._id)}
+                                        type="button"
+                                        onClick={() => handlerCartaSolicitud(idSolicitud)}
                                         className="px-4 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 shadow-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -275,20 +424,21 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                         Descargar Carta solicitud
                                     </button>
                                 </div>
+
                                 {/* Footer — botón submit */}
                                 <div className="pt-4 border-t border-slate-200 flex justify-end">
                                     <button
                                         type="submit"
-                                        disabled={estado === ''}
+                                        disabled={estadoActual === '' || bloqueado}
                                         className={`px-6 py-2.5 text-sm rounded-xl transition-all flex items-center gap-2 font-medium shadow-md
-                                            ${estado
+                                            ${estadoActual && !bloqueado
                                                 ? `bg-gradient-to-r ${config.boton} hover:opacity-90 text-white`
                                                 : 'bg-slate-100 text-slate-300 cursor-not-allowed'
                                             }`}>
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        {estado || 'Seleccione un estado'}
+                                        {bloqueado ? 'Matriculada' : estadoActual || 'Seleccione un estado'}
                                     </button>
                                 </div>
 

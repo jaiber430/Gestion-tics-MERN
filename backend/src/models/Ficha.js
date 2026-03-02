@@ -22,18 +22,37 @@ const fichaSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuarios',
     },
-    observacion: {
+    observacionCreacion: {
         type: String,
         trim: true,
         uppercase: true,
+        default: null
     },
-    numeroInscritos:{
-        type: Number,
+    observacionCreada: {
+        type: String,
         trim: true,
+        uppercase: true,
+        default: null
+    },
+    observacionMatriculada: {
+        type: String,
+        trim: true,
+        uppercase: true,
+        default: null
+    },
+    observacionRechazada: {
+        type: String,
+        trim: true,
+        uppercase: true,
+        default: null
+    },
+    numeroInscritos: {
+        type: Number,
+        default: null,
     },
     excel: {
         type: Boolean,
-        default: false
+        default: true  // true = puede descargar
     },
     fechaRevisonFicha: {
         type: Date,

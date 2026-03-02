@@ -5,27 +5,19 @@ import path from "path"
 const storage = multer.diskStorage({
 
     destination: (req, file, cb) => {
-
         const { idSolicitud } = req.params
-
         const ruta = path.join(
             "uploads",
             `solicitud-${idSolicitud}`,
             "documents",
             "funcionario"
         )
-
-        // Crear carpeta si no existe
         fs.mkdirSync(ruta, { recursive: true })
-
         cb(null, ruta)
     },
-
     filename: (req, file, cb) => {
         const { idSolicitud } = req.params
-        const extension = path.extname(file.originalname)
-
-        cb(null, `sofia-plus-${idSolicitud}${extension}`)
+        cb(null, `masivo-${idSolicitud}.xlsx`)
     }
 })
 

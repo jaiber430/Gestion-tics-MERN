@@ -6,9 +6,8 @@ import { promisify } from 'util'
 import ExcelJS from "exceljs";
 
 import Solicitud from "../models/Solicitud.js"
-import UsuarioAsignado from '../models/UsuarioAsignado.js'
 import RevisionCoordinador from '../models/RevisionCoordinador.js'
-import Ficha from "../models/Ficha.js"
+import Ficha from '../models/Ficha.js'
 import Aspirantes from '../models/Aspirantes.js'
 
 import HttpErrors from '../helpers/httpErrors.js'
@@ -473,32 +472,31 @@ const descargarDocumentoAspirantes = async (req, res) => {
 
 const descargarFormatoMasivo = async (req, res) => {
     const { idSolicitud } = req.params
-
-    const solicitud = await Solicitud.findOne({
-        _id: idSolicitud,
-        revisado: true
-    })
-
-    if (!solicitud) {
-        throw new HttpErrors('No existe el formato de inscripción masivo de la solicitud revisada', 404)
-    }
+    const solicitud = await Solicitud.findOne({ _id: idSolicitud, revisado: true })
+    if (!solicitud) throw new HttpErrors('Solicitud no encontrada', 404)
 
     const solicitudRevisada = await RevisionCoordinador.findOne({
         solicitud: solicitud._id,
         estado: true
     })
-
-    if (!solicitudRevisada) {
-        throw new HttpErrors('La solicitud aun no ha sido aprovada por un coordinador', 403)
-    }
+    if (!solicitudRevisada) throw new HttpErrors('La solicitud no ha sido aprobada por el coordinador', 403)
 
     const nameFile = `masivo-${idSolicitud}.xlsx`
+    const rutaExcel = path.join(process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', 'excel masivo', nameFile)
 
-    const rutaMasivo = path.join(
-        process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents', 'excel masivo', nameFile
+    if (!fs.existsSync(rutaExcel)) throw new HttpErrors('No existe el archivo Excel', 404)
+
+    // Cambiar excel a false después de descargar
+    await Ficha.findOneAndUpdate(
+        { solicitud: idSolicitud },
+        {
+            $set: { excel: false },
+            $setOnInsert: { estado: 'LISTA DE ESPERA', solicitud: idSolicitud }  // solo al crear
+        },
+        { upsert: true }
     )
 
-    res.download(rutaMasivo)
+    res.download(rutaExcel, nameFile)
 }
 
 const revisarSolicitudFuncionario = async (req, res) => {
@@ -506,57 +504,75 @@ const revisarSolicitudFuncionario = async (req, res) => {
     try {
         await session.startTransaction()
         const { idSolicitud } = req.params
-        const { estado, observacion, codigoFicha, codigoSolicitud } = req.body
+        const { estado, observacion, codigoFicha, codigoSolicitud, numeroInscritos } = req.body
 
         // Verificar que la solicitud exista y esté revisada
         const solicitud = await Solicitud.findOne({
             _id: idSolicitud,
             revisado: true
         }).session(session)
-
         if (!solicitud) {
             throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
         }
 
         const estadosValidos = ['CREACIÓN', 'CREADA', 'LISTA DE ESPERA', 'MATRICULADA', 'RECHAZADA']
-
         if (!estadosValidos.includes(estado)) {
             throw new HttpErrors('Estado no válido', 400)
         }
 
-        const updateSolicitud = await Solicitud.findOneAndUpdate(
-            { _id: idSolicitud },
-            { codigoSolicitud: codigoSolicitud },
-            {
-                new: true,
-                upsert: true,
-                session
-            }
-        )
-
-        const estadosPermitidosCodigo = [
-            'Creada',
-            'Matriculada',
-            'Rechazada'
-        ]
-
-        if (codigoFicha !== null && !estadosPermitidosCodigo.includes(estado) && codigoSolicitud !== null) {
-            throw new HttpErrors('El código de ficha y código de solicitud solo pueden asignarse cuando el estado es Rechazado, creado o matriculado', 403)
-        }
-
-        // Objeto que puede cambiar
+        // Objeto base de ficha
         const dataFicha = {
             solicitud: idSolicitud,
             estado,
-            observacion,
             usuarioSolicitante: solicitud.usuarioSolicitante,
             fechaRevisonFicha: new Date()
         }
 
-        if (codigoFicha !== undefined) {
-            dataFicha.codigoFicha = codigoFicha
+        // Lógica por estado
+        if (estado === 'CREACIÓN') {
+            dataFicha.observacionCreacion = observacion
         }
 
+        if (estado === 'CREADA') {
+            if (numeroInscritos) dataFicha.numeroInscritos = numeroInscritos
+            if (!codigoFicha) throw new HttpErrors('El código de ficha es obligatorio cuando el estado es CREADA', 400)
+            if (!codigoSolicitud) throw new HttpErrors('El código de solicitud es obligatorio cuando el estado es CREADA', 400)
+            dataFicha.observacionCreada = observacion
+            dataFicha.codigoFicha = codigoFicha
+            await Solicitud.findOneAndUpdate(
+                { _id: idSolicitud },
+                { codigoSolicitud },
+                { new: true, session }
+            )
+        }
+
+        if (estado === 'LISTA DE ESPERA') {
+            // Sin códigos ni observación
+        }
+
+        if (estado === 'MATRICULADA') {
+            if (numeroInscritos) dataFicha.numeroInscritos = numeroInscritos
+            if (!codigoFicha) throw new HttpErrors('El código de ficha es obligatorio cuando el estado es MATRICULADA', 400)
+            if (!codigoSolicitud) throw new HttpErrors('El código de solicitud es obligatorio cuando el estado es MATRICULADA', 400)
+            dataFicha.observacionMatriculada = observacion
+            dataFicha.codigoFicha = codigoFicha
+            await Solicitud.findOneAndUpdate(
+                { _id: idSolicitud },
+                { codigoSolicitud },
+                { new: true, session }
+            )
+        }
+
+        if (estado === 'RECHAZADA') {
+            if (!observacion) throw new HttpErrors('La observación es obligatoria cuando el estado es RECHAZADA', 400)
+            dataFicha.observacionRechazada = observacion
+            await Solicitud.findByIdAndUpdate(
+                idSolicitud,
+                { revisado: false },
+                { session }
+            )
+        }
+        
         const fichaUpdate = await Ficha.findOneAndUpdate(
             { solicitud: idSolicitud },
             dataFicha,
@@ -570,7 +586,7 @@ const revisarSolicitudFuncionario = async (req, res) => {
         await session.commitTransaction()
         session.endSession()
         res.status(200).json({
-            msg: "Revisión realizada correctamente",
+            msg: 'Revisión realizada correctamente',
             fichaUpdate
         })
     } catch (error) {
@@ -581,18 +597,33 @@ const revisarSolicitudFuncionario = async (req, res) => {
 }
 
 const subirExcelSofiaPlus = async (req, res) => {
-
     const { idSolicitud } = req.params
-
-    if (!req.file) {
-        throw new HttpErrors('No se envió ningún archivo', 400)
-    }
-
-    res.status(200).json({
-        msg: "Excel enviado correctamente",
-    })
+    if (!req.file) throw new HttpErrors('No se envió ningún archivo', 400)
+    await Ficha.findOneAndUpdate(
+        { solicitud: idSolicitud },
+        { excel: true }
+    )
+    res.status(200).json({ msg: 'Excel subido correctamente' })
 }
 
+const verFichas = async (req, res) => {
+    const { idSolicitud } = req.params
+    const ficha = await Ficha.findOne({ solicitud: idSolicitud })
+
+    if (!ficha)
+        return res.status(200).json({ excel: true })
+
+    res.status(200).json({ excel: ficha.excel })
+
+}
+
+const obtenerEstadoFicha = async (req, res) => {
+    const { idSolicitud } = req.params
+    const ficha = await Ficha.findOne({ solicitud: idSolicitud })
+    // Si no existe ficha retorna null — frontend maneja el default
+    if (!ficha) return res.status(200).json(null)
+    res.status(200).json(ficha)
+}
 
 // POR AHORA NO---------
 
@@ -644,5 +675,7 @@ export {
     verPdfAspirantes,
     verFichaCaracterizacionCoordinador,
     obtenerRevisiones,
-    verDetallesSolicitud
+    verDetallesSolicitud,
+    verFichas,
+    obtenerEstadoFicha
 }
