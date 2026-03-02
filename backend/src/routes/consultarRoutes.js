@@ -13,6 +13,7 @@ import {
     verFormatoMasivo,
     verCartaSolicitud,
     verDocumentoAspirantes,
+    verFichaCaracterizacionCoordinador,
 
     // FUNCIONARIO
     verSolicitudesFuncionario,
@@ -53,13 +54,19 @@ router.put(
 router.get(
     '/consultas-instructor/:idSolicitud/ficha-caracterizacion',
     checkAuth,
-    permisosRol('INSTRUCTOR', 'COORDINADOR'),
+    permisosRol('INSTRUCTOR'),
     verFichaCaracterizacion
 )
 
 router.get('/consultas-instructor/:idAspirante', checkAuth, permisosRol('INSTRUCTOR'), verPdfAspirantes)
 
 // COORDINADOR
+router.get(
+    '/consultas-coordinador/:idSolicitud/ficha-caracterizacion',
+    checkAuth,
+    permisosRol('COORDINADOR'),
+    verFichaCaracterizacionCoordinador
+)
 
 // Listar solicitudes
 router.get(

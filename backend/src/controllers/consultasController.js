@@ -66,6 +66,7 @@ const verFichaCaracterizacion = async (req, res) => {
         _id: idSolicitud,
         usuarioSolicitante: req.usuario.id
     })
+
     if (!solicitud) throw new HttpErrors('No existe la ficha de caracterización', 404)
 
     const carpeta = path.join(process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents')
@@ -79,6 +80,27 @@ const verFichaCaracterizacion = async (req, res) => {
     res.sendFile(rutaPdf)
 }
 
+const verFichaCaracterizacionCoordinador = async (req, res) => {
+    const { idSolicitud } = req.params
+
+    const solicitud = await Solicitud.findOne({
+        _id: idSolicitud,
+    })
+
+    if (!solicitud) throw new HttpErrors('No existe la ficha de caracterización', 404)
+
+    const carpeta = path.join(process.cwd(), 'uploads', `solicitud-${idSolicitud}`, 'documents')
+    const rutaDocx = path.join(carpeta, `ficha-${idSolicitud}.docx`)
+    const rutaPdf = path.join(carpeta, `ficha-${idSolicitud}.pdf`)
+
+    if (!fs.existsSync(rutaPdf)) {
+        await execAsync(`"C:\\Program Files\\LibreOffice\\program\\soffice.exe" --headless --convert-to pdf --outdir "${carpeta}" "${rutaDocx}"`)
+    }
+
+    res.sendFile(rutaPdf)
+}
+
+
 const consultarSolicitudCoordinador = async (req, res) => {
     try {
         const usuarios = await Usuarios.find({ coordinadorAsignado: req.usuario.id })
@@ -91,6 +113,10 @@ const consultarSolicitudCoordinador = async (req, res) => {
             usuarioSolicitante: { $in: dataInstructor },
             revisado: true,
         })
+            .populate('programaFormacion')
+            .populate('usuarioSolicitante')
+            .populate('empresaSolicitante')
+
         console.log(solicitudes)
 
         res.json(solicitudes)
@@ -569,5 +595,6 @@ export {
     descargarDocumentoAspirantes,
     descargarFormatoMasivo,
     subirExcelSofiaPlus,
-    verPdfAspirantes
+    verPdfAspirantes,
+    verFichaCaracterizacionCoordinador
 }
