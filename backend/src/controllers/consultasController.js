@@ -345,39 +345,38 @@ const verSolicitudesFuncionario = async (req, res) => {
 
 const verDetallesSolicitud = async (req, res) => {
     const { id } = req.params
-
     const solicitudes = await Solicitud.findOne({ _id: id, revisado: true })
-
-    if (solicitudes.length === 0) {
-        throw new HttpErrors(
-            'No hay solicitudes revisadas por el instructor',
-            404
-        )
+    if (!solicitudes) {
+        throw new HttpErrors('No hay solicitudes revisadas por el instructor', 404)
     }
 
     const solicitudesIds = [solicitudes._id]
-
     const revisionesAprobadas = await RevisionCoordinador.find({
         solicitud: { $in: solicitudesIds },
         estado: true
     })
         .populate('usuarioSolicitante', 'nombre email')
+        .populate('usuarioRevisador', 'nombre apellido email')
         .populate({
             path: 'solicitud',
             populate: [
                 { path: 'usuarioSolicitante' },
-                { path: 'empresaSolicitante' },
-                { path: 'programaFormacion' },
-                { path: 'municipio' }
+                { path: 'municipio' },
+                { path: 'programaFormacion', populate: { path: 'area' } },
+                { path: 'empresaSolicitante', populate: { path: 'tipoEmpresa', model: 'TipoEmpresaRegular' } },
             ]
         })
 
-    if (!solicitudes) {
-        throw new HttpErrors(
-            'No hay solicitudes aprobadas por el coordinador',
-            404
-        )
+    if (revisionesAprobadas.length === 0) {
+        throw new HttpErrors('No hay solicitudes aprobadas por el coordinador', 404)
     }
+
+    // Populate manual de programaEspecial usando refPath
+    await Promise.all(
+        revisionesAprobadas.map(revision =>
+            revision.solicitud.populate('programaEspecial')
+        )
+    )
 
     res.status(200).json(revisionesAprobadas)
 }
