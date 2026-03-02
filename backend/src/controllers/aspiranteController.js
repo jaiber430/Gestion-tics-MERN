@@ -390,7 +390,7 @@ const contarAspirante = async (req, res) => {
 
 
 // NUEVA FUNCIÓN: Obtener los tipos de la base de datos
-const obtenerDatosFormulario = async (req, res) => {
+const obtenerTiposIdentificacion = async (req, res) => {
     try {
         const tipos = await TiposIdentificacion.find();
         res.json(tipos);

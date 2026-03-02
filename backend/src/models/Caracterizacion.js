@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const caracterizacionSchema = new mongoose.Schema({
-    nombreCaracterizacion:{
+    caracterizacion:{
         type: String,
         uppercase: true,
         required: true
