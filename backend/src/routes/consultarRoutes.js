@@ -14,6 +14,7 @@ import {
     verCartaSolicitud,
     verDocumentoAspirantes,
     verFichaCaracterizacionCoordinador,
+    obtenerRevisiones,
 
     // FUNCIONARIO
     verSolicitudesFuncionario,
@@ -75,6 +76,8 @@ router.get(
     permisosRol('COORDINADOR'),
     consultarSolicitudCoordinador
 )
+
+router.get('/obtener-revisiones-coordinador', checkAuth, permisosRol('COORDINADOR'), obtenerRevisiones)
 
 // Revisar solicitud
 router.put(

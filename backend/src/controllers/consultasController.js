@@ -153,8 +153,8 @@ const revisarSolicitud = async (req, res) => {
 
     try {
         session.startTransaction()
-        if (!observacion) {
-            throw new HttpErrors('Todos los campos son requeridos', 400)
+        if (estado === false & !observacion) {
+            throw new HttpErrors('Si rechazas una solicitud debes enviar una observación', 400)
         }
 
         const existeSolicitud = await Solicitud
@@ -176,7 +176,7 @@ const revisarSolicitud = async (req, res) => {
             { solicitud: idSolicitud }, // criterio de búsqueda
             {
                 usuarioSolicitante: existeSolicitud.usuarioSolicitante,
-                usuarioCoordinador: req.usuario.id,
+                usuarioRevisador: req.usuario.id,
                 solicitud: idSolicitud,
                 estado,
                 observacion
@@ -186,17 +186,27 @@ const revisarSolicitud = async (req, res) => {
                 upsert: true    // si no existe lo crea
             }
         )
+
+        if (estado === false) {
+            existeSolicitud.revisado = false
+        }
+
+        await existeSolicitud.save({ session })
         await revision.save()
         await session.commitTransaction()
         session.endSession()
-        res.json({
-            msg: 'Revisión realizada exitosamente'
-        })
+        res.json('Revisión realizada exitosamente')
     } catch (error) {
         await session.abortTransaction()
         session.endSession()
         throw error
     }
+}
+
+// Backend - retorna todo el array no elemento por elemento
+const obtenerRevisiones = async (req, res) => {
+    const getRevisiones = await RevisionCoordinador.find()
+    res.json(getRevisiones)  // retorna el array completo
 }
 
 const verFormatoMasivo = async (req, res) => {
@@ -596,5 +606,6 @@ export {
     descargarFormatoMasivo,
     subirExcelSofiaPlus,
     verPdfAspirantes,
-    verFichaCaracterizacionCoordinador
+    verFichaCaracterizacionCoordinador,
+    obtenerRevisiones
 }
