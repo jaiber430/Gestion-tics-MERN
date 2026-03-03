@@ -37,7 +37,6 @@ const usuarioSchema = new mongoose.Schema({
     },
     telefono: {
         type: Number,
-        required: true,
     },
     email: {
         type: String,

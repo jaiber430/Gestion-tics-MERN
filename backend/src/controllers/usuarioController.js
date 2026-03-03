@@ -222,12 +222,19 @@ const registrarUsuario = async (req, res) => {
 
         const inicio = formatearFechaInicio(inicioContrato)
         const fin = formatearFechaFin(finContrato)
+        const fechaActual = new Date()
 
         if (inicio > fin) {
             throw new HttpErrors(
                 'La fecha de finalización no puede ser antes que la de inicio',
                 400
             )
+        }
+
+        let contratoActivo = false
+
+        if (fechaActual >= inicio && fechaActual <= fin) {
+            contratoActivo = true
         }
 
         const numeroContratoExiste =
@@ -239,12 +246,16 @@ const registrarUsuario = async (req, res) => {
                 409
             )
         }
+
+        req.body.contratoActivo = contratoActivo
     }
+
 
     if (tipoContrato !== 'Contrato') {
         delete req.body.numeroContrato
         delete req.body.inicioContrato
         delete req.body.finContrato
+        req.body.contratoActivo = false
     }
 
     await Usuarios.create(req.body)
@@ -303,19 +314,24 @@ const recuperarPassword = async (req, res) => {
 
 const verUsuarios = async (req, res) => {
     const verUsuariosNoverificados = await Usuarios.find({
-        // $or => Si cumple ambas condiciones
         $or: [
-            // $ne => Obtener datos diferentes a la petición
+            // Usuarios NO verificados
             { verificado: { $ne: true } },
-            { contratoActivo: { $ne: true } }
+            // Usuarios CON contrato (tienen número) Y contrato inactivo
+            {
+                numeroContrato: { $ne: null },
+                contratoActivo: false
+            }
         ]
     })
+        .populate('coordinadorAsignado')
         .populate('rol')
         .populate('tipoIdentificacion')
         .populate('programaEspecial')
+
     if (verUsuariosNoverificados.length === 0) {
         return res.json({
-            msg: "No se encuantran usuarios para verificar"
+            msg: "No se encuentran usuarios para verificar"
         })
     }
 
@@ -327,7 +343,10 @@ const verUsuarios = async (req, res) => {
         rol: usuario.rol.nombreRol,
         numeroContrato: usuario.numeroContrato ? usuario.numeroContrato : '',
         tipoPrograma: usuario.modelosProgramasEspeciales ? usuario.modelosProgramasEspeciales : "",
-        nombrePrograma: usuario.programaEspecial?.programaEspecial ? usuario.programaEspecial?.programaEspecial : ""
+        nombrePrograma: usuario.programaEspecial?.programaEspecial ? usuario.programaEspecial?.programaEspecial : "",
+        coordinadorAsignadoNombre: usuario.coordinadorAsignado?.nombre ? usuario.coordinadorAsignado?.nombre : '',
+        coordinadorAsignadoApellido: usuario.coordinadorAsignado?.apellido ? usuario.coordinadorAsignado?.apellido : '',
+        contratoActivo: usuario.contratoActivo ? usuario.contratoActivo : '',
     }))
 
     res.json(verUsuarios)
@@ -335,7 +354,6 @@ const verUsuarios = async (req, res) => {
 
 const verificarUsuarios = async (req, res) => {
     const { id } = req.params
-    const { verificado } = req.body
 
     const usuarioExiste = await Usuarios.findById(id)
 
@@ -343,7 +361,7 @@ const verificarUsuarios = async (req, res) => {
         throw new HttpErrors('Uusario a verificar no encontrado', 404)
     }
 
-    usuarioExiste.verificado = verificado || usuarioExiste.verificado
+    usuarioExiste.verificado = true
 
     await usuarioExiste.save()
     res.json({ msg: 'Usuario verificado correctamente' })
@@ -351,15 +369,14 @@ const verificarUsuarios = async (req, res) => {
 
 const activarContrato = async (req, res) => {
     const { id } = req.params
-    const { contratoActivo } = req.body
 
     const usuarioExiste = await Usuarios.findById(id)
 
     if (!usuarioExiste) {
-        throw new HttpErrors('Uusario a verificar no encontrado', 404)
+        throw new HttpErrors('Usario a verificar no encontrado', 404)
     }
 
-    usuarioExiste.contratoActivo = contratoActivo || usuarioExiste.contratoActivo
+    usuarioExiste.contratoActivo = true
 
     await usuarioExiste.save()
     res.json({ msg: 'Contrato activado correctamente' })

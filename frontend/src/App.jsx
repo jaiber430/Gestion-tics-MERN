@@ -21,6 +21,7 @@ import DetallesSolicitudes from './components/DetallesSolicitudes'
 
 import CrearPrograma from './pages/CrearPrograma'
 import Curricular from './pages/Curricular'
+import Administrador from './pages/Administrador'
 
 function App() {
   return (
@@ -50,6 +51,10 @@ function App() {
           <Route path='/funcionario' element={<Funcionario />}></Route>
           <Route path='/funcionario/reportes' element={<ReportesFuncionario />}></Route>
           <Route path='/funcionario/conocer-detalles-solicitud/:id' element={<DetallesSolicitudes />}></Route>
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route path='/administrador' element={<Administrador />}></Route>
         </Route>
 
         <Route element={<ProtectedRoute />}>

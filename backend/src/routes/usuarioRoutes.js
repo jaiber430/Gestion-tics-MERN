@@ -36,14 +36,14 @@ router.get(
     verUsuarios
 )
 
-router.patch(
+router.put(
     '/verificar/:id',
     checkAuth,
     permisosRol('ADMINISTRADOR'),
     verificarUsuarios
 )
 
-router.patch(
+router.put(
     '/activar-contrato/:id',
     checkAuth,
     permisosRol('ADMINISTRADOR'),
