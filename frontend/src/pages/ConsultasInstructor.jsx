@@ -35,6 +35,7 @@ const ConsultasInstructor = () => {
             })
             setTimeout(() => {
                 setAlerta({})
+                window.location.reload()
             }, 3000)
         } catch (error) {
             setAlerta({
@@ -113,15 +114,29 @@ const ConsultasInstructor = () => {
 
                                 {/* Badge de estado mejorado */}
                                 <div className="flex items-center gap-3">
-                                    {/* <span className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 ${oferta.revisado
-                                        ? 'bg-green-50 text-green-700 border border-green-200'
-                                        : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                                        }`}>
-                                        <span className={`w-2 h-2 rounded-full ${oferta.revisado ? 'bg-green-500 animate-pulse' : 'bg-yellow-500 animate-pulse'
-                                            }`}></span>
-                                        {oferta.revisado ? 'Revisado' : 'Pendiente de revisión'}
-                                    </span> */}
+                                    {oferta.ficha?.estado && !(oferta.ficha.estado === 'RECHAZADA' && oferta.revisado) ? (
+                                        <span className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 border ${oferta.ficha.estado === 'CREACIÓN' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                            oferta.ficha.estado === 'CREADA' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                                oferta.ficha.estado === 'LISTA DE ESPERA' ? 'bg-slate-50 text-slate-700 border-slate-200' :
+                                                    oferta.ficha.estado === 'MATRICULADA' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                        'bg-red-50 text-red-700 border-red-200'
+                                            }`}>
+                                            <span className={`w-2 h-2 rounded-full animate-pulse ${oferta.ficha.estado === 'CREACIÓN' ? 'bg-blue-500' :
+                                                oferta.ficha.estado === 'CREADA' ? 'bg-orange-500' :
+                                                    oferta.ficha.estado === 'LISTA DE ESPERA' ? 'bg-slate-500' :
+                                                        oferta.ficha.estado === 'MATRICULADA' ? 'bg-green-500' :
+                                                            'bg-red-500'
+                                                }`}></span>
+                                            {oferta.ficha.estado}
+                                        </span>
+                                    ) : !oferta.revisado ? (
+                                        <span className="px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 bg-orange-50 text-orange-700 border border-orange-200">
+                                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                            Pendiente de revisión
+                                        </span>
+                                    ) : null}
                                 </div>
+
                             </div>
 
                             {/* Grid de información - MEJORADA */}

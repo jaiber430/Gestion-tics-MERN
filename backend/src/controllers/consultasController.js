@@ -13,29 +13,33 @@ import Aspirantes from '../models/Aspirantes.js'
 import HttpErrors from '../helpers/httpErrors.js'
 import generarCartaCoordinador from '../services/generarCartaCoordinador.js'
 import Usuarios from '../models/Usuarios.js'
+import Fichas from '../models/Ficha.js'
 
 const execAsync = promisify(exec)
+
 const consultarSolicitudInstructor = async (req, res) => {
     const verSolicitudesInstructor = await Solicitud
-        .find({
-            usuarioSolicitante: req.usuario.id
-        })
+        .find({ usuarioSolicitante: req.usuario.id })
         .populate('empresaSolicitante')
-        .populate({
-            path: 'programaEspecial',
-            select: 'programaEspecial' // Solo el campo que necesitas
-        })
+        .populate({ path: 'programaEspecial', select: 'programaEspecial' })
         .populate({
             path: 'programaFormacion',
             select: 'nombrePrograma area',
-            populate: {
-                path: 'area',
-                select: 'area'
-            }
+            populate: { path: 'area', select: 'area' }
         })
-        .select('-__v') // Excluye campos que no necesitas
+        .select('-__v')
 
-    res.json(verSolicitudesInstructor)
+    // Obtener fichas de todas las solicitudes
+    const ids = verSolicitudesInstructor.map(s => s._id)
+    const fichas = await Ficha.find({ solicitud: { $in: ids } }).select('solicitud estado')
+
+    // Adjuntar ficha a cada solicitud
+    const respuesta = verSolicitudesInstructor.map(s => ({
+        ...s.toObject(),
+        ficha: fichas.find(f => f.solicitud.toString() === s._id.toString()) || null
+    }))
+
+    res.json(respuesta)
 }
 
 const enviarSolicitud = async (req, res) => {
@@ -309,10 +313,7 @@ const verSolicitudesFuncionario = async (req, res) => {
     const solicitudes = await Solicitud.find({ revisado: true })
 
     if (solicitudes.length === 0) {
-        throw new HttpErrors(
-            'No hay solicitudes revisadas por el instructor',
-            404
-        )
+        throw new HttpErrors('No hay solicitudes revisadas por el instructor', 404)
     }
 
     const solicitudesIds = solicitudes.map(s => s._id)
@@ -333,11 +334,49 @@ const verSolicitudesFuncionario = async (req, res) => {
         })
 
     if (revisionesAprobadas.length === 0) {
-        throw new HttpErrors(
-            'No hay solicitudes aprobadas por el coordinador',
-            404
-        )
+        throw new HttpErrors('No hay solicitudes aprobadas por el coordinador', 404)
     }
+
+    // Filtrar solo las que NO tienen ficha aún
+    const fichasExistentes = await Ficha.find({
+        solicitud: { $in: solicitudesIds }
+    }).select('solicitud')
+
+    const idsConFicha = fichasExistentes.map(f => f.solicitud.toString())
+
+    const sinFicha = revisionesAprobadas.filter(r =>
+        !idsConFicha.includes(r.solicitud._id.toString())
+    )
+
+    if (sinFicha.length === 0) {
+        throw new HttpErrors('No hay solicitudes pendientes de revisión', 404)
+    }
+
+    res.status(200).json(sinFicha)
+}
+
+const verMisRevisiones = async (req, res) => {
+    const fichasRevisadas = await Ficha.find({ usuarioFuncionario: req.usuario.id })
+    if (fichasRevisadas.length === 0) {
+        throw new HttpErrors('Aún no has revisado solicitudes', 404)
+    }
+
+    const solicitudesIds = fichasRevisadas.map(f => f.solicitud)
+
+    const revisionesAprobadas = await RevisionCoordinador.find({
+        solicitud: { $in: solicitudesIds },
+        estado: true
+    })
+        .populate('usuarioSolicitante', 'nombre email')
+        .populate({
+            path: 'solicitud',
+            populate: [
+                { path: 'usuarioSolicitante' },
+                { path: 'empresaSolicitante' },
+                { path: 'programaFormacion' },
+                { path: 'municipio' }
+            ]
+        })
 
     res.status(200).json(revisionesAprobadas)
 }
@@ -679,5 +718,6 @@ export {
     obtenerRevisiones,
     verDetallesSolicitud,
     verFichas,
-    obtenerEstadoFicha
+    obtenerEstadoFicha,
+    verMisRevisiones
 }

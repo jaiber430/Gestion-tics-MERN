@@ -117,6 +117,20 @@ const HeaderFuncionario = () => {
                                 Inicio
                             </NavLink>
 
+                            <NavLink
+                                to="/funcionario/mis-revisiones"
+                                end
+                                className={({ isActive }) =>
+                                    `h-full flex items-center px-1 border-b-2 transition-colors
+                                    ${isActive
+                                        ? "text-green-600 border-green-600 font-medium"
+                                        : "text-slate-500 border-transparent hover:text-slate-700"
+                                    }`
+                                }
+                            >
+                                Mis revisones
+                            </NavLink>
+
                             {params.id ?
                                 <NavLink
                                     to={`/funcionario/conocer-detalles-solicitud/${params.id}`}

@@ -26,7 +26,8 @@ import {
     subirExcelSofiaPlus,
     verDetallesSolicitud,
     verFichas,
-    obtenerEstadoFicha
+    obtenerEstadoFicha,
+    verMisRevisiones
 
 } from '../controllers/consultasController.js'
 
@@ -120,6 +121,14 @@ router.get(
     checkAuth,
     permisosRol('FUNCIONARIO'),
     verSolicitudesFuncionario
+)
+
+// Listar solo las solicitudes del funcionario en sesión
+router.get(
+    '/revision-funcionario/mis-revisiones',
+    checkAuth,
+    permisosRol('FUNCIONARIO'),
+    verMisRevisiones
 )
 
 router.get('/solicitudes-funcionario/:id', checkAuth, permisosRol('FUNCIONARIO'), verDetallesSolicitud)

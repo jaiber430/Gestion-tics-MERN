@@ -14,6 +14,7 @@ import ConsultasInstructor from './pages/ConsultasInstructor'
 import GestionAspirantes from './pages/GestionAspirantes'
 import ReportesCoordinador from './pages/ReportesCoordinador'
 
+import SolicitudesRevisadas from './pages/SolicitudesRevisadas'
 import Coordinador from './pages/Coordinador'
 import Funcionario from './pages/Funcionario'
 import ReportesFuncionario from './pages/ReportesFuncionario'
@@ -49,6 +50,7 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path='/funcionario' element={<Funcionario />}></Route>
+          <Route path='/funcionario/mis-revisiones' element={<SolicitudesRevisadas />}></Route>
           <Route path='/funcionario/reportes' element={<ReportesFuncionario />}></Route>
           <Route path='/funcionario/conocer-detalles-solicitud/:id' element={<DetallesSolicitudes />}></Route>
         </Route>

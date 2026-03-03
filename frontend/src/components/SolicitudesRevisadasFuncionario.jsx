@@ -19,7 +19,7 @@ const observacionHabilitada = (estado) =>
 const codigosHabilitados = (estado) =>
     estado === 'CREADA' || estado === 'MATRICULADA'
 
-const RevisarSolicitudesFuncionario = ({ solicitud }) => {
+const SolicitudesRevisadasFuncionario = ({ solicitud }) => {
 
     const [fichas, setFichas] = useState({})
     const [estadosLocal, setEstadosLocal] = useState({})
@@ -443,4 +443,4 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
     )
 }
 
-export default RevisarSolicitudesFuncionario
+export default SolicitudesRevisadasFuncionario
