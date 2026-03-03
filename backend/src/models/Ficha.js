@@ -22,19 +22,8 @@ const fichaSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuarios',
     },
+    // Observación solo en CREACIÓN y RECHAZADA
     observacionCreacion: {
-        type: String,
-        trim: true,
-        uppercase: true,
-        default: null
-    },
-    observacionCreada: {
-        type: String,
-        trim: true,
-        uppercase: true,
-        default: null
-    },
-    observacionMatriculada: {
         type: String,
         trim: true,
         uppercase: true,
@@ -46,17 +35,13 @@ const fichaSchema = new mongoose.Schema({
         uppercase: true,
         default: null
     },
-    numeroInscritos: {
-        type: Number,
-        default: null,
-    },
     excel: {
         type: Boolean,
-        default: true  // true = puede descargar
+        default: true  // true = puede descargar, false = debe subir
     },
     fechaRevisonFicha: {
         type: Date,
-        default: Date.now()
+        default: Date.now
     },
 }, {
     timestamps: true

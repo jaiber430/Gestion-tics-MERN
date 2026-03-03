@@ -103,13 +103,13 @@ const useSolicitudBase = () => {
         }
 
         const cargarTiposEmpresa = async () => {
-            if (tipo === 'campesena') return
             try {
                 setCargandoTiposEmpresa(true)
                 const { data } = await clienteAxios.get('/catalogos/tipos-empresa-regular')
                 setTiposEmpresa(data)
-            } catch {
-                mostrarAlerta('Error al cargar tipos de empresa', true)
+            } catch (err) {
+                console.log('Error catálogos:', err.response?.data || err.message)
+                mostrarAlerta('Error al cargar catálogos', true)
             } finally {
                 setCargandoTiposEmpresa(false)
             }

@@ -11,6 +11,14 @@ const ESTADOS_CONFIG = {
     'RECHAZADA': { barra: 'from-red-500 to-red-400', badge: 'bg-red-50 text-red-700 border-red-200', boton: 'from-red-600 to-red-500 shadow-red-200' },
 }
 
+// Observación habilitada solo en CREACIÓN y RECHAZADA
+const observacionHabilitada = (estado) =>
+    estado === 'CREACIÓN' || estado === 'RECHAZADA'
+
+// Códigos habilitados solo en CREADA y MATRICULADA
+const codigosHabilitados = (estado) =>
+    estado === 'CREADA' || estado === 'MATRICULADA'
+
 const RevisarSolicitudesFuncionario = ({ solicitud }) => {
 
     const [fichas, setFichas] = useState({})
@@ -18,7 +26,6 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
     const [observacionesLocal, setObservacionesLocal] = useState({})
     const [codigosFicha, setCodigosFicha] = useState({})
     const [codigosSolicitud, setCodigosSolicitud] = useState({})
-    const [numerosInscritos, setNumerosInscritos] = useState({})
     const [excelListo, setExcelListo] = useState({}) // { [idSolicitud]: bool }
     const [alerta, setAlerta] = useState({})
 
@@ -39,7 +46,6 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                 const observacionesMap = {}
                 const codigosFichaMap = {}
                 const codigosSolicitudMap = {}
-                const numerosInscritosMap = {}
                 const excelMap = {}
 
                 resultados.forEach(({ id, data }) => {
@@ -48,12 +54,9 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                     // Precargar observación según el estado guardado
                     observacionesMap[id] =
                         data?.observacionCreacion ||
-                        data?.observacionCreada ||
-                        data?.observacionMatriculada ||
                         data?.observacionRechazada || ''
                     codigosFichaMap[id] = data?.codigoFicha || ''
                     codigosSolicitudMap[id] = solicitud.find(s => s.solicitud._id === id)?.solicitud?.codigoSolicitud || ''
-                    numerosInscritosMap[id] = data?.numeroInscritos || ''
                     excelMap[id] = data?.excel ?? true
                 })
 
@@ -62,7 +65,6 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                 setObservacionesLocal(observacionesMap)
                 setCodigosFicha(codigosFichaMap)
                 setCodigosSolicitud(codigosSolicitudMap)
-                setNumerosInscritos(numerosInscritosMap)
                 setExcelListo(excelMap)
             } catch (error) {
                 console.error(error)
@@ -77,7 +79,6 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
         setObservacionesLocal(prev => ({ ...prev, [idSolicitud]: '' }))
         setCodigosFicha(prev => ({ ...prev, [idSolicitud]: '' }))
         setCodigosSolicitud(prev => ({ ...prev, [idSolicitud]: '' }))
-        setNumerosInscritos(prev => ({ ...prev, [idSolicitud]: '' }))
     }
 
     const handlerDocumentosAspirantes = async (idSolicitud) => {
@@ -197,7 +198,6 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                     observacion: observacionesLocal[idSolicitud],
                     codigoFicha: codigosFicha[idSolicitud],
                     codigoSolicitud: codigosSolicitud[idSolicitud],
-                    numeroInscritos: numerosInscritos[idSolicitud]
                 }
             )
             // Actualizar ficha local con el nuevo estado guardado
@@ -225,6 +225,10 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                 const estadoActual = estadosLocal[idSolicitud] || ''
                 const bloqueado = ficha?.estado === 'MATRICULADA'
                 const config = ESTADOS_CONFIG[estadoActual] || { barra: 'from-yellow-500 to-amber-400' }
+
+                // Condiciones de campos
+                const obsHabilitada = !bloqueado && observacionHabilitada(estadoActual)
+                const codsHabilitados = !bloqueado && codigosHabilitados(estadoActual)
 
                 return (
                     <div
@@ -272,7 +276,7 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
 
                             <form onSubmit={(e) => handleSubmit(idSolicitud, e)}>
 
-                                {/* Select + Observación + Códigos + Inscritos */}
+                                {/* Select + Observación + Códigos */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 
                                     {/* Estado */}
@@ -293,73 +297,57 @@ const RevisarSolicitudesFuncionario = ({ solicitud }) => {
                                         </select>
                                     </div>
 
-                                    {/* Observación */}
+                                    {/* Observación — habilitada solo en CREACIÓN y RECHAZADA */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Observación</label>
                                         <textarea
                                             value={observacionesLocal[idSolicitud] || ''}
                                             onChange={e => setObservacionesLocal(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
-                                            disabled={bloqueado || estadoActual === 'LISTA DE ESPERA' || estadoActual === ''}
-                                            placeholder={bloqueado || estadoActual === 'LISTA DE ESPERA' || estadoActual === '' ? 'No disponible' : 'Escribe la observación...'}
+                                            disabled={!obsHabilitada}
+                                            placeholder={!obsHabilitada ? 'No disponible' : 'Escribe la observación...'}
                                             rows={2}
                                             className={`w-full px-4 py-2.5 border rounded-xl transition-all resize-none focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                ${bloqueado || estadoActual === 'LISTA DE ESPERA' || estadoActual === ''
+                                                ${!obsHabilitada
                                                     ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'border-slate-200 bg-white text-slate-700'
                                                 }`}
                                         />
                                     </div>
 
-                                    {/* Código ficha */}
+                                    {/* Código ficha — solo CREADA y MATRICULADA */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Código ficha</label>
                                         <input
                                             type='number'
                                             value={codigosFicha[idSolicitud] || ''}
                                             onChange={e => setCodigosFicha(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
-                                            disabled={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')}
-                                            placeholder={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA') ? 'No disponible' : 'Ingresa el código...'}
+                                            disabled={!codsHabilitados}
+                                            placeholder={!codsHabilitados ? 'No disponible' : 'Ingresa el código...'}
                                             className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                ${bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')
+                                                ${!codsHabilitados
                                                     ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'border-slate-200 bg-white text-slate-700'
                                                 }`}
                                         />
                                     </div>
 
-                                    {/* Código solicitud */}
+                                    {/* Código solicitud — solo CREADA y MATRICULADA */}
                                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Código Solicitud</label>
                                         <input
                                             type='number'
                                             value={codigosSolicitud[idSolicitud] || ''}
                                             onChange={e => setCodigosSolicitud(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
-                                            disabled={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')}
-                                            placeholder={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA') ? 'No disponible' : 'Ingresa el código...'}
+                                            disabled={!codsHabilitados}
+                                            placeholder={!codsHabilitados ? 'No disponible' : 'Ingresa el código...'}
                                             className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                ${bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')
+                                                ${!codsHabilitados
                                                     ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'border-slate-200 bg-white text-slate-700'
                                                 }`}
                                         />
                                     </div>
 
-                                    {/* Número de inscritos */}
-                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Número de inscritos</label>
-                                        <input
-                                            type='number'
-                                            value={numerosInscritos[idSolicitud] || ''}
-                                            onChange={e => setNumerosInscritos(prev => ({ ...prev, [idSolicitud]: e.target.value }))}
-                                            disabled={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')}
-                                            placeholder={bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA') ? 'No disponible' : 'Ingresa el número...'}
-                                            className={`w-full px-4 py-2.5 border rounded-xl transition-all focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-50 text-sm
-                                                ${bloqueado || (estadoActual !== 'CREADA' && estadoActual !== 'MATRICULADA')
-                                                    ? 'border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                    : 'border-slate-200 bg-white text-slate-700'
-                                                }`}
-                                        />
-                                    </div>
                                 </div>
 
                                 {/* Botones de documentos — lo más importante */}

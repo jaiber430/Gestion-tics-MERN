@@ -348,14 +348,13 @@ const verDetallesSolicitud = async (req, res) => {
     if (!solicitudes) {
         throw new HttpErrors('No hay solicitudes revisadas por el instructor', 404)
     }
-
     const solicitudesIds = [solicitudes._id]
     const revisionesAprobadas = await RevisionCoordinador.find({
         solicitud: { $in: solicitudesIds },
         estado: true
     })
         .populate('usuarioSolicitante', 'nombre email')
-        .populate('usuarioRevisador', 'nombre apellido email')
+        .populate('usuarioRevisador')
         .populate({
             path: 'solicitud',
             populate: [
@@ -377,7 +376,23 @@ const verDetallesSolicitud = async (req, res) => {
         )
     )
 
-    res.status(200).json(revisionesAprobadas)
+    // Obtener ficha ligada a cada solicitud
+    const fichas = await Ficha.find({
+        solicitud: { $in: solicitudesIds }
+    }).populate('usuarioSolicitante usuarioFuncionario')
+
+    // Adjuntar ficha al objeto de respuesta
+    const respuesta = revisionesAprobadas.map(revision => {
+        const revisionObj = revision.toObject()
+        const fichaEncontrada = fichas.find(f => f.solicitud.toString() === revision.solicitud._id.toString())
+
+        return {
+            ...revisionObj, // Esto envía toda la RevisionCoordinador
+            ficha: fichaEncontrada ? fichaEncontrada.toObject() : null
+        }
+    })
+
+    res.status(200).json(respuesta)
 }
 
 const descargarCartaSolicitud = async (req, res) => {
@@ -504,26 +519,23 @@ const revisarSolicitudFuncionario = async (req, res) => {
     try {
         await session.startTransaction()
         const { idSolicitud } = req.params
-        const { estado, observacion, codigoFicha, codigoSolicitud, numeroInscritos } = req.body
+        const { estado, observacion, codigoFicha, codigoSolicitud } = req.body
 
         // Verificar que la solicitud exista y esté revisada
         const solicitud = await Solicitud.findOne({
             _id: idSolicitud,
             revisado: true
         }).session(session)
-        if (!solicitud) {
-            throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
-        }
+        if (!solicitud) throw new HttpErrors('Solicitud no encontrada o no revisada', 404)
 
         const estadosValidos = ['CREACIÓN', 'CREADA', 'LISTA DE ESPERA', 'MATRICULADA', 'RECHAZADA']
-        if (!estadosValidos.includes(estado)) {
-            throw new HttpErrors('Estado no válido', 400)
-        }
+        if (!estadosValidos.includes(estado)) throw new HttpErrors('Estado no válido', 400)
 
         // Objeto base de ficha
         const dataFicha = {
             solicitud: idSolicitud,
             estado,
+            usuarioFuncionario: req.usuario.id,
             usuarioSolicitante: solicitud.usuarioSolicitante,
             fechaRevisonFicha: new Date()
         }
@@ -534,10 +546,8 @@ const revisarSolicitudFuncionario = async (req, res) => {
         }
 
         if (estado === 'CREADA') {
-            if (numeroInscritos) dataFicha.numeroInscritos = numeroInscritos
             if (!codigoFicha) throw new HttpErrors('El código de ficha es obligatorio cuando el estado es CREADA', 400)
             if (!codigoSolicitud) throw new HttpErrors('El código de solicitud es obligatorio cuando el estado es CREADA', 400)
-            dataFicha.observacionCreada = observacion
             dataFicha.codigoFicha = codigoFicha
             await Solicitud.findOneAndUpdate(
                 { _id: idSolicitud },
@@ -547,14 +557,12 @@ const revisarSolicitudFuncionario = async (req, res) => {
         }
 
         if (estado === 'LISTA DE ESPERA') {
-            // Sin códigos ni observación
+            // Sin campos adicionales
         }
 
         if (estado === 'MATRICULADA') {
-            if (numeroInscritos) dataFicha.numeroInscritos = numeroInscritos
             if (!codigoFicha) throw new HttpErrors('El código de ficha es obligatorio cuando el estado es MATRICULADA', 400)
             if (!codigoSolicitud) throw new HttpErrors('El código de solicitud es obligatorio cuando el estado es MATRICULADA', 400)
-            dataFicha.observacionMatriculada = observacion
             dataFicha.codigoFicha = codigoFicha
             await Solicitud.findOneAndUpdate(
                 { _id: idSolicitud },
@@ -572,23 +580,17 @@ const revisarSolicitudFuncionario = async (req, res) => {
                 { session }
             )
         }
-        
+
         const fichaUpdate = await Ficha.findOneAndUpdate(
             { solicitud: idSolicitud },
             dataFicha,
-            {
-                new: true,
-                upsert: true,
-                session
-            }
+            { new: true, upsert: true, session }
         )
 
         await session.commitTransaction()
         session.endSession()
-        res.status(200).json({
-            msg: 'Revisión realizada correctamente',
-            fichaUpdate
-        })
+        res.status(200).json({ msg: 'Revisión realizada correctamente', fichaUpdate })
+
     } catch (error) {
         await session.abortTransaction()
         session.endSession()
